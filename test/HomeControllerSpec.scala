@@ -16,7 +16,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
   "HomeController GET" should {
 
     "render the appSummary resource from a new instance of controller" in {
-      val controller = new HomeController(stubControllerComponents())
+      val controller = new HomeController
+      controller.setControllerComponents(stubControllerComponents())
       val home = controller.appSummary().apply(FakeRequest(GET, "/summary"))
 
       status(home) mustBe OK
