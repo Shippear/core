@@ -1,12 +1,9 @@
 package controllers
 
-import javax.inject._
-
+import controllers.util.BaseController
 import play.api.libs.json.Json
-import play.api.mvc._
 
-@Singleton
-class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class HomeController extends BaseController {
 
   def appSummary = Action {
     Ok(Json.obj("content" -> "Scala Play React Seed"))

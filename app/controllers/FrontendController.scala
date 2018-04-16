@@ -1,18 +1,14 @@
 package controllers
 
-import javax.inject._
-
+import com.google.inject.Inject
+import controllers.util.BaseController
 import play.api.Configuration
 import play.api.http.HttpErrorHandler
-import play.api.mvc._
+import play.api.mvc.{Action, AnyContent}
 
-/**
-  * Frontend controller managing all static resource associate routes.
-  * @param assets Assets controller reference.
-  * @param cc Controller components reference.
-  */
-@Singleton
-class FrontendController @Inject()(assets: Assets, errorHandler: HttpErrorHandler, config: Configuration, cc: ControllerComponents) extends AbstractController(cc) {
+class FrontendController @Inject()(assets: Assets,
+                                   errorHandler: HttpErrorHandler,
+                                   config: Configuration) extends BaseController {
 
   def index: Action[AnyContent] = assets.at("index.html")
 
@@ -21,4 +17,5 @@ class FrontendController @Inject()(assets: Assets, errorHandler: HttpErrorHandle
   } else {
     if (resource.contains(".")) assets.at(resource) else index
   }
+
 }
