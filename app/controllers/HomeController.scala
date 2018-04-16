@@ -1,11 +1,9 @@
 package controllers
 
-import com.google.inject.Inject
 import controllers.util.BaseController
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 
-class HomeController @Inject()(client: WSClient) extends BaseController {
+class HomeController extends BaseController {
 
   def appSummary = Action {
     info("Loggin TEST!!!")
