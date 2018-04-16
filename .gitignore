@@ -1,11 +1,11 @@
 logs
 target
-/project/project/*
-/project/target/*
+project/project/*
+project/target/*
 /.idea
 /.idea_modules
 /.classpath
 /.project
 /.settings
 /RUNNING_PID
-
+out/
