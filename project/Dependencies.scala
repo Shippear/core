@@ -12,15 +12,17 @@ object Dependencies {
     "Sbt Plugins" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases",
     "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
-    "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
+    "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/"
   )
 
 
   val externalDependencies = Seq(
     PlayImport.guice,
+    PlayImport.ws,
     "com.h2database" % "h2" % "1.4.196",
     "com.iheart" %% "ficus" % "1.4.3",
-    "net.codingwell" %% "scala-guice" % "4.1.1"
+    "net.codingwell" %% "scala-guice" % "4.1.1",
+    "org.mongodb.scala" %% "mongo-scala-driver" % "2.1.0"
   )
 
   val jsonDependencies = Seq(
