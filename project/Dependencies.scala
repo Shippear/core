@@ -22,7 +22,7 @@ object Dependencies {
     "com.h2database" % "h2" % "1.4.196",
     "com.iheart" %% "ficus" % "1.4.3",
     "net.codingwell" %% "scala-guice" % "4.1.1",
-    "org.mongodb.scala" %% "mongo-scala-driver" % "2.1.0"
+    "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.1"
   )
 
   val jsonDependencies = Seq(
