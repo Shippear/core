@@ -1,6 +1,6 @@
-package controllers
+package controller
 
-import controllers.util.BaseController
+import controller.util.BaseController
 import play.api.libs.json.Json
 
 class HomeController extends BaseController {
