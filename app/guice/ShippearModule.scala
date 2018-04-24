@@ -1,7 +1,7 @@
 package guice
 
 import controller.{FrontendController, HomeController, UserController}
-import controller.{FrontendController, HomeController}
+import database.Mongo
 import net.codingwell.scalaguice.ScalaModule
 import service.UserService
 
@@ -12,5 +12,7 @@ class ShippearModule extends ScalaModule {
     bind[UserController].asEagerSingleton()
 
     bind[UserService]
+
+    bind[Mongo].asEagerSingleton()
   }
 }

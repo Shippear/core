@@ -4,10 +4,7 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.User
-import play.api.libs.ws.WSClient
 import service.UserService
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserController @Inject()(service: UserService) extends BaseController {
 
