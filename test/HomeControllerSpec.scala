@@ -3,6 +3,7 @@ package controllers
 import controller.HomeController
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
+import play.api.libs.json.{JsObject, JsValue}
 import play.api.test._
 import play.api.test.Helpers._
 
@@ -14,6 +15,9 @@ import play.api.test.Helpers._
   */
 class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
+  private def parseContent(content: JsValue) =
+    content.asInstanceOf[JsObject].value("value").asInstanceOf[JsObject].value("content").toString
+
   "HomeController GET" should {
 
     "render the appSummary resource from a new instance of controller" in {
@@ -24,7 +28,7 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       status(home) mustBe OK
       contentType(home) mustBe Some("application/json")
       val resultJson = contentAsJson(home)
-      resultJson.toString() mustBe """{"content":"Scala Play React Seed"}"""
+      parseContent(resultJson) mustBe """{"value":"Scala Play React Seed"}"""
     }
 
     "render the appSummary resource from the application" in {
@@ -34,17 +38,17 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
       status(home) mustBe OK
       contentType(home) mustBe Some("application/json")
       val resultJson = contentAsJson(home)
-      resultJson.toString() mustBe """{"content":"Scala Play React Seed"}"""
+      parseContent(resultJson) mustBe """{"value":"Scala Play React Seed"}"""
     }
 
     "render the appSummary resource from the router" in {
-      val request = FakeRequest(GET, "/api/summary")
+      val request = FakeRequest(GET, "/shippear/summary")
       val home = route(app, request).get
 
       status(home) mustBe OK
       contentType(home) mustBe Some("application/json")
       val resultJson = contentAsJson(home)
-      resultJson.toString() mustBe """{"content":"Scala Play React Seed"}"""
+      parseContent(resultJson) mustBe """{"value":"Scala Play React Seed"}"""
     }
   }
 }
