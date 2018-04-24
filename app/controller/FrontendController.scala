@@ -1,7 +1,9 @@
-package controllers
+package controller
 
 import com.google.inject.Inject
-import controllers.util.BaseController
+import controller.util.BaseController
+import controllers.Assets
+import controller.util.BaseController
 import play.api.Configuration
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{Action, AnyContent}

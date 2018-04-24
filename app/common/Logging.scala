@@ -14,5 +14,6 @@ trait Logging {
 
   protected def error(message: => String): Unit = LOGGER.error(message)
 
+  protected def error(message: => String, exception: Throwable): Unit = LOGGER.error(message, exception)
 
 }
