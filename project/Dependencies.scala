@@ -12,7 +12,8 @@ object Dependencies {
     "Sbt Plugins" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases",
     "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
-    "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/"
+    "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
+    "Sonatype OSS" at "https://oss.sonatype.org/content/groups/public"
   )
 
 
@@ -23,6 +24,7 @@ object Dependencies {
     "com.iheart" %% "ficus" % "1.4.3",
     "net.codingwell" %% "scala-guice" % "4.1.1",
     "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.1",
+    "ai.snips" %% "play-mongo-bson" % "0.4",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0"
   )
 

@@ -6,12 +6,33 @@ import controller.util.BaseController
 import model.User
 import service.UserService
 
-class UserController @Inject()(service: UserService) extends BaseController {
+import scala.concurrent.ExecutionContext
 
-  //Todo action.async
-  def createUser = Action { implicit request =>
+class UserController @Inject()(service: UserService)(implicit ec: ExecutionContext) extends BaseController {
+
+  def createUser = Action.async { implicit request =>
     val user = request.parseBodyTo[User]
-    Ok(service.toUser(user.name))
+    service.save(user)
+      .map {
+        _ => Ok(s"User ${user.userName} created successfully")
+      }
+      .recover {
+        case ex: Exception =>
+          error("Error creating a new user", ex)
+          InternalServerError(s"Error creating a new user ${ex.getMessage}")
+    }
+  }
+
+  def findUser(userName: String) = Action.async { implicit request =>
+    service.user(userName)
+      .map {
+        user => Ok(user)
+      }
+      .recover {
+        case ex: Exception =>
+          error(s"Error getting user $userName", ex)
+          InternalServerError(s"Error creating a new user ${ex.getMessage}")
+      }
   }
 
 }

@@ -7,14 +7,9 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
 class Mongo extends ConfigReader {
 
-  val config = envConfiguration.as[MongoConfiguration]("mongo")
+  val config = envConfiguration.as[MongoConfiguration]("mongodb")
 
   private val mongoClient: MongoClient = MongoClient(config.uri)
 
-  private val database = mongoClient.getDatabase(config.database)
-
-  def collection(name: String) = database.getCollection(name)
-
-
-
+  val database = mongoClient.getDatabase(config.database)
 }
