@@ -1,3 +1,3 @@
 package database
 
-case class MongoConfiguration(uri: String, database: String)
+case class MongoConfiguration(database: String)
