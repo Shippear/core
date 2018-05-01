@@ -1,6 +1,5 @@
 package controller
 
-
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.User
@@ -12,7 +11,7 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
 
   def createUser = Action.async { implicit request =>
     val user = request.parseBodyTo[User]
-    service.save(user).
+    service.create(user).
       map {
         id =>info(s"User ${user.userName} created with id $id")
         Ok(id)
@@ -25,7 +24,7 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
   }
 
   def findUser(userName: String) = Action.async { implicit request =>
-    service.user(userName).
+    service.retrieve("userName", userName).
       map {
         user => Ok(user)
       }.

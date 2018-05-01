@@ -1,6 +1,12 @@
 package model
 
-import org.mongodb.scala.bson.ObjectId
 
-
-case class User(_id: String, userName: String, firstName: String, lastName: String, photoId: String, order: Option[Order])
+case class User(userName: String,
+                firstName: String,
+                lastName: String,
+                dni: String,
+                contactInfo: ContactInfo,
+                photoUrl: String,
+                addresses: Seq[Address],
+                order: Option[Order],
+                paymentMethods: Seq[PaymentMethod])
