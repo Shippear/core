@@ -10,8 +10,8 @@ import scala.concurrent.ExecutionContext
 
 class UserController @Inject()(service: UserService)(implicit ec: ExecutionContext) extends BaseController {
 
-  def createUser = Action.async { implicit request =>
-    val user = request.parseBodyTo[User]
+  def createUser = AsyncActionWithBody[User] { implicit request =>
+    val user = request.content
     service.save(user)
       .map {
         _ => Ok(s"User ${user.userName} created successfully")
@@ -23,7 +23,7 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
     }
   }
 
-  def findUser(userName: String) = Action.async { implicit request =>
+  def findUser(userName: String) = AsyncAction { implicit request =>
     service.user(userName)
       .map {
         user => Ok(user)
