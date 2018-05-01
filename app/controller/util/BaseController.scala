@@ -1,13 +1,19 @@
 package controller.util
 
-import common.Logging
-import common.serialization.{SnakeCaseJsonProtocol,_}
+import com.google.inject.Inject
+import common.{ConfigReader, Logging}
+import common.serialization.{SnakeCaseJsonProtocol, _}
 import play.api.mvc.{InjectedController, Request}
 import play.api.mvc._
 
+import scala.concurrent.{ExecutionContext, Future}
+import ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 
-class BaseController extends InjectedController with Logging with SnakeCaseJsonProtocol {
+
+class BaseController extends InjectedController with Logging with SnakeCaseJsonProtocol with ConfigReader {
+
+  val key = envConfiguration.getString(ShippearHeaders.API_KEY)
 
   implicit def pimpRequest(request: Request[AnyContent]): PimpRequest = new PimpRequest(request)
 
@@ -24,6 +30,22 @@ class BaseController extends InjectedController with Logging with SnakeCaseJsonP
   }
 
 
+  def AsyncAction(block: ShippearRequest[AnyContent] => Future[Result]) = Action.async { request =>
+    doRequest(ShippearRequest(request.body, request.headers.toSimpleMap), block)
+  }
+
+  def AsyncActionWithBody[B : Manifest](block: ShippearRequest[B] => Future[Result]) = Action.async { request =>
+    doRequest(ShippearRequest(request.parseBodyTo[B], request.headers.toSimpleMap), block)
+  }
+
+
+  protected def doRequest[B](request: ShippearRequest[B], block: ShippearRequest[B] => Future[Result]): Future[Result] = {
+    request.headers.get(ShippearHeaders.API_KEY) match {
+      case Some(apiKey) => if(apiKey.equals(key)) block(request) else Future(Unauthorized("Invalid API_KEY"))
+      case _ => Future(Unauthorized("Invalid API_KEY"))
+    }
+  }
+
 }
 
 trait Headers {
@@ -33,3 +55,5 @@ trait Headers {
   def getOrElse(key: String, another: String) = headers.getOrElse(key, another)
 
 }
+
+case class ShippearRequest[T](content: T, headers: Map[String,String]) extends Headers
