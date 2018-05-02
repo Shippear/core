@@ -1,13 +1,11 @@
 package controller.util
 
-import com.google.inject.Inject
-import common.{ConfigReader, Logging}
 import common.serialization.{SnakeCaseJsonProtocol, _}
-import play.api.mvc.{InjectedController, Request}
-import play.api.mvc._
+import common.{ConfigReader, Logging}
+import play.api.mvc.{InjectedController, Request, _}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 
 
@@ -44,6 +42,11 @@ class BaseController extends InjectedController with Logging with SnakeCaseJsonP
       case Some(apiKey) => if(apiKey.equals(key)) block(request) else Future(Unauthorized("Invalid API_KEY"))
       case _ => Future(Unauthorized("Invalid API_KEY"))
     }
+  }
+
+  protected def constructInternalError(message: String, ex: Exception) = {
+    error(message, ex)
+    InternalServerError(s"$message. ${ex.getMessage}")
   }
 
 }

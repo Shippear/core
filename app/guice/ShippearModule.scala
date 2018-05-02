@@ -12,7 +12,7 @@ class ShippearModule extends ScalaModule {
 
     //User
     bind[UserController].asEagerSingleton()
-    bind[UserService]
+    bind[UserService].asEagerSingleton()
     bind[UserDAO].asEagerSingleton()
   }
 }
