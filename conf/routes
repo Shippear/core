@@ -9,7 +9,8 @@ GET     /                           controller.FrontendController.index()
 GET     /shippear/summary                controller.HomeController.appSummary
 
 # Shippear
-POST     /shippear/users/find           controller.UserController.findUser
+GET      /shippear/users/all             controller.UserController.allUsers
+POST     /shippear/users/find            controller.UserController.findUser
 POST     /shippear/users/create          controller.UserController.createUser
 POST     /shippear/users/update          controller.UserController.updateUser
 

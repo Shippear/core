@@ -9,28 +9,21 @@ import scala.concurrent.ExecutionContext
 class UserController @Inject()(service: UserService)(implicit ec: ExecutionContext) extends BaseController {
 
   def createUser = AsyncActionWithBody[User] { implicit request =>
-    val user = request.content
-    service.create(user).map { _ =>
-      info(s"User ${user.userName} created")
-        Ok(Map("result" -> s"${user.userName} created"))
-      }.
-      recover {
+    service.create(request.content).map { _ =>
+      info(s"User ${request.content.userName} created")
+      Ok(Map("result" -> s"${request.content.userName} created"))
+    }.recover {
         case ex: Exception =>
-          error("Error creating a new user", ex)
-          InternalServerError(s"Error creating a new user ${ex.getMessage}")
-    }
+          constructInternalError("Error creating a new user", ex)
+      }
   }
 
   def findUser = AsyncActionWithBody[Map[String, String]] { implicit request =>
-    val criteria = request.content.map {case (a, b) => (snake2camel(a), b)}
-
-    service.findBy(criteria).map {
-        user => Ok(user)
-      }
-      .recover {
+    service.findBy(request.content).map {
+        user => if(user.isDefined) Ok(user) else NotFound(s"User with criteria ${request.content} not found")
+      }.recover {
         case ex: Exception =>
-          error(s"Error getting user ", ex)
-          InternalServerError(s"Error creating a new user ${ex.getMessage}")
+          constructInternalError(s"Error getting user with criteria ${request.content}", ex)
       }
   }
 
@@ -38,11 +31,19 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
     service.update(request.content).map{
       _ => Ok("User updated successfully")
     }.recover {
-
     case ex: Exception =>
-      error(s"Error updating user ${request.content.userName}", ex)
-      InternalServerError(s"Error creating a new user ${ex.getMessage}")
+      constructInternalError(s"Error updating user ${request.content.userName}", ex)
     }
   }
+
+  def allUsers = AsyncAction { implicit request =>
+    service.all.map{ result =>
+      Ok(result.toList)
+    }.recover {
+      case ex: Exception =>
+        constructInternalError(s"Error getting all users", ex)
+    }
+  }
+
 
 }

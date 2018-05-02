@@ -7,19 +7,31 @@ import play.api.libs.json.{Json, Writes}
 
 trait Service[T] extends CamelCaseJsonProtocol {
 
+  def snake2camel(in: String) = {
+    if(in.toUpperCase.equals("_ID"))
+      "_id"
+    else
+      "_([a-z\\d])".r.replaceAllIn(in, _.group(1).toUpperCase)
+  }
+
+
   def dao: BaseDAO[T]
 
-  def toDoc(doc: T)(implicit writes: Writes[T]): Document = Document(Json.stringify(Json.toJson(doc)))
+  implicit def toDoc(doc: T)(implicit writes: Writes[T]): Document =
+    Document(Json.stringify(Json.toJson(doc)))
 
   def create(doc: T) = {
     dao.insertOne(doc)
   }
 
   def findBy(params: Map[String, String]) = {
-    dao.findOne(Document(params))
+    val criteria = params.map {case (a, b) => (snake2camel(a), b)}
+    dao.findOne(Document(criteria))
   }
 
   def update(doc: T) = {
     dao.replaceOne(doc)
   }
+
+  def all = dao.all.toFuture()
 }

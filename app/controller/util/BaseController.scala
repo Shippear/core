@@ -44,7 +44,10 @@ class BaseController extends InjectedController with Logging with SnakeCaseJsonP
     }
   }
 
-  def snake2camel(in: String) = "_([a-z\\d])".r.replaceAllIn(in, _.group(1).toUpperCase)
+  protected def constructInternalError(message: String, ex: Exception) = {
+    error(message, ex)
+    InternalServerError(s"$message. ${ex.getMessage}")
+  }
 
 }
 
