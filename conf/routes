@@ -9,8 +9,10 @@ GET     /                           controller.FrontendController.index()
 GET     /shippear/summary                controller.HomeController.appSummary
 
 # Shippear
-GET      /shippear/users/find/:userName  controller.UserController.findUser(userName: String)
+GET      /shippear/users/all             controller.UserController.allUsers
+POST     /shippear/users/find            controller.UserController.findUser
 POST     /shippear/users/create          controller.UserController.createUser
+POST     /shippear/users/update          controller.UserController.updateUser
 
 # Serve static assets under public directory
 GET     /*file                      controller.FrontendController.assetOrDefault(file)
