@@ -1,21 +1,22 @@
 package service
 
 import ai.snips.bsonmacros.BaseDAO
+import common.serialization.CamelCaseJsonProtocol
 import org.mongodb.scala.bson.collection.immutable.Document
+import play.api.libs.json.{Json, Writes}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-trait Service[T] {
+trait Service[T] extends CamelCaseJsonProtocol {
 
   def dao: BaseDAO[T]
 
-  def create(doc: T): Future[String] = {
-    dao.insertOne(doc).map(result => result.toString)
+  def toDoc(doc: T)(implicit writes: Writes[T]): Document = Document(Json.stringify(Json.toJson(doc)))
+
+  def create(doc: T) = {
+    dao.insertOne(doc)
   }
 
-  def retrieve(paramName: String, paramValue: String) = {
-    dao.findOne(Document(paramName -> paramValue))
+  def findBy(params: Map[String, String]) = {
+    dao.findOne(Document(params))
   }
 
   def update(doc: T) = {

@@ -1,44 +1,48 @@
 package controller
 
+
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.User
 import service.UserService
-
-import scala.concurrent.{ExecutionContext, Future}
-
+import scala.concurrent.ExecutionContext
 class UserController @Inject()(service: UserService)(implicit ec: ExecutionContext) extends BaseController {
 
-  def createUser = Action.async { implicit request =>
-    val user = request.parseBodyTo[User]
-    service.create(user).
-      map {
-        id =>info(s"User ${user.userName} created with id $id")
-        Ok(id)
+  def createUser = AsyncActionWithBody[User] { implicit request =>
+    val user = request.content
+    service.create(user).map { _ =>
+      info(s"User ${user.userName} created")
+        Ok(Map("result" -> s"${user.userName} created"))
       }.
       recover {
         case ex: Exception =>
           error("Error creating a new user", ex)
           InternalServerError(s"Error creating a new user ${ex.getMessage}")
-      }
+    }
   }
 
-  def findUser(userName: String) = Action.async { implicit request =>
-    service.retrieve("userName", userName).
-      map {
+  def findUser = AsyncActionWithBody[Map[String, String]] { implicit request =>
+    val criteria = request.content.map {case (a, b) => (snake2camel(a), b)}
+
+    service.findBy(criteria).map {
         user => Ok(user)
-      }.
-      recover {
+      }
+      .recover {
         case ex: Exception =>
-          error(s"Error getting user $userName", ex)
+          error(s"Error getting user ", ex)
           InternalServerError(s"Error creating a new user ${ex.getMessage}")
       }
   }
 
-  def updateUser = Action.async { implicit request =>
-    val user = request.parseBodyTo[User]
-    service.update(user)
-    Future{ Ok("A")}
+  def updateUser = AsyncActionWithBody[User] { implicit request =>
+    service.update(request.content).map{
+      _ => Ok("User updated successfully")
+    }.recover {
+
+    case ex: Exception =>
+      error(s"Error updating user ${request.content.userName}", ex)
+      InternalServerError(s"Error creating a new user ${ex.getMessage}")
+    }
   }
 
 }
