@@ -26,7 +26,7 @@ object Dependencies {
     "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.1",
     "ai.snips" %% "play-mongo-bson" % "0.4",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0",
-    "com.github.salat" %% "salat" % "1.11.2"
+    "com.sendgrid" % "sendgrid-java" % "4.1.2"
   )
 
   val jsonDependencies = Seq(
