@@ -1,18 +1,15 @@
-package controllers
+package controller
 
-import controller.HomeController
-import org.scalatestplus.play._
-import org.scalatestplus.play.guice._
+import org.scalatest.TestSuite
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerTest
+import org.specs2.mutable.Specification
 import play.api.libs.json.{JsObject, JsValue}
-import play.api.test._
 import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Injecting}
 
-/**
-  * Add your spec here.
-  * You can mock out a whole application including requests, plugins etc.
-  *
-  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
-  */
+
+
 class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
   private def parseContent(content: JsValue) =
@@ -21,34 +18,39 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
   "HomeController GET" should {
 
     "render the appSummary resource from a new instance of controller" in {
+
       val controller = new HomeController
       controller.setControllerComponents(stubControllerComponents())
       val home = controller.appSummary().apply(FakeRequest(GET, "/summary"))
 
-      status(home) mustBe OK
+      status(home) mustEqual OK
       contentType(home) mustBe Some("application/json")
       val resultJson = contentAsJson(home)
-      parseContent(resultJson) mustBe """{"value":"Scala Play React Seed"}"""
+      parseContent(resultJson) mustEqual """{"value":"Scala Play React Seed"}"""
+
     }
+
 
     "render the appSummary resource from the application" in {
       val controller = inject[HomeController]
       val home = controller.appSummary().apply(FakeRequest(GET, "/summary"))
 
-      status(home) mustBe OK
+      status(home) mustEqual OK
       contentType(home) mustBe Some("application/json")
       val resultJson = contentAsJson(home)
-      parseContent(resultJson) mustBe """{"value":"Scala Play React Seed"}"""
+      parseContent(resultJson) mustEqual """{"value":"Scala Play React Seed"}"""
     }
 
     "render the appSummary resource from the router" in {
       val request = FakeRequest(GET, "/shippear/summary")
       val home = route(app, request).get
 
-      status(home) mustBe OK
+      status(home) mustEqual OK
       contentType(home) mustBe Some("application/json")
       val resultJson = contentAsJson(home)
-      parseContent(resultJson) mustBe """{"value":"Scala Play React Seed"}"""
+      parseContent(resultJson) mustEqual """{"value":"Scala Play React Seed"}"""
     }
+
   }
+
 }

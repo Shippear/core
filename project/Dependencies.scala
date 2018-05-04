@@ -38,7 +38,8 @@ object Dependencies {
 
   val testDependencies = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2",
-    "org.mockito" % "mockito-all" % "1.10.19"
+    "org.mockito" % "mockito-all" % "1.10.19",
+    "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.3"
   ).map(_ % Test)
 
 }

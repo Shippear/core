@@ -7,8 +7,10 @@ import play.api.mvc.{Result, Results}
 import play.api.test.Helpers.status
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
+import play.api.test.Helpers._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.specs2.mutable.Specification
 
 class BaseControllerTest extends PlaySpec with Results with ConfigReader {
 
@@ -29,7 +31,7 @@ class BaseControllerTest extends PlaySpec with Results with ConfigReader {
       val headers = (ShippearHeaders.API_KEY, apikey)
       val result: Future[Result] = fakeController.action.apply(fakeRequest.withHeaders(headers))
 
-      status(result) mustBe 200
+      status(result) mustEqual 200
 
     }
 
@@ -37,14 +39,14 @@ class BaseControllerTest extends PlaySpec with Results with ConfigReader {
       val headers = (ShippearHeaders.API_KEY, "BLA BLA BLA")
       val result: Future[Result] = fakeController.action.apply(fakeRequest.withHeaders(headers))
 
-      status(result) mustBe 401
+      status(result) mustEqual 401
 
     }
 
     "return a 401 when an API_KEY header is NOT present" in {
       val result: Future[Result] = fakeController.action.apply(fakeRequest)
 
-      status(result) mustBe 401
+      status(result) mustEqual 401
 
     }
 
