@@ -9,6 +9,8 @@
         </encoder>
     </appender>
 
+    <logger name="de.flapdoodle.embed.process" level="OFF" />
+
     <root level="ERROR">
         <appender-ref ref="STDOUT" />
     </root>
