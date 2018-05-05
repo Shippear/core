@@ -1,6 +1,8 @@
 <!-- https://www.playframework.com/documentation/latest/SettingsLogger -->
 <configuration scan="true">
 
+
+
     <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -9,7 +11,9 @@
         </encoder>
     </appender>
 
-    <logger name="de.flapdoodle.embed.process" level="OFF" />
+    <logger name="play" level="ERROR" />
+    <logger name="application" level="ERROR" />
+    <logger name="de.flapdoodle.embed.mongo" level="ERROR" />
 
     <root level="ERROR">
         <appender-ref ref="STDOUT" />

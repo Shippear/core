@@ -1,16 +1,13 @@
 package controller.util
 
 import common.ConfigReader
-import controller.UserController
 import org.scalatestplus.play.PlaySpec
 import play.api.mvc.{Result, Results}
-import play.api.test.Helpers.status
-import play.api.test.Helpers._
+import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeRequest, Helpers}
-import play.api.test.Helpers._
-import scala.concurrent.Future
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.specs2.mutable.Specification
+import scala.concurrent.Future
 
 class BaseControllerTest extends PlaySpec with Results with ConfigReader {
 
