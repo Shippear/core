@@ -7,6 +7,8 @@ import play.api.libs.json.{JsObject, JsValue}
 import play.api.test._
 import play.api.test.Helpers._
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Add your spec here.
   * You can mock out a whole application including requests, plugins etc.
@@ -19,6 +21,8 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
     content.asInstanceOf[JsObject].value("value").asInstanceOf[JsObject].value("content").toString
 
   "HomeController GET" should {
+
+    import ExecutionContext.Implicits.global
 
     "render the appSummary resource from a new instance of controller" in {
       val controller = new HomeController
