@@ -5,8 +5,6 @@ import com.google.inject.Inject
 import org.mongodb.scala.MongoDatabase
 import play.api.Configuration
 import play.api.inject.DefaultApplicationLifecycle
-
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class DBContext @Inject()(implicit ec: ExecutionContext)
