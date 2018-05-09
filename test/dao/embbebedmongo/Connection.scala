@@ -8,10 +8,11 @@ import de.flapdoodle.embed.mongo.{Command, MongodExecutable, MongodStarter}
 import de.flapdoodle.embed.process.runtime.Network
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+import org.mongodb.scala.MongoClient
 
 trait Connection extends Logging with ConfigReader {
 
-  protected val config = envConfiguration.as[MongoConfiguration]("mongodb")
+  protected val config: MongoConfiguration = envConfiguration.as[MongoConfiguration]("mongodb")
 
   //Override this method to personalize testing port
   def embedConnectionPort: Int = config.port
@@ -36,6 +37,6 @@ trait Connection extends Logging with ConfigReader {
 
   lazy val mongodExecutable: MongodExecutable = runtime.prepare(mongodConfig)
 
-
+  lazy val mongo = MongoClient(config.uri)
 
 }

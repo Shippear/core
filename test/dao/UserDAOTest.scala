@@ -1,6 +1,5 @@
 package dao
 
-import ai.snips.bsonmacros.DatabaseContext
 import dao.embbebedmongo.{MongoTest, ToDocument}
 import model._
 import org.scalatest.mockito.MockitoSugar
@@ -24,12 +23,22 @@ class UserDAOTest extends MongoTest with ToDocument[User] with MockitoSugar {
   "UserDAO" should {
     "save" in{
 
-      val dao = new UserDAO(mock[DatabaseContext])
+      val dao = new UserDAO(dbContext)
 
       await(dao.collection.insertOne(user).toFuture())
       await(dao.collection.count().toFuture()) mustBe 1
 
     }
+
+    "update" in{
+
+      val dao = new UserDAO(dbContext)
+
+      await(dao.collection.insertOne(user).toFuture())
+      await(dao.collection.count().toFuture()) mustBe 1
+
+    }
+
 
   }
 
