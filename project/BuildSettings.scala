@@ -12,10 +12,11 @@ object BuildSettings {
     scalacOptions         += "-language:reflectiveCalls",
     scalacOptions         += "-language:postfixOps",
     crossPaths            := false,
+    fork in Test          := false,
     resolvers             ++= Dependencies.resolvers,
-    javaOptions in Test += "-Dlogger.file=test/resources/logback-test.xml",
-    testOptions in Test += Tests.Setup(() => {  System.setProperty("config.file", "test/resources/conf/application.conf") }),
-    testOptions in Test += Tests.Setup(() => {
+    testOptions in Test   += Tests.Setup(() => {  System.setProperty("logger.file", "test/resources/logback-test.xml") }),
+    testOptions in Test   += Tests.Setup(() => {  System.setProperty("config.file", "test/resources/application.conf") }),
+    testOptions in Test   += Tests.Setup(() => {
       print(
         """
 * Initializing Embedded MongoDB
