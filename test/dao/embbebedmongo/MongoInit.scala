@@ -1,15 +1,14 @@
 package dao.embbebedmongo
 
+import ai.snips.bsonmacros.DatabaseContext
 import org.mongodb.scala.bson.Document
 import org.mongodb.scala.{MongoClient, MongoCollection}
 
 trait MongoInit {
   self: Connection =>
 
-  lazy val client = MongoClient(s"mongodb://localhost:${network.getPort}")
+  lazy val client = MongoClient(config.uri)
 
-  def dbCollection: MongoCollection[Document] = client.getDatabase("test").getCollection("model")
-
-  def testObject: Document = Document("name" -> "test")
+  def dbCollection(name: String): MongoCollection[Document] = client.getDatabase(config.database).getCollection(name)
 
 }

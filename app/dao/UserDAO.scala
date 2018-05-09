@@ -2,7 +2,7 @@ package dao
 
 import ai.snips.bsonmacros.{BaseDAO, CodecGen, DatabaseContext}
 import com.google.inject.Inject
-import common.ConfigReader
+import common.{ConfigReader, Logging}
 import database.MongoConfiguration
 import model._
 import net.ceedubs.ficus.Ficus._

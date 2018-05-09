@@ -1,20 +1,20 @@
 package dao.embbebedmongo
 
-import common.Logging
+import common.{ConfigReader, Logging}
+import database.MongoConfiguration
 import de.flapdoodle.embed.mongo.config.{IMongodConfig, MongodConfigBuilder, Net, RuntimeConfigBuilder}
 import de.flapdoodle.embed.mongo.distribution.Version
 import de.flapdoodle.embed.mongo.{Command, MongodExecutable, MongodStarter}
-import de.flapdoodle.embed.process.config.io.ProcessOutput
 import de.flapdoodle.embed.process.runtime.Network
-import org.slf4j.Logger
-import play.api.Logger
+import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
-trait Connection extends Logging{
+trait Connection extends Logging with ConfigReader {
 
-
+  protected val config = envConfiguration.as[MongoConfiguration]("mongodb")
 
   //Override this method to personalize testing port
-  def embedConnectionPort: Int = { 12345 }
+  def embedConnectionPort: Int = config.port
 
   //Override this method to personalize MongoDB version
   def embedMongoDBVersion: Version.Main = { Version.Main.PRODUCTION }

@@ -17,8 +17,8 @@ trait Service[T] extends CamelCaseJsonProtocol {
 
   def dao: BaseDAO[T]
 
-  implicit def toDoc(doc: T)(implicit writes: Writes[T]): Document =
-    Document(Json.stringify(Json.toJson(doc)))
+  implicit def toDoc(obj: T)(implicit writes: Writes[T]): Document =
+    Document(Json.stringify(Json.toJson(obj)))
 
   def create(doc: T) = {
     dao.insertOne(doc)
