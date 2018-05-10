@@ -25,13 +25,13 @@ object Dependencies {
     "net.codingwell" %% "scala-guice" % "4.1.1",
     "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.1",
     "ai.snips" %% "play-mongo-bson" % "0.4",
-    "com.github.nscala-time" %% "nscala-time" % "2.16.0",
+    "com.github.nscala-time" %% "nscala-time" % "2.18.0",
     "com.github.salat" %% "salat" % "1.11.2"
   )
 
   val jsonDependencies = Seq(
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.2",
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.9.3"
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.5",
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.9.5"
   )
 
   val appDependencies = externalDependencies ++ jsonDependencies

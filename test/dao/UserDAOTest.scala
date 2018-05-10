@@ -4,9 +4,7 @@ import dao.embbebedmongo.{MongoTest, ToDocument}
 import model._
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters
-import play.api.libs.json.Json
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,11 +15,12 @@ class UserDAOTest extends MongoTest with ToDocument[User] {
   val contactInfo = ContactInfo("email", "phone")
 
   val addressGeolocation = Geolocation(132, -123)
-  val address = Address(addressGeolocation, "alias", "street", 123, "zipCode", Some("appart"),2)
-  val paymentMethod = PaymentMethod("cardOwner","cardnumber", "12/02/1992", "securityCode", "cardType")
+  val address = Address(addressGeolocation, "alias", "street", 123, "zipCode", Some("appart"),2, Some(true))
+  val paymentMethod = PaymentMethod("cardOwner","cardnumber", "12/02/1992", "securityCode", "cardType", Some("cbu"))
+  val transport = Transport("Auto ", Some("ABC123"), Some("Citroen c4"))
 
   val user = User("123", "onesignalId", "username", "firstName", "lastName",
-  "dni1234", contactInfo, "photUrl", Seq(address), None, Seq(paymentMethod))
+  "dni1234", contactInfo, "photUrl", Seq(address), None, Seq(paymentMethod), Some(6.0), Some(transport))
 
 
   "UserDAO" should {
@@ -42,7 +41,7 @@ class UserDAOTest extends MongoTest with ToDocument[User] {
       val dao = new UserDAO(dbContext)
       await(dao.insertOne(user))
 
-      val bson: BsonDocument = Filters.equal("userName", user.userName).toBsonDocument(Filters.getClass, dbContext.codecRegistry)
+      val bson: BsonDocument = Filters.equal("userName", user.userName).toBsonDocument(Filters.getClass, dbContext.dbContext.codecRegistry)
       val filter = Document(bson)
 
       await(dao.findOne(filter)).size mustBe 1

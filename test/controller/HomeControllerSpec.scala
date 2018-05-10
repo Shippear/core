@@ -8,12 +8,22 @@ import play.api.test.{FakeRequest, Injecting}
 
 
 
+import scala.concurrent.ExecutionContext
+
+/**
+  * Add your spec here.
+  * You can mock out a whole application including requests, plugins etc.
+  *
+  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
+  */
 class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
   private def parseContent(content: JsValue) =
     content.asInstanceOf[JsObject].value("value").asInstanceOf[JsObject].value("content").toString
 
   "HomeController GET" should {
+
+    import ExecutionContext.Implicits.global
 
     "render the appSummary resource from a new instance of controller" in {
 

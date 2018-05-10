@@ -1,15 +1,14 @@
 package controller.util
 
+import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
 import play.api.mvc.{InjectedController, Request, _}
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 
-class BaseController extends InjectedController with Logging with SnakeCaseJsonProtocol with ConfigReader {
+class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedController with Logging with SnakeCaseJsonProtocol with ConfigReader {
 
   val key = envConfiguration.getString(ShippearHeaders.API_KEY)
 

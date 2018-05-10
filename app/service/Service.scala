@@ -1,10 +1,7 @@
 package service
 
 import ai.snips.bsonmacros.BaseDAO
-import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Filters._
 import common.serialization.CamelCaseJsonProtocol
-import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.collection.immutable.Document
 import play.api.libs.json.{Json, Writes}
 

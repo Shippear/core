@@ -14,6 +14,6 @@ trait MongoTest extends PlaySpec with Connection with BeforeAndAfterEach with Be
 
   override def afterEach = Await.result(mongo.getDatabase(config.database).drop().toFuture(), 30 seconds)
 
-  val dbContext = new DBContext
+  val dbContext = new ShippearDBContextTest
 
 }
