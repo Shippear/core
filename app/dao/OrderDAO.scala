@@ -11,7 +11,7 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 
 import scala.concurrent.ExecutionContext
 
-class OrderDAO @Inject()(dbContext: DBContext)(implicit ec: ExecutionContext) extends BaseDAO[Order] with ConfigReader {
+class OrderDAO @Inject()(dbContext: ShippearDBContext)(implicit ec: ExecutionContext) extends BaseDAO[Order] with ConfigReader {
 
   val config = envConfiguration.as[MongoConfiguration]("mongodb")
 

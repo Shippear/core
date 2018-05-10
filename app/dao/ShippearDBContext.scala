@@ -4,7 +4,7 @@ import ai.snips.bsonmacros.{CodecGen, DatabaseContext}
 import com.google.inject.Inject
 import model._
 
-class DBContext @Inject()(dbContext: DatabaseContext) {
+class ShippearDBContext @Inject()(val dbContext: DatabaseContext) {
 
   CodecGen[Transport](dbContext.codecRegistry)
   CodecGen[Geolocation](dbContext.codecRegistry)

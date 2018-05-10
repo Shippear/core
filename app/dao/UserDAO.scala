@@ -11,7 +11,7 @@ import org.mongodb.scala.MongoCollection
 
 import scala.concurrent.ExecutionContext
 
-class UserDAO @Inject()(dbContext: DBContext)(implicit ec: ExecutionContext)
+class UserDAO @Inject()(dbContext: ShippearDBContext)(implicit ec: ExecutionContext)
   extends BaseDAO[User] with ConfigReader {
 
   val config = envConfiguration.as[MongoConfiguration]("mongodb")

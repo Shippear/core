@@ -1,7 +1,7 @@
 package guice
 
 import controller.{FrontendController, HomeController, OrderController, UserController}
-import dao.{DBContext, OrderDAO, UserDAO}
+import dao.{ShippearDBContext, OrderDAO, UserDAO}
 import net.codingwell.scalaguice.ScalaModule
 import service.{OrderService, UserService}
 
@@ -22,6 +22,6 @@ class ShippearModule extends ScalaModule {
 
 
     //Context for play to parse objects to json
-    bind[DBContext]
+    bind[ShippearDBContext]
   }
 }
