@@ -5,7 +5,7 @@ import common.{ConfigReader, Logging}
 import play.api.mvc.{InjectedController, Request, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 

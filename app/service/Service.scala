@@ -1,7 +1,10 @@
 package service
 
 import ai.snips.bsonmacros.BaseDAO
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters._
 import common.serialization.CamelCaseJsonProtocol
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.collection.immutable.Document
 import play.api.libs.json.{Json, Writes}
 
@@ -17,8 +20,8 @@ trait Service[T] extends CamelCaseJsonProtocol {
 
   def dao: BaseDAO[T]
 
-  implicit def toDoc(doc: T)(implicit writes: Writes[T]): Document =
-    Document(Json.stringify(Json.toJson(doc)))
+  implicit def toDoc(obj: T)(implicit writes: Writes[T]): Document =
+    Document(Json.stringify(Json.toJson(obj)))
 
   def create(doc: T) = {
     dao.insertOne(doc)

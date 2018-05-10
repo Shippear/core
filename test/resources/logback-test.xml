@@ -1,6 +1,8 @@
 <!-- https://www.playframework.com/documentation/latest/SettingsLogger -->
 <configuration scan="true">
 
+
+
     <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -8,6 +10,10 @@
             <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
         </encoder>
     </appender>
+
+    <logger name="play" level="ERROR" />
+    <logger name="application" level="ERROR" />
+
 
     <root level="ERROR">
         <appender-ref ref="STDOUT" />

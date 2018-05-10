@@ -10,6 +10,9 @@ import org.joda.time.DateTime
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Success, Try}
 
+/**
+  * Configuration reader that depends on the environments.
+  */
 trait ConfigReader {
   protected def envConfiguration = ConfigReader.eConfiguration
 
@@ -34,8 +37,8 @@ trait ConfigReader {
 
   implicit class RichConfig(config: Config) {
     def isProd = {
-      val env = config.getString("environment")
-      env == "prod" || env == "cont"
+      val env = config.getString("environments")
+      env == "prod"
     }
 
     def getFiniteDuration(valueName: String): FiniteDuration =
@@ -50,7 +53,7 @@ object ConfigReader extends Logging {
   import scala.collection.immutable._
 
 
- // private val EnvironmentKey = "environment"
+  private val EnvironmentKey = "environment"
   private val OverrideKey = "override"
   private val OverrideJvmOpt = "overrideFileDir"
   private val OverrideFileName = "application-override.conf"
@@ -59,7 +62,7 @@ object ConfigReader extends Logging {
 
   private lazy val defaultConfig: Config = ConfigFactory.load()
 
-//  private lazy val environment: String = defaultConfig.getString(EnvironmentKey)
+  private lazy val environment: String = defaultConfig.getString(EnvironmentKey)
 
   private def initConfiguration(): Config = reloadConfiguration()
 
@@ -85,7 +88,7 @@ object ConfigReader extends Logging {
 
   private[common] def reloadConfiguration(overridingConfigMap: Map[String, _ <: Any] = Map()): Config = {
     val overrideConf: Config = ConfigFactory.parseMap(overridingConfigMap.asJava)
-    val eConf = overrideConf.withFallback(ConfigFactory.load().withFallback(defaultConfig))
+    val eConf = overrideConf.withFallback(ConfigFactory.load().getConfig(environment).withFallback(defaultConfig))
     Option(System.getProperty(OverrideJvmOpt)).map(loadOverrideConfFile(_, eConf)).getOrElse(eConf)
   }
 
