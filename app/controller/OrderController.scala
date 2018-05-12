@@ -5,7 +5,7 @@ import controller.util.BaseController
 import model.Order
 import service.OrderService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext) extends BaseController {
 
@@ -44,6 +44,18 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }.recover {
       case ex: Exception =>
         constructInternalError(s"Error getting all orders.", ex)
+    }
+  }
+
+  def cancelOrder(idOrder: String) = AsyncAction { implicit request =>
+    service.cancelOrder(idOrder).map { case (aId, pId, cId) =>
+      val OneSignalId = "OneSignalId"
+        Ok(Map(s"applicant$OneSignalId" -> aId,
+          s"participant$OneSignalId" -> pId),
+          s"carrier$OneSignalId" -> cId)
+    }.recover {
+      case ex: Exception =>
+        constructInternalError(s"Error cancelling order $idOrder", ex)
     }
   }
 
