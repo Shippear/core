@@ -1,11 +1,11 @@
 package controller
 
-
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.User
 import service.UserService
 import scala.concurrent.ExecutionContext
+
 class UserController @Inject()(service: UserService)(implicit ec: ExecutionContext) extends BaseController {
 
   def createUser = AsyncActionWithBody[User] { implicit request =>
@@ -29,7 +29,7 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
 
   def updateUser = AsyncActionWithBody[User] { implicit request =>
     service.update(request.content).map{
-      _ => Ok("User updated successfully")
+      _ => Ok(s"User ${request.content.userName} updated successfully")
     }.recover {
     case ex: Exception =>
       constructInternalError(s"Error updating user ${request.content.userName}", ex)

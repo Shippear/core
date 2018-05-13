@@ -2,7 +2,7 @@ package common
 
 trait Logging {
 
-  private lazy val LOGGER = play.api.Logger(this.getClass)
+  protected lazy val LOGGER = play.api.Logger(this.getClass)
 
   protected def trace(message: => String): Unit = LOGGER.trace(message)
 
