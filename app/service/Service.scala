@@ -20,9 +20,7 @@ trait Service[T] extends CamelCaseJsonProtocol {
   implicit def toDoc(doc: T)(implicit writes: Writes[T]): Document =
     Document(Json.stringify(Json.toJson(doc)))
 
-  def create(doc: T) = {
-    dao.insertOne(doc)
-  }
+  def create(doc: T) = dao.insertOne(doc)
 
   def findBy(params: Map[String, String]) = {
     val criteria = params.map {case (a, b) => (snake2camel(a), b)}

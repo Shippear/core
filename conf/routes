@@ -12,6 +12,7 @@ GET     /shippear/summary                controller.HomeController.appSummary
 GET      /shippear/users/all             controller.UserController.allUsers
 POST     /shippear/users/find            controller.UserController.findUser
 POST     /shippear/users/create          controller.UserController.createUser
+POST     /shippear/routeMap/find          controller.RouteMapController.findRouteMap
 POST     /shippear/users/update          controller.UserController.updateUser
 
 # Serve static assets under public directory
