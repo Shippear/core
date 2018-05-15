@@ -4,24 +4,25 @@ import ai.snips.bsonmacros
 import ai.snips.bsonmacros.BaseDAO
 import ai.snips.bsonmacros.BsonMagnets.CanBeBsonValue
 import com.google.inject.Inject
-import common.{ConfigReader, Logging}
+import common.{ConfigReader, Filters, Logging}
 import dao.ShippearDBContext
 import database.MongoConfiguration
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import org.mongodb.scala.bson.Document
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.bson.{BsonDocument, Document}
+import org.mongodb.scala.model.Filters
 import org.mongodb.scala.{FindObservable, MongoCollection}
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import scala.util.Success
 
 class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBContext)(implicit ct: ClassTag[T],
                                                              ec: ExecutionContext) extends ConfigReader with Logging{
 
   private val base = new BaseDAO[T] {
-    override def collection: MongoCollection[T] = dbContext.database(config.database).getCollection[T](collectionName)
+    lazy val collection: MongoCollection[T] = dbContext.database(config.database).getCollection[T](collectionName)
 
     def getId(doc: Document) = bsonmacros.toDBObject(doc).get("_id").asString()
   }
@@ -49,6 +50,10 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
   def all: Future[Seq[T]] = base.all.toFuture
 
   def find(bson: Document): FindObservable[T] = base.find(bson)
+
+  def findByFilters(filters: Bson): Future[Seq[T]] =
+    base.find(Document(filters.toBsonDocument(Filters.getClass, dbContext.dbContext.codecRegistry))).toFuture
+
 
 }
 

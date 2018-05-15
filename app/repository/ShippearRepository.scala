@@ -36,25 +36,13 @@ trait ShippearRepository[T] extends Logging {
 
   def dao: ShippearDAO[T]
 
-  def create(doc: T) = {
-    info(s"Creating in collection $collectionName.")
-    dao.insertOne(doc)
-  }
+  def create(doc: T) = dao.insertOne(doc)
 
-  def findBy(params: Map[String, String]) = {
-    info(s"FindBy criteria ${params.mkString(", ")}.")
-    dao.findOne(params)
-  }
+  def findBy(params: Map[String, String]) = dao.findOne(params)
 
-  def findOneById(id: String): Future[T] = {
-    info(s"FindOneById $id.")
-    dao.findOneById(id)
-  }
+  def findOneById(id: String): Future[T] = dao.findOneById(id)
 
-  def update(doc: T) = {
-    info(s"Updating to collection $collectionName")
-    dao.replaceOne(doc)
-  }
+  def update(doc: T) = dao.replaceOne(doc)
 
   def all = dao.all
 }
