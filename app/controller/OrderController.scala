@@ -48,11 +48,12 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
   }
 
   def cancelOrder(idOrder: String) = AsyncAction { implicit request =>
-    service.cancelOrder(idOrder).map { case (aId, pId, cId) =>
-      val OneSignalId = "OneSignalId"
-        Ok(Map(s"applicant$OneSignalId" -> aId,
-          s"participant$OneSignalId" -> pId),
-          s"carrier$OneSignalId" -> cId)
+    service.cancelOrder(idOrder).map {
+      case (aId, pId, cId) =>
+        val OneSignalId = "OneSignalId"
+        Ok(cId.foldLeft(Map(s"applicant$OneSignalId" -> aId, s"participant$OneSignalId" -> pId)) {
+          case (map, signalId) => map + (s"carrier$OneSignalId" -> signalId)
+        })
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error cancelling order $idOrder", ex)

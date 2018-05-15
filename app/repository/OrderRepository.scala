@@ -4,6 +4,7 @@ import com.google.inject.Inject
 import dao.util.ShippearDAO
 import model.OrderState.CANCELLED
 import model.{Order, User}
+import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -31,7 +32,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     } yield result
   }
 
-  def cancelOrder(id: String): Future[(String, String, String)] = {
+  def cancelOrder(id: String): Future[(String, String, Option[String])] = {
     //TODO analizar si hay que verificar el estado del pedido
     for {
       order <- super.findOneById(id)
@@ -40,19 +41,14 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
       applicant <- userRepository.findOneById(order.applicantId)
       participant <- userRepository.findOneById(order.participantId)
       someCarrier <- findCarrier(order.carrierId)
-      carrier = if (someCarrier.isDefined) someCarrier.get.onesignalId else ""
-    } yield (applicant.onesignalId, participant.onesignalId, carrier)
+    } yield (applicant.onesignalId, participant.onesignalId, someCarrier.map(_.onesignalId))
 
   }
 
   private def findCarrier(id: Option[String]): Future[Option[User]] = {
    id match {
-      case Some(carrierId) =>
-        Try(userRepository.findOneById(carrierId)) match {
-          case Success(result) => result.map(Some(_))
-          case Failure(ex) =>  error(s"Carrier id $carrierId", ex); Future(None)
-      }
-      case None => Future(None)
+      case Some(carrierId) => userRepository.findOneById(carrierId).map(Some(_)).recover {case _: NotFoundException => None}
+      case None => Future.successful(None)
     }
   }
 
