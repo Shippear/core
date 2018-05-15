@@ -16,16 +16,16 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
       Ok(Map("result" -> s"Order ${request.content._id} created"))
     }.recover {
       case ex: Exception =>
-        constructInternalError("Error creating a new order", ex)
+        constructErrorResult("Error creating a new order", ex)
     }
   }
 
   def findOrder = AsyncActionWithBody[Map[String, String]] { implicit request =>
     service.findBy(request.content).map {
-      user => if(user.isDefined) Ok(user) else NotFound(s"Order with criteria ${request.content} not found")
+      order => Ok(order)
     }.recover {
       case ex: Exception =>
-        constructInternalError(s"Error getting order with criteria ${request.content}", ex)
+        constructErrorResult(s"Error getting order with criteria ${request.content}", ex)
     }
   }
 
@@ -34,7 +34,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
       _ => Ok(s"Order ${request.content._id} updated successfully")
     }.recover {
       case ex: Exception =>
-        constructInternalError(s"Error updating order ${request.content._id}", ex)
+        constructErrorResult(s"Error updating order ${request.content._id}", ex)
     }
   }
 
@@ -43,7 +43,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
       Ok(result.toList)
     }.recover {
       case ex: Exception =>
-        constructInternalError(s"Error getting all orders.", ex)
+        constructErrorResult(s"Error getting all orders.", ex)
     }
   }
 
@@ -55,7 +55,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
           s"carrier$OneSignalId" -> cId)
     }.recover {
       case ex: Exception =>
-        constructInternalError(s"Error cancelling order $idOrder", ex)
+        constructErrorResult(s"Error cancelling order $idOrder", ex)
     }
   }
 
