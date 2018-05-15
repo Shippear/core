@@ -1,7 +1,19 @@
 package service
 
 import com.google.inject.Inject
-import dao.OrderDAO
-import model.Order
+import model.{Order, User}
+import model.OrderState._
+import repository.{OrderRepository, UserRepository}
+import service.Exception.NotFoundException
 
-class OrderService @Inject()(val dao: OrderDAO) extends Service[Order]
+import scala.concurrent.{ExecutionContext, Future}
+
+class OrderService @Inject()(val repository: OrderRepository)(implicit ec: ExecutionContext)
+  extends Service[Order]{
+
+  def cancelOrder(id: String): Future[(String, String, Option[String])] =
+   repository.cancelOrder(id)
+
+
+
+}
