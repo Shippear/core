@@ -13,11 +13,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class UserRepositoryTest extends MongoTest with ScalaFutures {
 
   class UserRepoTest extends UserRepository  {
-    override def collectionName: String = "test"
+    override def collectionName: String = "users"
 
     override lazy val dao: ShippearDAO[User] = new ShippearDAO[User](collectionName, dbContext)
 
   }
+
+  val repo = new UserRepoTest
 
   //User
   val idUser = "123"
@@ -40,7 +42,7 @@ class UserRepositoryTest extends MongoTest with ScalaFutures {
 
   "UserRepository" should {
     "Create a new order into the user" in {
-      val repo = new UserRepoTest
+
       await(repo.create(user))
 
       await(repo.updateUserOrder(idUser, order))
@@ -52,7 +54,6 @@ class UserRepositoryTest extends MongoTest with ScalaFutures {
     }
 
     "Update an existing order" in {
-      val repo = new UserRepoTest
       await(repo.create(user))
 
       await(repo.updateUserOrder(idUser, order))
@@ -74,13 +75,11 @@ class UserRepositoryTest extends MongoTest with ScalaFutures {
     }
 
     "Add a new order if the user already has a one" in {
-      val repo = new UserRepoTest
       await(repo.create(user))
       await(repo.updateUserOrder(idUser, order))
 
-      whenReady(repo.findOneById(idUser)){
-        u => u.orders.get.size mustBe 1
-      }
+      val result = await(repo.findOneById(idUser))
+      result.orders.get.size mustBe 1
 
       //Creating another order
       val newOrderId = "11111"

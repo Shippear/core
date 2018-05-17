@@ -22,10 +22,12 @@ class OrderRepositoryTest extends MongoTest with MockitoSugar {
   when(userRepo.findOneById(any[String])).thenReturn(Future(user))
 
   class OrderRepoTest extends OrderRepository(userRepo){
-    override def collectionName: String = "test"
+    override def collectionName: String = "orders"
 
     override lazy val dao: ShippearDAO[Order] = new ShippearDAO[Order](collectionName, dbContext)
   }
+
+  val repo = new OrderRepoTest
 
   //Order
   val idUser = "123"
@@ -40,7 +42,6 @@ class OrderRepositoryTest extends MongoTest with MockitoSugar {
 
   "OrderRepository" should {
     "Save a new order" in {
-      val repo = new OrderRepoTest
       await(repo.create(order))
 
       val savedOrder = await(repo.findOneById(idOrder))
@@ -49,7 +50,6 @@ class OrderRepositoryTest extends MongoTest with MockitoSugar {
     }
 
     "Update an order" in {
-      val repo = new OrderRepoTest
       await(repo.create(order))
 
       val savedOrder = await(repo.findOneById(idOrder))
@@ -65,7 +65,6 @@ class OrderRepositoryTest extends MongoTest with MockitoSugar {
     }
 
     "Cancel an order" in {
-      val repo = new OrderRepoTest
       await(repo.create(order))
 
       val savedOrder = await(repo.findOneById(idOrder))
