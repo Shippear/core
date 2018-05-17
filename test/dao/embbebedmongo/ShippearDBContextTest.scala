@@ -10,12 +10,11 @@ import play.api.inject.DefaultApplicationLifecycle
 import scala.concurrent.{ExecutionContext, Future}
 
 class ShippearDBContextTest @Inject()(implicit ec: ExecutionContext)
-  extends ShippearDBContext(new DatabaseContext(Configuration(), new DefaultApplicationLifecycle))
-    with Connection {
+  extends ShippearDBContext(new DefaultApplicationLifecycle) with Connection {
 
 
   override def database(name: String): MongoDatabase =
-    mongo.getDatabase(name).withCodecRegistry(dbContext.codecRegistry)
+    mongo.getDatabase(name).withCodecRegistry(codecRegistry)
 
 
 }

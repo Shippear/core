@@ -4,13 +4,13 @@ import ai.snips.bsonmacros
 import ai.snips.bsonmacros.BaseDAO
 import ai.snips.bsonmacros.BsonMagnets.CanBeBsonValue
 import com.google.inject.Inject
-import common.{ConfigReader, Filters, Logging}
+import common.{ConfigReader, Logging}
 import dao.ShippearDBContext
 import database.MongoConfiguration
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+import org.mongodb.scala.bson.Document
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.bson.{BsonDocument, Document}
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.{FindObservable, MongoCollection}
 import service.Exception.NotFoundException
@@ -52,7 +52,7 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
   def find(bson: Document): FindObservable[T] = base.find(bson)
 
   def findByFilters(filters: Bson): Future[Seq[T]] =
-    base.find(Document(filters.toBsonDocument(Filters.getClass, dbContext.dbContext.codecRegistry))).toFuture
+    base.find(Document(filters.toBsonDocument(Filters.getClass, dbContext.codecRegistry))).toFuture
 
 
 }

@@ -1,21 +1,40 @@
 package dao
 
-import ai.snips.bsonmacros.{CodecGen, DatabaseContext}
+import ai.snips.bsonmacros.{CodecGen, DatabaseContext, DynamicCodecRegistry}
 import com.google.inject.Inject
+import common.ConfigReader
 import model._
+import org.mongodb.scala.{MongoClient, MongoDatabase}
+import play.api.inject.ApplicationLifecycle
 
-class ShippearDBContext @Inject()(val dbContext: DatabaseContext) {
+import scala.concurrent.{ExecutionContext, Future}
 
-  CodecGen[Transport](dbContext.codecRegistry)
-  CodecGen[Geolocation](dbContext.codecRegistry)
-  CodecGen[PaymentMethod](dbContext.codecRegistry)
-  CodecGen[ContactInfo](dbContext.codecRegistry)
-  CodecGen[Address](dbContext.codecRegistry)
-  CodecGen[Route](dbContext.codecRegistry)
-  CodecGen[Address](dbContext.codecRegistry)
-  CodecGen[Order](dbContext.codecRegistry)
-  CodecGen[User](dbContext.codecRegistry)
+class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext)
+  extends ConfigReader{
 
-  def database(name: String)  = dbContext.database(name)
+  lazy val mongoConf: String = envConfiguration.getString("mongodb.uri")
+  lazy val client = MongoClient(mongoConf)
+  lazy val codecRegistry = new DynamicCodecRegistry
+
+  applicationLifecycle.addStopHook { () =>
+    Future.successful(client.close())
+  }
+
+  def database(name: String): MongoDatabase =
+    client.getDatabase(name).withCodecRegistry(codecRegistry)
+
+  def ping(): Future[Unit] =
+    client.listDatabaseNames().toFuture.map(_ => ())
+
+  CodecGen[Transport](codecRegistry)
+  CodecGen[Geolocation](codecRegistry)
+  CodecGen[PaymentMethod](codecRegistry)
+  CodecGen[ContactInfo](codecRegistry)
+  CodecGen[Address](codecRegistry)
+  CodecGen[Route](codecRegistry)
+  CodecGen[Address](codecRegistry)
+  CodecGen[Order](codecRegistry)
+  CodecGen[User](codecRegistry)
+
 
 }

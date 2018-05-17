@@ -17,7 +17,6 @@ class ShippearModule extends ScalaModule {
     //Context for play to parse objects to json
     bind[ShippearDBContext].asEagerSingleton()
     bind[ShippearDAOFactory].asEagerSingleton()
-    bind[DatabaseContext].asEagerSingleton()
 
     //User
     bind[UserController].asEagerSingleton()
