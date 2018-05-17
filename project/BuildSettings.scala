@@ -4,19 +4,20 @@ import sbt._
 object BuildSettings {
 
   lazy val basicSettings = Seq(
-    name                  := "shippear",
-    startYear             := Some(2018),
-    scalaVersion          := "2.12.3",
-    scalacOptions         += "-feature",
-    scalacOptions         += "-language:implicitConversions",
-    scalacOptions         += "-language:reflectiveCalls",
-    scalacOptions         += "-language:postfixOps",
-    crossPaths            := false,
-    fork in Test          := false,
-    resolvers             ++= Dependencies.resolvers,
-    testOptions in Test   += Tests.Setup(() => {  System.setProperty("logger.file", "test/resources/logback-test.xml") }),
-    testOptions in Test   += Tests.Setup(() => {  System.setProperty("config.file", "test/resources/application.conf") }),
-    testOptions in Test   += Tests.Setup(() => {
+    name                       := "shippear",
+    startYear                  := Some(2018),
+    scalaVersion               := "2.12.3",
+    scalacOptions              += "-feature",
+    scalacOptions              += "-language:implicitConversions",
+    scalacOptions              += "-language:reflectiveCalls",
+    scalacOptions              += "-language:postfixOps",
+    crossPaths                 := false,
+    fork in Test               := false,
+    parallelExecution in Test  := false,
+    resolvers                  ++= Dependencies.resolvers,
+    testOptions in Test        += Tests.Setup(() => {  System.setProperty("logger.file", "test/resources/logback-test.xml") }),
+    testOptions in Test        += Tests.Setup(() => {  System.setProperty("config.file", "test/resources/application.conf") }),
+    testOptions in Test        += Tests.Setup(() => {
       print(
         """
 * Initializing Embedded MongoDB
