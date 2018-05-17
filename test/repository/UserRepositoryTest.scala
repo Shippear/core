@@ -5,10 +5,12 @@ import java.util.Date
 import dao.embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import model._
+import org.scalatest.concurrent.ScalaFutures
 import play.api.test.Helpers.{await, _}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class UserRepositoryTest extends MongoTest {
+class UserRepositoryTest extends MongoTest with ScalaFutures {
 
   class UserRepoTest extends UserRepository  {
     override def collectionName: String = "test"
@@ -76,8 +78,9 @@ class UserRepositoryTest extends MongoTest {
       await(repo.create(user))
       await(repo.updateUserOrder(idUser, order))
 
-      val u = await(repo.findOneById(idUser))
-      u.orders.get.size mustBe 1
+      whenReady(repo.findOneById(idUser)){
+        u => u.orders.get.size mustBe 1
+      }
 
       //Creating another order
       val newOrderId = "11111"
