@@ -10,7 +10,7 @@ import play.api.test.Helpers.{await, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class UserRepositoryTest extends MongoTest with ScalaFutures {
+class UserRepositoryTest extends MongoTest {
 
   class UserRepoTest extends UserRepository  {
     override def collectionName: String = "users"
