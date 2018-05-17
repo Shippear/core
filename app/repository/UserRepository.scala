@@ -22,7 +22,7 @@ class UserRepository @Inject()(implicit ec: ExecutionContext) extends ShippearRe
 
 
   private def copyNewUser(user: User, newOrder: Order): User = {
-    val updatedOrder = Some(replace(user.orders.getOrElse(Seq.empty), newOrder, newOrder._id.equals))
+    val updatedOrder = Some(replaceOrAdd(user.orders.getOrElse(Seq.empty), newOrder, (order: Order) => order._id.==(newOrder._id)))
     user.copy(orders = updatedOrder)
   }
 
