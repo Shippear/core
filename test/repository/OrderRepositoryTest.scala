@@ -1,5 +1,7 @@
 package repository
 
-class OrderRepositoryTest {
+import dao.embbebedmongo.MongoTest
+
+class OrderRepositoryTest extends MongoTest {
 
 }

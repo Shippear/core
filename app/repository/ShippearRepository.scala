@@ -21,8 +21,8 @@ trait ShippearRepository[T] extends Logging {
     Document(Json.stringify(Json.toJson(obj)))
 
 
-  protected def replaceOrAdd[A](list: Seq[A], elem: A, criteria: A => Boolean): Seq[A] =
-    list.filterNot(criteria) :+ elem
+  protected def replaceOrAdd[A](list: Seq[A], elem: A)(predicate: A => Boolean): Seq[A] =
+    list.filterNot(predicate) :+ elem
 
   implicit def criteria2Document(params: Map[String, String]): Document = {
     val criteria = params.map {case (a, b) => (snake2camel(a), b)}
