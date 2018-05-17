@@ -1,3 +1,3 @@
 package database
 
-case class MongoConfiguration(database: String, port: Int, uri: String)
+case class MongoConfiguration(database: String, port: Option[Int], uri: String)

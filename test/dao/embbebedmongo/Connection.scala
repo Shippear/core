@@ -15,7 +15,7 @@ trait Connection extends Logging with ConfigReader {
   protected val config: MongoConfiguration = envConfiguration.as[MongoConfiguration]("mongodb")
 
   //Override this method to personalize testing port
-  def embedConnectionPort: Int = config.port
+  def embedConnectionPort: Int = config.port.getOrElse(12345)
 
   //Override this method to personalize MongoDB version
   def embedMongoDBVersion: Version.Main = { Version.Main.PRODUCTION }
