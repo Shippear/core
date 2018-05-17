@@ -8,9 +8,12 @@ import play.api.Configuration
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{Action, AnyContent}
 
+import scala.concurrent.ExecutionContext
+
 class FrontendController @Inject()(assets: Assets,
                                    errorHandler: HttpErrorHandler,
-                                   config: Configuration) extends BaseController {
+                                   config: Configuration)
+                                  (implicit ec: ExecutionContext) extends BaseController {
 
   def index: Action[AnyContent] = assets.at("index.html")
 

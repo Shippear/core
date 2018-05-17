@@ -1,15 +1,16 @@
 package controller.util
 
+import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
 import play.api.mvc.{InjectedController, Request, _}
+import service.Exception.NotFoundException
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 
-class BaseController extends InjectedController with Logging with SnakeCaseJsonProtocol with ConfigReader {
+class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedController with Logging with SnakeCaseJsonProtocol with ConfigReader {
 
   val key = envConfiguration.getString(ShippearHeaders.API_KEY)
 
@@ -20,7 +21,9 @@ class BaseController extends InjectedController with Logging with SnakeCaseJsonP
       implicit val headers = new Headers {
         override def headers: Map[String, String] = request.headers.toSimpleMap
       }
-      Try{request.body.asJson.get.toString.parseJsonTo[T]} match {
+      Try {
+        request.body.asJson.get.toString.parseJsonTo[T]
+      } match {
         case Failure(ex) => error(s"Error parsing from json to ${manifest.toString()}", ex); throw ex
         case Success(some) => some
       }
@@ -44,9 +47,13 @@ class BaseController extends InjectedController with Logging with SnakeCaseJsonP
     }
   }
 
-  protected def constructInternalError(message: String, ex: Exception) = {
+  protected def constructErrorResult(message: String, ex: Exception) = {
     error(message, ex)
-    InternalServerError(s"$message. ${ex.getMessage}")
+    ex match {
+      case NotFoundException(msg) => NotFound(s"$message. $msg")
+      case _ => InternalServerError(Map("result" -> s"$message. ${ex.getMessage}"))
+    }
+
   }
 
 }

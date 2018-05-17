@@ -8,7 +8,8 @@ case class Address(geolocation: Geolocation,
                    number: Int,
                    zipCode: String,
                    appartament: Option[String],
-                   localityId: Int)
+                   localityId: Int,
+                   public: Boolean)
 
 object Address {
   implicit val jsonFormat = Json.writes[Address]
