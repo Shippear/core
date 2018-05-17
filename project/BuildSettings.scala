@@ -13,6 +13,7 @@ object BuildSettings {
     scalacOptions              += "-language:postfixOps",
     crossPaths                 := false,
     fork in Test               := false,
+    testForkedParallel in Test := false,
     parallelExecution in Test  := false,
     resolvers                  ++= Dependencies.resolvers,
     testOptions in Test        += Tests.Setup(() => {  System.setProperty("logger.file", "test/resources/logback-test.xml") }),
