@@ -123,7 +123,7 @@ class RepositoryTest extends MongoTest {
     }
 
     "Update an existing order" in {
-      await(repo.create(user))
+      await(repo.create(user.copy(firstName = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")))
 
       await(repo.updateUserOrder(idUser, order))
 
@@ -144,11 +144,10 @@ class RepositoryTest extends MongoTest {
     }
 
     "Add a new order if the user already has a one" in {
-      await(repo.create(user))
+      await(repo.create(user.copy(firstName = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")))
       await(repo.updateUserOrder(idUser, order))
 
       val result = await(repo.findOneById(idUser))
-      var foo = result._id
       result.orders.get.size mustBe 1
 
       //Creating another order
@@ -159,7 +158,6 @@ class RepositoryTest extends MongoTest {
       await(repo.updateUserOrder(idUser, newOrder))
 
       val u2 = await(repo.findOneById(idUser))
-      foo = u2._id
       u2.orders.get.size mustBe 2
 
     }
