@@ -16,7 +16,7 @@ class TrackingCacheTask @Inject()(val taskManager: TaskManager, cacheRepository:
 
   lazy val interval: FiniteDuration = config.getFiniteDuration("update-interval")
 
-  private var activated: AtomicBoolean = new AtomicBoolean(config.getBoolean("activated"))
+  private val activated: AtomicBoolean = new AtomicBoolean(config.getBoolean("activated"))
 
   def isActivated = activated.get()
 
