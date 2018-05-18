@@ -23,4 +23,9 @@ class CacheController @Inject()(service: CacheService)(implicit ec: ExecutionCon
     }
   }
 
+  def active(value: Boolean) = {
+    val newValue = service.active(value)
+    Future(Map("result" -> s"Saving cache to DB now is: $newValue"))
+  }
+
 }

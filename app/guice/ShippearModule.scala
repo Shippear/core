@@ -8,7 +8,7 @@ import model.User
 import net.codingwell.scalaguice.ScalaModule
 import repository.{CacheRepository, OrderRepository, UserRepository}
 import service.{CacheService, OrderService, UserService}
-import task.TaskManager
+import task.{TaskManager, TrackingCacheTask}
 
 class ShippearModule extends ScalaModule {
   override def configure(): Unit = {
@@ -36,8 +36,9 @@ class ShippearModule extends ScalaModule {
     bind[CacheService].asEagerSingleton()
     bind[CacheRepository].asEagerSingleton()
 
-    //Task Manager
+    //Tasks
     bind[TaskManager].asEagerSingleton()
+    bind[TrackingCacheTask].asEagerSingleton()
 
   }
 }
