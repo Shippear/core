@@ -95,7 +95,7 @@ class RepositoryTest extends MongoTest {
   val geolocation = Geolocation(132, -123)
   val contactInfo = ContactInfo("email@email.com", "011123119")
   val address = Address(geolocation, "alias", "street", 123, "zipCode", Some("appart"),2, public = true)
-  val paymentMethod = PaymentMethod("ownerName", "123", new Date, "securityCode", "VISA", None)
+  val paymentMethod = PaymentMethod("ownerName", "123", "02/20", "securityCode", "VISA", None)
   val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", contactInfo, "photoUrl", Seq(address), None, Seq(paymentMethod),
     None, None)
 
