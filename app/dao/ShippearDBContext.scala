@@ -4,7 +4,7 @@ import ai.snips.bsonmacros.{CodecGen, DatabaseContext, DynamicCodecRegistry}
 import com.google.inject.Inject
 import common.ConfigReader
 import model._
-import org.mongodb.scala.{MongoClient, MongoDatabase}
+import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
 import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,7 +21,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
   }
 
   def database(name: String): MongoDatabase =
-    client.getDatabase(name).withCodecRegistry(codecRegistry)
+    client.getDatabase(name).withWriteConcern(WriteConcern.ACKNOWLEDGED).withReadPreference(ReadPreference.primary()).withCodecRegistry(codecRegistry)
 
   def ping(): Future[Unit] =
     client.listDatabaseNames().toFuture.map(_ => ())
