@@ -28,6 +28,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
 
   CodecGen[Transport](codecRegistry)
   CodecGen[Geolocation](codecRegistry)
+  CodecGen[CacheGeolocation](codecRegistry)
   CodecGen[PaymentMethod](codecRegistry)
   CodecGen[ContactInfo](codecRegistry)
   CodecGen[Address](codecRegistry)

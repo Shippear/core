@@ -1,13 +1,14 @@
 package guice
 
 import ai.snips.bsonmacros.DatabaseContext
-import controller.{FrontendController, HomeController, OrderController, UserController}
+import controller._
 import dao.util.ShippearDAOFactory
 import dao.ShippearDBContext
 import model.User
 import net.codingwell.scalaguice.ScalaModule
-import repository.{OrderRepository, UserRepository}
-import service.{OrderService, UserService}
+import repository.{CacheRepository, OrderRepository, UserRepository}
+import service.{CacheService, OrderService, UserService}
+import task.TaskManager
 
 class ShippearModule extends ScalaModule {
   override def configure(): Unit = {
@@ -16,6 +17,8 @@ class ShippearModule extends ScalaModule {
 
     //Context for play to parse objects to json
     bind[ShippearDBContext].asEagerSingleton()
+
+    //DAO Factory
     bind[ShippearDAOFactory].asEagerSingleton()
 
     //User
@@ -27,6 +30,14 @@ class ShippearModule extends ScalaModule {
     bind[OrderController].asEagerSingleton()
     bind[OrderService].asEagerSingleton()
     bind[OrderRepository].asEagerSingleton()
+
+    //Tracking cache
+    bind[CacheController].asEagerSingleton()
+    bind[CacheService].asEagerSingleton()
+    bind[CacheRepository].asEagerSingleton()
+
+    //Task Manager
+    bind[TaskManager].asEagerSingleton()
 
   }
 }

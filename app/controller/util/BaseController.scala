@@ -4,7 +4,7 @@ import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
 import play.api.mvc.{InjectedController, Request, _}
-import service.Exception.NotFoundException
+import service.Exception.{InternalServerErrorException, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -50,7 +50,7 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
   protected def constructErrorResult(message: String, ex: Exception) = {
     error(message, ex)
     ex match {
-      case NotFoundException(msg) => NotFound(s"$message. $msg")
+      case NotFoundException(msg) => NotFound(Map("result" -> s"$msg. ${ex.getMessage}"))
       case _ => InternalServerError(Map("result" -> s"$message. ${ex.getMessage}"))
     }
 
