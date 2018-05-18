@@ -118,6 +118,7 @@ class RepositoryTest extends MongoTest {
 
       //Comparing order ids
       val updatedUser = await(repo.findOneById(idUser))
+      Thread.sleep(1000)
       updatedUser.orders.get.head._id mustEqual order._id
 
     }
@@ -129,6 +130,7 @@ class RepositoryTest extends MongoTest {
 
       //Comparing order ids
       var updatedUser = await(repo.findOneById(idUser))
+      Thread.sleep(1000)
       var orders = updatedUser.orders.get
 
       orders.head._id mustEqual order._id
@@ -137,6 +139,7 @@ class RepositoryTest extends MongoTest {
       await(repo.updateUserOrder(idUser, newOrder))
 
       updatedUser = await(repo.findOneById(idUser))
+      Thread.sleep(1000)
       orders = updatedUser.orders.get
       orders.size mustEqual 1
       orders.head._id mustEqual order._id
@@ -158,6 +161,7 @@ class RepositoryTest extends MongoTest {
       await(repo.updateUserOrder(idUser, newOrder))
 
       val u2 = await(repo.findOneById(idUser))
+      Thread.sleep(1000)
       u2.orders.get.size mustBe 2
 
     }
