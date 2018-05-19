@@ -25,7 +25,7 @@ POST     /shippear/orders/cancel/:idOrder  controller.OrderController.cancelOrde
 # Tracking
 GET     /shippear/cache/:idUser            controller.CacheController.geolocation(idUser: String)
 POST    /shippear/cache                    controller.CacheController.updateLocation
-POST    /shippear/cache/active/:value      controller.CacheController.active(value: Boolean)
+POST    /shippear/cache/active/:status     controller.CacheController.active(status: Boolean)
 
 # Serve static assets under public directory
 GET     /*file                             controller.FrontendController.assetOrDefault(file)

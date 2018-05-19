@@ -26,7 +26,7 @@ class TrackingCacheTask @Inject()(val taskManager: TaskManager, cacheRepository:
 
   def updateCache = {
     if(isActivated) {
-      val locationsCache = cacheRepository.cache.clone()
+      val locationsCache = cacheRepository.locations
       info("Saving locations cache to DB...")
       locationsCache.foreach { case (_, cacheGeolocation) => cacheRepository.dao.upsertOne(cacheGeolocation) }
     }

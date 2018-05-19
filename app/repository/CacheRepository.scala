@@ -13,7 +13,7 @@ class CacheRepository @Inject()(implicit ec: ExecutionContext) extends ShippearR
 
   override lazy val dao: ShippearDAO[CacheGeolocation] = daoFactory[CacheGeolocation](collectionName)
 
-  lazy val cache: TrieMap[String, CacheGeolocation] = {
+  private lazy val cache: TrieMap[String, CacheGeolocation] = {
     val trieMap = TrieMap.empty[String, CacheGeolocation]
     dao.all.map{
       locations => locations.foreach(geo => trieMap.putIfAbsent(geo._id, geo))
@@ -21,6 +21,8 @@ class CacheRepository @Inject()(implicit ec: ExecutionContext) extends ShippearR
 
     trieMap
   }
+
+  def locations = cache.snapshot()
 
   def updateGeolocation(geolocation: CacheGeolocation) = {
     cache.put(geolocation._id, geolocation)

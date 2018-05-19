@@ -12,6 +12,7 @@ import task.{TaskManager, TrackingCacheTask}
 
 class ShippearModule extends ScalaModule {
   override def configure(): Unit = {
+
     bind[HomeController].asEagerSingleton()
     bind[FrontendController].asEagerSingleton()
 
@@ -41,4 +42,5 @@ class ShippearModule extends ScalaModule {
     bind[TrackingCacheTask].asEagerSingleton()
 
   }
+
 }
