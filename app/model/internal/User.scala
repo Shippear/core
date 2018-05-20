@@ -1,9 +1,10 @@
 package model.internal
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import play.api.libs.json._
 
 
-case class User(_id : String,
+case class User(@JsonProperty("_id") _id : String,
                 onesignalId: String,
                 userName: String,
                 firstName: String,

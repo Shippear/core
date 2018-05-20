@@ -32,12 +32,12 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
 
   def AsyncActionWithBody[B : Manifest](block: ShippearRequest[B] => Future[Result]) = Action.async { request =>
     Try {
-      request.body.asJson.get.toString.parseJsonTo[B]
+      request.parseBodyTo[B]
     } match {
       case Failure(ex) =>
         val msg = s"Error parsing from json to ${manifest.toString()}"
         error(msg, ex)
-        Future(BadRequest(s"$msg. $ex"))
+        Future(BadRequest(Map("result" -> s"$msg. $ex")))
       case Success(some) =>  doRequest(ShippearRequest(some, request.headers.toSimpleMap), block)
     }
 
@@ -55,6 +55,7 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
     error(message, ex)
     ex match {
       case NotFoundException(msg) => NotFound(Map("result" -> s"$msg. ${ex.getMessage}"))
+      case _: IllegalArgumentException => BadRequest(Map("result" -> s"$message. ${ex.getMessage}"))
       case _ => InternalServerError(Map("result" -> s"$message. ${ex.getMessage}"))
     }
 
