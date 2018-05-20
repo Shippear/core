@@ -2,7 +2,7 @@ package repository
 
 import com.google.inject.Inject
 import dao.util.ShippearDAO
-import model.CacheGeolocation
+import model.internal.CacheGeolocation
 
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.ExecutionContext

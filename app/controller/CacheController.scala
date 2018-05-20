@@ -2,7 +2,7 @@ package controller
 
 import com.google.inject.Inject
 import controller.util.BaseController
-import model.CacheGeolocation
+import model.internal.CacheGeolocation
 import service.CacheService
 import service.Exception.{InternalServerErrorException, NotFoundException}
 

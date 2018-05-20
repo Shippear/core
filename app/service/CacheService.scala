@@ -1,7 +1,7 @@
 package service
 
 import com.google.inject.Inject
-import model.CacheGeolocation
+import model.internal.CacheGeolocation
 import repository.CacheRepository
 import task.TrackingCacheTask
 

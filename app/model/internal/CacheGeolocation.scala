@@ -1,4 +1,4 @@
-package model
+package model.internal
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import play.api.libs.json.Json

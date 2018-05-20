@@ -1,9 +1,9 @@
-package model
+package model.internal
 
 object OrderState extends Enumeration {
   type OrderState = Value
 
-  val NEW, PENDING_CARRIER, PENDING_PICKUP, ON_TRAVEL, CLOSED, CANCELLED = Value
+  val PENDING_PARTICIPANT, PENDING_CARRIER, PENDING_PICKUP, ON_TRAVEL, DELIVERED, CANCELLED = Value
 
   implicit def toString(state: OrderState) = state.toString
 

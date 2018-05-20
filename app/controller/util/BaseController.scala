@@ -21,12 +21,7 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
       implicit val headers = new Headers {
         override def headers: Map[String, String] = request.headers.toSimpleMap
       }
-      Try {
-        request.body.asJson.get.toString.parseJsonTo[T]
-      } match {
-        case Failure(ex) => error(s"Error parsing from json to ${manifest.toString()}", ex); throw ex
-        case Success(some) => some
-      }
+      request.body.asJson.get.toString.parseJsonTo[T]
     }
   }
 
@@ -36,7 +31,16 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
   }
 
   def AsyncActionWithBody[B : Manifest](block: ShippearRequest[B] => Future[Result]) = Action.async { request =>
-    doRequest(ShippearRequest(request.parseBodyTo[B], request.headers.toSimpleMap), block)
+    Try {
+      request.body.asJson.get.toString.parseJsonTo[B]
+    } match {
+      case Failure(ex) =>
+        val msg = s"Error parsing from json to ${manifest.toString()}"
+        error(msg, ex)
+        Future(BadRequest(s"$msg. $ex"))
+      case Success(some) =>  doRequest(ShippearRequest(some, request.headers.toSimpleMap), block)
+    }
+
   }
 
 

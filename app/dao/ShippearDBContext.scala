@@ -4,6 +4,8 @@ import ai.snips.bsonmacros.{CodecGen, DatabaseContext, DynamicCodecRegistry}
 import com.google.inject.Inject
 import common.ConfigReader
 import model._
+import model.internal.OperationType.OperationType
+import model.internal._
 import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
 import play.api.inject.ApplicationLifecycle
 

@@ -2,8 +2,8 @@ package repository
 
 import com.google.inject.Inject
 import dao.util.ShippearDAO
-import model.OrderState.CANCELLED
-import model.{Order, User}
+import model.internal.OrderState.CANCELLED
+import model.internal.{Order, User}
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}

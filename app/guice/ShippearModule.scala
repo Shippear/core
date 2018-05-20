@@ -4,7 +4,7 @@ import ai.snips.bsonmacros.DatabaseContext
 import controller._
 import dao.util.ShippearDAOFactory
 import dao.ShippearDBContext
-import model.User
+import model.internal.User
 import net.codingwell.scalaguice.ScalaModule
 import repository.{CacheRepository, OrderRepository, UserRepository}
 import service.{CacheService, OrderService, UserService}

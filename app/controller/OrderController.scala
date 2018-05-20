@@ -2,18 +2,22 @@ package controller
 
 import com.google.inject.Inject
 import controller.util.BaseController
-import model.Order
+import model.internal.Order
+import model.mapper.OrderMapper
+import model.request.OrderRequest
 import service.OrderService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext) extends BaseController {
+class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
+  extends BaseController with OrderMapper {
 
 
-  def createOrder = AsyncActionWithBody[Order] { implicit request =>
-    service.create(request.content).map { _ =>
-      info(s"Order ${request.content._id} created")
-      Ok(Map("result" -> s"Order ${request.content._id} created"))
+  def createOrder = AsyncActionWithBody[OrderRequest] { implicit request =>
+    val order: Order = request.content
+    service.create(order).map { _ =>
+      info(s"Order ${order._id} created")
+      Ok(Map("_id" -> s"${order._id}"))
     }.recover {
       case ex: Exception =>
         constructErrorResult("Error creating a new order", ex)
