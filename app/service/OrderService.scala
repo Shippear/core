@@ -1,10 +1,8 @@
 package service
 
 import com.google.inject.Inject
-import model.{Order, User}
-import model.OrderState._
-import repository.{OrderRepository, UserRepository}
-import service.Exception.NotFoundException
+import model.internal.Order
+import repository.OrderRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -2,8 +2,9 @@ package controller
 
 import com.google.inject.Inject
 import controller.util.BaseController
-import model.User
+import model.internal.User
 import service.UserService
+
 import scala.concurrent.ExecutionContext
 
 class UserController @Inject()(service: UserService)(implicit ec: ExecutionContext) extends BaseController {

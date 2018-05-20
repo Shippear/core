@@ -1,4 +1,4 @@
-package model
+package model.internal
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import play.api.libs.json._
@@ -15,8 +15,9 @@ case class User(@JsonProperty("_id") _id : String,
                 addresses: Seq[Address],
                 orders: Option[Seq[Order]],
                 paymentMethods: Seq[PaymentMethod],
+                cbu: Option[String],
                 scoring: Option[Double],
-                transport: Option[Transport])
+                transport: Option[Seq[Transport]])
 
 object User {
   implicit val jsonFormat = Json.writes[User]

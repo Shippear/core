@@ -1,9 +1,9 @@
 package dao
 
-import ai.snips.bsonmacros.{CodecGen, DatabaseContext, DynamicCodecRegistry}
+import ai.snips.bsonmacros.{CodecGen, DynamicCodecRegistry}
 import com.google.inject.Inject
 import common.ConfigReader
-import model._
+import model.internal._
 import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
 import play.api.inject.ApplicationLifecycle
 
@@ -28,8 +28,10 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
 
   CodecGen[Transport](codecRegistry)
   CodecGen[Geolocation](codecRegistry)
+  CodecGen[CacheGeolocation](codecRegistry)
   CodecGen[PaymentMethod](codecRegistry)
   CodecGen[ContactInfo](codecRegistry)
+  CodecGen[City](codecRegistry)
   CodecGen[Address](codecRegistry)
   CodecGen[Route](codecRegistry)
   CodecGen[Address](codecRegistry)

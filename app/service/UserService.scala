@@ -3,7 +3,7 @@ package service
 
 import com.google.inject.Inject
 import common.Logging
-import model.{Address, User}
+import model.internal.{Address, User}
 import repository.UserRepository
 
 import scala.concurrent.{ExecutionContext, Future}
