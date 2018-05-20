@@ -8,7 +8,7 @@ case class Address(geolocation: Geolocation,
                    number: Int,
                    zipCode: String,
                    appartament: Option[String],
-                   localityId: Int,
+                   city: City,
                    public: Boolean)
 
 object Address {
