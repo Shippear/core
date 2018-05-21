@@ -18,4 +18,4 @@ case class OrderRequest(@JsonProperty("_id") _id: Option[String],
                          availableTo: Date,
                          awaitFrom: Option[Date],
                          awaitTo: Option[Date],
-                         qrCode: Option[String])
+                         qrCode: Option[Array[Byte]])
