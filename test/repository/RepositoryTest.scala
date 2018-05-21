@@ -43,7 +43,7 @@ class RepositoryTest extends MongoTest {
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
     val order = Order(idOrder, idUser, "11111", Some("carrierId"),
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some("QRCode"))
+      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -112,7 +112,7 @@ class RepositoryTest extends MongoTest {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
   val order = Order("idOrder", idUser, "11111", Some("carrierId"),
-    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some("QRCode"))
+    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
 
 
@@ -159,7 +159,7 @@ class RepositoryTest extends MongoTest {
       //Creating another order
       val newOrderId = "11111"
       val newOrder = Order(newOrderId, idUser, "11111", Some("carrierId"),
-        "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some("QRCode"))
+        "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
       await(repo.updateUserOrder(idUser, newOrder))
 
