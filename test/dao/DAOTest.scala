@@ -5,6 +5,7 @@ import java.util.Date
 import dao.embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import model._
+import model.internal._
 import org.joda.time.DateTime
 import org.mongodb.scala.model.Filters
 import play.api.test.Helpers.{await, _}
@@ -21,14 +22,16 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   lazy val dao: ShippearDAO[Order] = new ShippearDAO[Order](collectionName, dbContext)
 
   val originGeolocation = Geolocation(132, -123)
-  val origin = Address(originGeolocation, "alias", "street", 123, "zipCode", Some("appart"),2, public = true)
+  val originCity = City(2, "Almagro")
+  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity , public = true)
   val destinationGeolocation = Geolocation(132, -123)
-  val destination = Address(destinationGeolocation, "alias", "aaaaaaa", 1231231, "zipCode", Some("appart"),2, public = true)
+  val destinationCity = City(1, "Nuñez")
+  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
   lazy val participantId = "11111"
   val order = Order("123", "12345", participantId, Some("carrierId"),
-    "state", "operationType", route, new Date, new Date, Some("QRCode"))
+    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
 
   "OrderDAO" should{

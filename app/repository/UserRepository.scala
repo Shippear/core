@@ -2,7 +2,7 @@ package repository
 
 import com.google.inject.Inject
 import dao.util.ShippearDAO
-import model.{Order, User}
+import model.internal.{Order, User}
 
 import scala.concurrent.ExecutionContext
 

@@ -1,15 +1,12 @@
-package model
-
-import java.util.Date
+package model.internal
 
 import play.api.libs.json.Json
 
 case class PaymentMethod(cardOwnerName: String,
                          cardNumber: String,
-                         expirationDate: Date,
+                         expirationDate: String,
                          securityCode: String,
-                         cardType: String,
-                         cbu: Option[String])
+                         cardType: String)
 
 object PaymentMethod {
   implicit val jsonFormat = Json.writes[PaymentMethod]
