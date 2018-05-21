@@ -1,14 +1,28 @@
 package repository
 
+import java.io.ByteArrayOutputStream
+
 import com.google.inject.Inject
 import dao.util.ShippearDAO
 import model.OrderState.CANCELLED
 import model.{Order, User}
+import org.bson.BsonBinary
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: ExecutionContext) extends ShippearRepository[Order] {
+  def assignCarrier(orderId : String, carrierId : String, qrCode : String): Future[Unit] ={
+    for{
+      order <- super.findOneById(orderId)
+      newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode))
+      _ = update(newOrder)
+      _ = userRepository.updateUserOrder(newOrder.applicantId, newOrder)
+      _ = userRepository.updateUserOrder(newOrder.participantId, newOrder)
+      _ = userRepository.updateUserOrder(carrierId, newOrder)
+    } yield newOrder
+  }
+
 
   override def collectionName: String = "orders"
 

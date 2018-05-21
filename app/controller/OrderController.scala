@@ -60,5 +60,14 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+  def assignCarrier = AsyncActionWithBody[Map[String,String]] {implicit request =>
+    service.assignCarrier(request.content).map{
+      _ => Ok(Map("result" -> s"Order assigned to carrier successfully"))
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error updating order", ex)
+    }
+  }
+
 
 }
