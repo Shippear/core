@@ -35,7 +35,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def updateOrder = AsyncActionWithBody[Order] { implicit request =>
     service.update(request.content).map{
-      _ => Ok(s"Order ${request.content._id} updated successfully")
+      _ => Ok(Map("result" -> s"Order ${request.content._id} updated successfully"))
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error updating order ${request.content._id}", ex)
