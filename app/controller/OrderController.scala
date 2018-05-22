@@ -3,14 +3,13 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.Order
-import model.mapper.OrderMapper
 import model.request.OrderRequest
 import service.OrderService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
-  extends BaseController with OrderMapper {
+  extends BaseController {
 
 
   def createOrder = AsyncActionWithBody[OrderRequest] { implicit request =>

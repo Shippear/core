@@ -1,5 +1,7 @@
 package model.internal
 
+import com.fasterxml.jackson.core.`type`.TypeReference
+
 object OrderState extends Enumeration {
   type OrderState = Value
 
@@ -9,3 +11,6 @@ object OrderState extends Enumeration {
 
   implicit def toState(state: String): OrderState = withName(state.toUpperCase)
 }
+
+//For jackson deserialization
+class OrderStateType extends TypeReference[OrderState.type]

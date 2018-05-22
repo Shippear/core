@@ -57,7 +57,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
   private def updateCarrier(order: Order): Future[_] = {
     order.carrierId match {
       case Some(id) => userRepository.updateUserOrder(id, order)
-      case _ => Future.successful()
+      case _ => Future.successful(Unit)
     }
   }
 

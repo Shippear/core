@@ -28,6 +28,16 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
       }
   }
 
+  def ordersFor(idUser: String) = AsyncAction { implicit request =>
+    service.findClasifiedOrders(idUser).map {
+      user => Ok(user)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error getting user _id $idUser", ex)
+    }
+  }
+
+
   def updateUser = AsyncActionWithBody[User] { implicit request =>
     service.update(request.content).map{
       _ => Ok(s"User ${request.content.userName} updated successfully")
