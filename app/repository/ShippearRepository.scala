@@ -17,10 +17,6 @@ trait ShippearRepository[T] extends Logging {
       "_([a-z\\d])".r.replaceAllIn(in, _.group(1).toUpperCase)
   }
 
-  implicit def object2Document(obj: T)(implicit writes: Writes[T]): Document =
-    Document(Json.stringify(Json.toJson(obj)))
-
-
   protected def replaceOrAdd[A](list: Seq[A], elem: A)(predicate: A => Boolean): Seq[A] =
     list.filterNot(predicate) :+ elem
 

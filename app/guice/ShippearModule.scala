@@ -6,6 +6,7 @@ import dao.util.ShippearDAOFactory
 import dao.ShippearDBContext
 import model.internal.User
 import net.codingwell.scalaguice.ScalaModule
+import onesignal.OneSignalClient
 import repository.{CacheRepository, OrderRepository, UserRepository}
 import service.{CacheService, OrderService, UserService}
 import task.{TaskManager, TrackingCacheTask}
@@ -40,6 +41,9 @@ class ShippearModule extends ScalaModule {
     //Tasks
     bind[TaskManager].asEagerSingleton()
     bind[TrackingCacheTask].asEagerSingleton()
+
+    //Email http client
+    bind[OneSignalClient].asEagerSingleton()
 
   }
 

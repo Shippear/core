@@ -64,5 +64,13 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+  def test(oneSignal: String) = AsyncAction { implicit request =>
+    service.test(oneSignal).map { _ =>
+      Ok("a")
+    }.recover {
+      case ex: Exception => InternalServerError("okk")
+    }
+  }
+
 
 }
