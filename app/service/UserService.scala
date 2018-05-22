@@ -6,7 +6,6 @@ import common.Logging
 import model.internal.{Address, User}
 import model.response.UserResponse
 import repository.UserRepository
-import model.internal.OrderState._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,7 +28,7 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
 
   private def validateAddresses(addresses: Seq[Address]) = addresses.exists(_.public)
 
-  def findClasifiedOrders(idUser: String): Future[UserResponse] = {
+  def ordersByState(idUser: String): Future[UserResponse] = {
     super.findBy(Map("_id" -> idUser)).map(User.user2Response)
   }
 

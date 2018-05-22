@@ -28,8 +28,8 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
       }
   }
 
-  def ordersFor(idUser: String) = AsyncAction { implicit request =>
-    service.findClasifiedOrders(idUser).map {
+  def ordersByState(idUser: String) = AsyncAction { implicit request =>
+    service.ordersByState(idUser).map {
       user => Ok(user)
     }.recover {
       case ex: Exception =>
