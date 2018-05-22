@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.joda.time.DateTime
+import play.api.Play
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Success, Try}
@@ -37,7 +38,7 @@ trait ConfigReader {
 
   implicit class RichConfig(config: Config) {
     def isProd = {
-      val env = config.getString("environments")
+      val env = config.getString("environment")
       env == "prod"
     }
 

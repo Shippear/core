@@ -4,6 +4,8 @@ import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
 import play.api.mvc.{InjectedController, Request, _}
+import service.Exception.{InternalServerErrorException, NotFoundException}
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -19,10 +21,7 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
       implicit val headers = new Headers {
         override def headers: Map[String, String] = request.headers.toSimpleMap
       }
-      Try{request.body.asJson.get.toString.parseJsonTo[T]} match {
-        case Failure(ex) => error(s"Error parsing from json to ${manifest.toString()}", ex); throw ex
-        case Success(some) => some
-      }
+      request.body.asJson.get.toString.parseJsonTo[T]
     }
   }
 
@@ -32,7 +31,16 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
   }
 
   def AsyncActionWithBody[B : Manifest](block: ShippearRequest[B] => Future[Result]) = Action.async { request =>
-    doRequest(ShippearRequest(request.parseBodyTo[B], request.headers.toSimpleMap), block)
+    Try {
+      request.parseBodyTo[B]
+    } match {
+      case Failure(ex) =>
+        val msg = s"Error parsing from json to ${manifest.toString()}"
+        error(msg, ex)
+        Future(BadRequest(Map("result" -> s"$msg. $ex")))
+      case Success(some) =>  doRequest(ShippearRequest(some, request.headers.toSimpleMap), block)
+    }
+
   }
 
 
@@ -43,9 +51,14 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
     }
   }
 
-  protected def constructInternalError(message: String, ex: Exception) = {
+  protected def constructErrorResult(message: String, ex: Exception) = {
     error(message, ex)
-    InternalServerError(s"$message. ${ex.getMessage}")
+    ex match {
+      case NotFoundException(msg) => NotFound(Map("result" -> s"$msg. ${ex.getMessage}"))
+      case _: IllegalArgumentException => BadRequest(Map("result" -> s"$message. ${ex.getMessage}"))
+      case _ => InternalServerError(Map("result" -> s"$message. ${ex.getMessage}"))
+    }
+
   }
 
 }

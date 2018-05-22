@@ -1,21 +1,58 @@
 package dao
 
-import ai.snips.bsonmacros.{CodecGen, DatabaseContext}
+import ai.snips.bsonmacros.{CodecGen, DynamicCodecRegistry}
 import com.google.inject.Inject
-import model._
+import common.ConfigReader
+import model.internal._
+import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
+import play.api.inject.ApplicationLifecycle
+import org.mongodb.scala.bson.codecs.Macros._
+import org.mongodb.scala.bson.codecs.{DEFAULT_CODEC_REGISTRY, Macros}
+import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 
-class ShippearDBContext @Inject()(val dbContext: DatabaseContext) {
+import scala.concurrent.{ExecutionContext, Future}
 
-  CodecGen[Transport](dbContext.codecRegistry)
-  CodecGen[Geolocation](dbContext.codecRegistry)
-  CodecGen[PaymentMethod](dbContext.codecRegistry)
-  CodecGen[ContactInfo](dbContext.codecRegistry)
-  CodecGen[Address](dbContext.codecRegistry)
-  CodecGen[Route](dbContext.codecRegistry)
-  CodecGen[Address](dbContext.codecRegistry)
-  CodecGen[Order](dbContext.codecRegistry)
-  CodecGen[User](dbContext.codecRegistry)
+class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext)
+  extends ConfigReader{
 
-  def database(name: String)  = dbContext.database(name)
+  lazy val mongoConf: String = envConfiguration.getString("mongodb.uri")
+  lazy val client = MongoClient(mongoConf)
+
+  applicationLifecycle.addStopHook { () =>
+    Future.successful(client.close())
+  }
+
+  private val transport = Macros.createCodecProviderIgnoreNone[Transport]()
+  private val geolocation = Macros.createCodecProviderIgnoreNone[Geolocation]()
+  private val cacheGeolocation = Macros.createCodecProviderIgnoreNone[CacheGeolocation]()
+  private val paymentMethods = Macros.createCodecProviderIgnoreNone[PaymentMethod]()
+  private val contactInfo = Macros.createCodecProviderIgnoreNone[ContactInfo]()
+  private val city = Macros.createCodecProviderIgnoreNone[City]()
+  private val address = Macros.createCodecProviderIgnoreNone[Address]()
+  private val route = Macros.createCodecProviderIgnoreNone[Route]()
+  private val order = Macros.createCodecProviderIgnoreNone[Order]()
+  private val user = Macros.createCodecProviderIgnoreNone[User]()
+
+  val codecRegistry = fromRegistries(
+    fromProviders(
+      transport,
+      geolocation,
+      cacheGeolocation,
+      paymentMethods,
+      contactInfo,
+      city,
+      address,
+      route,
+      order,
+      user,
+    ),
+    DEFAULT_CODEC_REGISTRY
+  )
+
+  def database(name: String): MongoDatabase =
+    client.getDatabase(name).withWriteConcern(WriteConcern.ACKNOWLEDGED).withReadPreference(ReadPreference.primary()).withCodecRegistry(codecRegistry)
+
+  def ping(): Future[Unit] =
+    client.listDatabaseNames().toFuture.map(_ => ())
 
 }
