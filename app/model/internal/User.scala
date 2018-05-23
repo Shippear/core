@@ -24,9 +24,9 @@ case class User(@JsonProperty("_id") _id : String,
 object User {
   implicit val jsonFormat = Json.writes[User]
 
-  val finalizedStates: List[String] = List(CANCELLED, DELIVERED)
   val toBeConfirmedStates: List[String] = List(PENDING_PARTICIPANT, PENDING_CARRIER)
   val inProgressStates: List[String] = List(PENDING_PICKUP, ON_TRAVEL)
+  val finalizedStates: List[String] = List(CANCELLED, DELIVERED)
 
   implicit def user2Response(user: User): UserResponse = {
     val finalized = user.orders.map(o => o.filter { order => finalizedStates.contains(order.state) })
