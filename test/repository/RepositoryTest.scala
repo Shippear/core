@@ -5,7 +5,6 @@ import java.util.Date
 import dao.embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import model.internal.OrderState._
-import model._
 import model.internal._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
