@@ -73,5 +73,14 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+  def validateQrCode = AsyncActionWithBody[Map[String,String]] {implicit request =>
+    service.validateQrCode(request.content).map{
+      case true => Ok(Map("result" -> s"QR Code validate successfully"))
+      case false => Forbidden(Map("result" -> s"Wrong QR Code"))
+    }.recover{
+      case ex: Exception =>
+        constructErrorResult(s"Error to validate Qr Code", ex)
+    }
+  }
 
 }

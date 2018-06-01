@@ -22,6 +22,7 @@ POST     /shippear/orders/create           controller.OrderController.createOrde
 POST     /shippear/orders/update           controller.OrderController.updateOrder
 POST     /shippear/orders/cancel/:idOrder  controller.OrderController.cancelOrder(idOrder: String)
 POST     /shippear/orders/assign-carrier   controller.OrderController.assignCarrier
+POST     /shippear/orders/validateQrCode   controller.OrderController.validateQrCode
 
 # Tracking
 GET     /shippear/cache/:idUser            controller.CacheController.geolocation(idUser: String)

@@ -2,7 +2,8 @@ package repository
 
 import com.google.inject.Inject
 import dao.util.ShippearDAO
-import model.internal.OrderState.CANCELLED
+import model.internal.OrderState.{CANCELLED, PENDING_PICKUP}
+import model.internal.UserType._
 import model.internal.{Order, User}
 import service.Exception.NotFoundException
 
@@ -12,7 +13,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
   def assignCarrier(orderId : String, carrierId : String, qrCode : Array[Byte]): Future[Unit] ={
     for{
       order <- super.findOneById(orderId)
-      newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode))
+      newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode), state = PENDING_PICKUP)
       _ = update(newOrder)
       _ = userRepository.updateUserOrder(newOrder.applicantId, newOrder)
       _ = userRepository.updateUserOrder(newOrder.participantId, newOrder)
@@ -20,6 +21,17 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     } yield newOrder
   }
 
+  def validateQrCode(orderId : String, userId : String, userType : UserType): Future[Any] ={
+    val order = findOneById(orderId)
+    order.map{ order =>
+        userType match{
+        case APPLICANT => order.applicantId.equals(userId)
+        case PARTICIPANT => order.participantId.equals(userId)
+        case CARRIER => order.carrierId.getOrElse().equals(userId)
+        case _ => false
+      }
+    }
+  }
 
   override def collectionName: String = "orders"
 

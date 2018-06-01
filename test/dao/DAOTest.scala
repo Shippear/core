@@ -1,18 +1,23 @@
 package dao
 
+import java.io.{FileOutputStream, OutputStream}
+import java.nio.file.Files
 import java.util.Date
 
 import dao.embbebedmongo.MongoTest
 import dao.util.ShippearDAO
+import javax.imageio.ImageIO
 import model._
 import model.internal._
 import org.joda.time.DateTime
 import org.mongodb.scala.model.Filters
 import play.api.test.Helpers.{await, _}
+import qrcodegenerator.QrCodeGenerator
 import repository.ShippearRepository
 import service.Exception.NotFoundException
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.tools.nsc.classpath.FileUtils
 
 
 class DAOTest extends MongoTest with ShippearRepository[Order] {
@@ -33,6 +38,10 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val order = Order("123", "12345", participantId, Some("carrierId"),
     "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
+  val qrCodeGenerator = new QrCodeGenerator
+  val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
+  val orderWithQrCode = Order("123", "12345", participantId, Some("carrierId"),
+    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some(qrCode))
 
   "OrderDAO" should{
     "Save an object" in {
@@ -79,6 +88,11 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
       //using or
       val filterOr = Filters.or(Filters.eq("participantId", participantId), Filters.lt("availableFrom", availableFrom))
       await(dao.findByFilters(filterOr)).size mustBe 1
+    }
+
+    "Save an order with QR code" in {
+      await(dao.insertOne(orderWithQrCode))
+      await(dao.all).size mustBe 1
     }
 
 
