@@ -8,6 +8,7 @@ import model.internal.{Order, User}
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: ExecutionContext) extends ShippearRepository[Order] {
   def assignCarrier(orderId : String, carrierId : String, qrCode : Array[Byte]): Future[Unit] ={
@@ -39,17 +40,18 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
   override def create(order: Order) = {
     for {
       result <- super.create(order)
-      _ = userRepository.updateUserOrder(order.applicantId, order)
-      _ = userRepository.updateUserOrder(order.participantId, order)
+      _ <- userRepository.updateUserOrder(order.applicantId, order)
+      _ <- userRepository.updateUserOrder(order.participantId, order)
     } yield result
+
   }
 
   override def update(order: Order) = {
     for {
       result <- super.update(order)
-      _ = userRepository.updateUserOrder(order.applicantId, order)
-      _ = userRepository.updateUserOrder(order.participantId, order)
-      _ = order.carrierId.map(carrierId => userRepository.updateUserOrder(carrierId, order))
+      _ <- userRepository.updateUserOrder(order.applicantId, order)
+      _ <- userRepository.updateUserOrder(order.participantId, order)
+      _ <- updateCarrier(order)
     } yield result
   }
 
@@ -58,7 +60,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     for {
       order <- super.findOneById(id)
       updateOrder = order.copy(state = CANCELLED)
-      _ = update(updateOrder)
+      _ <- update(updateOrder)
       applicant <- userRepository.findOneById(order.applicantId)
       participant <- userRepository.findOneById(order.participantId)
       someCarrier <- findCarrier(order.carrierId)
@@ -73,6 +75,13 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     }
   }
 
+
+  private def updateCarrier(order: Order): Future[_] = {
+    order.carrierId match {
+      case Some(id) => userRepository.updateUserOrder(id, order)
+      case _ => Future.successful(Unit)
+    }
+  }
 
 
 }

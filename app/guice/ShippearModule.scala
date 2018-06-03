@@ -1,8 +1,8 @@
 package guice
 
 import controller._
-import dao.util.ShippearDAOFactory
 import dao.ShippearDBContext
+import dao.util.ShippearDAOFactory
 import net.codingwell.scalaguice.ScalaModule
 import repository.{CacheRepository, OrderRepository, UserRepository}
 import service.{CacheService, OrderService, UserService}

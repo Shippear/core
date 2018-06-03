@@ -3,14 +3,13 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.{AssignCarrier, Order, OrderToValidate}
-import model.mapper.OrderMapper
 import model.request.OrderRequest
 import service.OrderService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
-  extends BaseController with OrderMapper {
+  extends BaseController {
 
 
   def createOrder = AsyncActionWithBody[OrderRequest] { implicit request =>
@@ -35,7 +34,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def updateOrder = AsyncActionWithBody[Order] { implicit request =>
     service.update(request.content).map{
-      _ => Ok(s"Order ${request.content._id} updated successfully")
+      _ => Ok(Map("result" -> s"Order ${request.content._id} updated successfully"))
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error updating order ${request.content._id}", ex)

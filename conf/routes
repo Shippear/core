@@ -11,6 +11,7 @@ GET     /shippear/summary                  controller.HomeController.appSummary
 # Shippear
 # Users
 GET      /shippear/users/all               controller.UserController.allUsers
+GET      /shippear/users/orders/:idUser    controller.UserController.ordersByState(idUser: String)
 POST     /shippear/users/find              controller.UserController.findUser
 POST     /shippear/users/create            controller.UserController.createUser
 POST     /shippear/users/update            controller.UserController.updateUser

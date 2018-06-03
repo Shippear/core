@@ -15,7 +15,7 @@ import play.api.test.Helpers.{await, _}
 import qrcodegenerator.QrCodeGenerator
 import repository.ShippearRepository
 import service.Exception.NotFoundException
-
+import OrderState._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.tools.nsc.classpath.FileUtils
 
@@ -36,7 +36,7 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
   lazy val participantId = "11111"
   val order = Order("123", "12345", participantId, Some("carrierId"),
-    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
   val qrCodeGenerator = new QrCodeGenerator
   val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
