@@ -5,7 +5,7 @@ import java.util.Date
 import dao.embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import model.internal.OrderState._
-import model.internal.UserType.{APPLICANT}
+import model.internal.UserType.{APPLICANT, CARRIER}
 import model.internal._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
@@ -99,6 +99,13 @@ class RepositoryTest extends MongoTest {
 
       val result = await(repo.validateQrCode(idOrder,idUser,APPLICANT))
       result equals true
+    }
+
+    "Wrong QR Code" in {
+      await(repo.create(order))
+
+      val result = await(repo.validateQrCode(idOrder,idUser,CARRIER))
+      result equals false
     }
   }
 

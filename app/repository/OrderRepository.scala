@@ -14,10 +14,10 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     for{
       order <- super.findOneById(orderId)
       newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode), state = PENDING_PICKUP)
-      _ = update(newOrder)
-      _ = userRepository.updateUserOrder(newOrder.applicantId, newOrder)
-      _ = userRepository.updateUserOrder(newOrder.participantId, newOrder)
-      _ = userRepository.updateUserOrder(carrierId, newOrder)
+      _ <- update(newOrder)
+      _ <- userRepository.updateUserOrder(newOrder.applicantId, newOrder)
+      _ <- userRepository.updateUserOrder(newOrder.participantId, newOrder)
+      _ <- userRepository.updateUserOrder(carrierId, newOrder)
     } yield newOrder
   }
 
@@ -27,8 +27,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
         userType match{
         case APPLICANT => order.applicantId.equals(userId)
         case PARTICIPANT => order.participantId.equals(userId)
-        case CARRIER => order.carrierId.getOrElse().equals(userId)
-        case _ => false
+        case CARRIER =>  order.carrierId.getOrElse().equals(userId)
       }
     }
   }

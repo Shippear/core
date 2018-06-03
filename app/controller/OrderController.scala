@@ -2,7 +2,7 @@ package controller
 
 import com.google.inject.Inject
 import controller.util.BaseController
-import model.internal.Order
+import model.internal.{AssignCarrier, Order, OrderToValidate}
 import model.mapper.OrderMapper
 import model.request.OrderRequest
 import service.OrderService
@@ -64,7 +64,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  def assignCarrier = AsyncActionWithBody[Map[String,String]] {implicit request =>
+  def assignCarrier = AsyncActionWithBody[AssignCarrier] { implicit request =>
     service.assignCarrier(request.content).map{
       _ => Ok(Map("result" -> s"Order assigned to carrier successfully"))
     }.recover {
@@ -73,10 +73,10 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  def validateQrCode = AsyncActionWithBody[Map[String,String]] {implicit request =>
+  def validateQrCode = AsyncActionWithBody[OrderToValidate] { implicit request =>
     service.validateQrCode(request.content).map{
-      case true => Ok(Map("result" -> s"QR Code validate successfully"))
-      case false => Forbidden(Map("result" -> s"Wrong QR Code"))
+      case true => Ok(Map("result" -> "QR Code validate successfully"))
+      case false => Forbidden(Map("result" -> "Wrong QR Code"))
     }.recover{
       case ex: Exception =>
         constructErrorResult(s"Error to validate Qr Code", ex)
