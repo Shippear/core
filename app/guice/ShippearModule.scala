@@ -1,10 +1,8 @@
 package guice
 
-import ai.snips.bsonmacros.DatabaseContext
 import controller._
-import dao.util.ShippearDAOFactory
 import dao.ShippearDBContext
-import model.internal.User
+import dao.util.ShippearDAOFactory
 import net.codingwell.scalaguice.ScalaModule
 import onesignal.OneSignalClient
 import repository.{CacheRepository, OrderRepository, UserRepository}
