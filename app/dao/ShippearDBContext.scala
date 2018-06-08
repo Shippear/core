@@ -1,14 +1,12 @@
 package dao
 
-import ai.snips.bsonmacros.{CodecGen, DynamicCodecRegistry}
 import com.google.inject.Inject
 import common.ConfigReader
 import model.internal._
+import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.mongodb.scala.bson.codecs.{DEFAULT_CODEC_REGISTRY, Macros}
 import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
 import play.api.inject.ApplicationLifecycle
-import org.mongodb.scala.bson.codecs.Macros._
-import org.mongodb.scala.bson.codecs.{DEFAULT_CODEC_REGISTRY, Macros}
-import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 
 import scala.concurrent.{ExecutionContext, Future}
 

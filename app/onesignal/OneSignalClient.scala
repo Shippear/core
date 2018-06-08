@@ -6,9 +6,8 @@ import common.{ConfigReader, Logging}
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import onesignal.EmailType.{EmailType, _}
-import onesignal.html.HTML
-import play.api.libs.ws.DefaultBodyWritables._
 import play.api.libs.ws.WSClient
+import HTML._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,10 +30,10 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
   private def emailBody(emailType: EmailType): String = {
     emailType match {
-      case ORDER_CREATED => HTML.CREATED
-      case ORDER_ON_WAY => HTML.TRAVELLING
-      case ORDER_CANCELED => HTML.CANCELED
-      case ORDER_FINALIZED => HTML.FINALIZED
+      case ORDER_CREATED => CREATED
+      case ORDER_ON_WAY => TRAVELLING
+      case ORDER_CANCELED => CANCELED
+      case ORDER_FINALIZED => FINALIZED
     }
   }
 

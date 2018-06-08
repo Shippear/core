@@ -10,8 +10,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class OrderService @Inject()(val mailClient: OneSignalClient, val repository: OrderRepository)(implicit ec: ExecutionContext)
   extends Service[Order]{
 
-  def cancelOrder(id: String): Future[(String, String, Option[String])] =
-   repository.cancelOrder(id)
+  def cancelOrder(id: String): Future[(String, String, Option[String])] = {
+    for{
+      (applicantOSId, participantOSId, carrierOSId) <- repository.cancelOrder(id)
+      list = List(applicantOSId, participantOSId, carrierOSId.getOrElse("")).filter(_.isEmpty)
+      _ = mailClient.sendEmail(list, EmailType.ORDER_CANCELED)
+    } yield (applicantOSId, participantOSId, carrierOSId)
+
+  }
+
 
   def sendEmail(oneSignal: String) = mailClient.sendEmail(List(oneSignal), EmailType.ORDER_ON_WAY)
 
