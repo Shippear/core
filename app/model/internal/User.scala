@@ -22,7 +22,6 @@ case class User(@JsonProperty("_id") _id : String,
                 transport: Option[Seq[Transport]])
 
 object User {
-  implicit val jsonFormat = Json.writes[User]
 
   val toBeConfirmedStates: List[String] = List(PENDING_PARTICIPANT, PENDING_CARRIER)
   val inProgressStates: List[String] = List(PENDING_PICKUP, ON_TRAVEL)
