@@ -63,11 +63,19 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  def test(oneSignal: String) = AsyncAction { implicit request =>
-    service.test(oneSignal).map { _ =>
-      Ok("a")
+  def devices(id: Option[String]) = AsyncAction { implicit request =>
+    service.device(id).map { res =>
+      Ok(res)
     }.recover {
-      case ex: Exception => InternalServerError("okk")
+      case ex: Exception => constructErrorResult(ex.getMessage, ex)
+    }
+  }
+
+  def sendEmail(id: String) = AsyncAction { implicit request =>
+    service.sendEmail(id).map { res =>
+      Ok(res)
+    }.recover {
+      case ex: Exception => constructErrorResult(ex.getMessage, ex)
     }
   }
 

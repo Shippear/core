@@ -2,7 +2,7 @@ package service
 
 import com.google.inject.Inject
 import model.internal.Order
-import onesignal.OneSignalClient
+import onesignal.{EmailType, OneSignalClient}
 import repository.OrderRepository
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -13,6 +13,8 @@ class OrderService @Inject()(val mailClient: OneSignalClient, val repository: Or
   def cancelOrder(id: String): Future[(String, String, Option[String])] =
    repository.cancelOrder(id)
 
-  def test(oneSignal: String) = Future(mailClient.createEmail(List(oneSignal)))
+  def sendEmail(oneSignal: String) = mailClient.sendEmail(List(oneSignal), EmailType.ORDER_ON_WAY)
+
+  def device(userOneSignalId: Option[String]) = mailClient.device(userOneSignalId)
 
 }

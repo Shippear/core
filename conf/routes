@@ -23,6 +23,10 @@ POST     /shippear/orders/create           controller.OrderController.createOrde
 POST     /shippear/orders/update           controller.OrderController.updateOrder
 POST     /shippear/orders/cancel/:idOrder  controller.OrderController.cancelOrder(idOrder: String)
 
+#Mails Test
+GET      /shippear/devices                  controller.OrderController.devices(id: Option[String])
+GET      /shippear/send/:id                 controller.OrderController.sendEmail(id: String)
+
 # Tracking
 GET     /shippear/cache/:idUser            controller.CacheController.geolocation(idUser: String)
 POST    /shippear/cache                    controller.CacheController.updateLocation

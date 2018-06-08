@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import common.Logging
 import dao.util.{ShippearDAO, ShippearDAOFactory}
 import org.mongodb.scala.bson.collection.immutable.Document
-import play.api.libs.json.{Json, Writes}
 
 import scala.concurrent.Future
 
