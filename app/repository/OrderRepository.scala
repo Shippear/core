@@ -28,8 +28,8 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
         userType match{
         case APPLICANT => order.applicantId.equals(userId)
         case PARTICIPANT => order.participantId.equals(userId)
-        case CARRIER =>  order.carrierId.getOrElse().equals(userId)
-      }
+        case CARRIER =>  order.carrierId.getOrElse(throw NotFoundException("Carrier not found")).equals(userId)
+        }
     }
   }
 

@@ -16,6 +16,10 @@ import qrcodegenerator.QrCodeGenerator
 import repository.ShippearRepository
 import service.Exception.NotFoundException
 import OrderState._
+import akka.stream.TLSClientAuth
+import io.jsonwebtoken.lang.Assert
+import org.reflections.util.FilterBuilder.Matcher
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.tools.nsc.classpath.FileUtils
 
@@ -92,6 +96,8 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
     "Save an order with QR code" in {
       await(dao.insertOne(orderWithQrCode))
+      val orderWithQR = await(dao.findOneById(orderWithQrCode._id))
+      orderWithQR.qrCode.isDefined mustBe true
       await(dao.all).size mustBe 1
     }
 
