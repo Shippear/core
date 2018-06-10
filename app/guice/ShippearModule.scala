@@ -7,6 +7,9 @@ import net.codingwell.scalaguice.ScalaModule
 import repository.{CacheRepository, OrderRepository, UserRepository}
 import service.{CacheService, OrderService, UserService}
 import task.{TaskManager, TrackingCacheTask}
+import qrcodegenerator.QrCodeGenerator
+import repository.{OrderRepository, UserRepository}
+import service.{OrderService, UserService}
 
 class ShippearModule extends ScalaModule {
   override def configure(): Unit = {
@@ -29,6 +32,7 @@ class ShippearModule extends ScalaModule {
     bind[OrderController].asEagerSingleton()
     bind[OrderService].asEagerSingleton()
     bind[OrderRepository].asEagerSingleton()
+    bind[QrCodeGenerator].asEagerSingleton()
 
     //Tracking cache
     bind[CacheController].asEagerSingleton()
@@ -40,5 +44,4 @@ class ShippearModule extends ScalaModule {
     bind[TrackingCacheTask].asEagerSingleton()
 
   }
-
 }
