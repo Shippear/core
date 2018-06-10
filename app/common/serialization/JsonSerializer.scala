@@ -29,7 +29,7 @@ object JsonSerializer {
       mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"))
       mapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
       mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      mapper.configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
       mapper
     }
   }

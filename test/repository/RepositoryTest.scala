@@ -5,10 +5,12 @@ import java.util.Date
 import dao.embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import model.internal.OrderState._
+import model.internal.UserType.{APPLICANT, CARRIER}
 import model.internal._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.test.Helpers.{await, _}
+import qrcodegenerator.QrCodeGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -29,6 +31,7 @@ class RepositoryTest extends MongoTest {
       override lazy val dao: ShippearDAO[Order] = new ShippearDAO[Order](collectionName, dbContext)
     }
 
+    val qrCodeGenerator = new QrCodeGenerator
     val repo = new OrderRepoTest
 
     //Order
@@ -41,6 +44,8 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(1, "Nuñez")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
+    val carrierId = "791"
+    val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
     val order = Order(idOrder, idUser, "11111", Some("carrierId"),
       PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
@@ -78,6 +83,30 @@ class RepositoryTest extends MongoTest {
       val result = await(repo.findOneById(idOrder))
       toState(result.state) mustEqual CANCELLED
     }
+
+    "Assign carrier" in {
+      await(repo.create(order))
+      await(repo.assignCarrier(idOrder, carrierId , qrCode))
+
+      val saveOrderWithCarrier = await(repo.findOneById(idOrder))
+
+      toState(saveOrderWithCarrier.state) mustEqual PENDING_PICKUP
+      saveOrderWithCarrier.carrierId mustBe Some(carrierId)
+    }
+
+    "Validate QR Code successfully" in {
+      await(repo.create(order))
+
+      val result = await(repo.validateQrCode(idOrder,idUser,APPLICANT))
+      result equals true
+    }
+
+    "Wrong QR Code" in {
+      await(repo.create(order))
+
+      val result = await(repo.validateQrCode(idOrder,idUser,CARRIER))
+      result equals false
+    }
   }
 
 
@@ -112,7 +141,6 @@ class RepositoryTest extends MongoTest {
   val route = Route(origin, destination)
   val order = Order("idOrder", idUser, "11111", Some("carrierId"),
     "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-
 
 
     "Create a new order into the user" in {

@@ -13,7 +13,8 @@ object Dependencies {
     "Typesafe repository snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
     "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype repo" at "https://oss.sonatype.org/content/groups/scala-tools/",
-    "Sonatype OSS" at "https://oss.sonatype.org/content/groups/public"
+    "Sonatype OSS" at "https://oss.sonatype.org/content/groups/public",
+    "jitpack" at "https://jitpack.io"
   )
 
 
@@ -26,7 +27,8 @@ object Dependencies {
     "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.1",
     "ai.snips" %% "play-mongo-bson" % "0.4",
     "com.github.nscala-time" %% "nscala-time" % "2.18.0",
-    "com.github.salat" %% "salat" % "1.11.2"
+    "com.github.salat" %% "salat" % "1.11.2",
+    "com.github.kenglxn.qrgen" % "javase" % "2.4.0"
   )
 
   val jsonDependencies = Seq(
