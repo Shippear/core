@@ -22,6 +22,8 @@ POST     /shippear/orders/find             controller.OrderController.findOrder
 POST     /shippear/orders/create           controller.OrderController.createOrder
 POST     /shippear/orders/update           controller.OrderController.updateOrder
 POST     /shippear/orders/cancel/:idOrder  controller.OrderController.cancelOrder(idOrder: String)
+POST     /shippear/orders/assign-carrier   controller.OrderController.assignCarrier
+POST     /shippear/orders/validate-qr-code controller.OrderController.validateQrCode
 
 #Mails Test
 GET      /shippear/devices                  controller.OrderController.devices(id: Option[String])
