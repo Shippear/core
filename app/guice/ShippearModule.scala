@@ -8,7 +8,7 @@ import net.codingwell.scalaguice.ScalaModule
 import onesignal.OneSignalClient
 import qrcodegenerator.QrCodeGenerator
 import repository.{CacheRepository, OrderRepository, UserRepository}
-import service.{CacheService, OrderService, RouteMapService, UserService}
+import service._
 import task.{TaskManager, TrackingCacheTask}
 
 class ShippearModule extends ScalaModule {
@@ -43,7 +43,9 @@ class ShippearModule extends ScalaModule {
     bind[TaskManager].asEagerSingleton()
     bind[TrackingCacheTask].asEagerSingleton()
 
-    //Email http client
+    //Email
+    bind[MailController].asEagerSingleton()
+    bind[MailService].asEagerSingleton()
     bind[OneSignalClient].asEagerSingleton()
 
     //RouteMap

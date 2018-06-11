@@ -11,12 +11,12 @@ import HTML._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class OneSignalConfig(id: Option[String], auth: Option[String])
+case class OneSignalConfig(id: Option[String], auth: Option[String], activated: Boolean)
 
 class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext) extends ConfigReader with Logging with SnakeCaseJsonProtocol {
 
   val config = envConfiguration.getConfig("email-notification").as[OneSignalConfig]
-  val activated = config.id.isDefined
+  var active = config.activated
 
   private val ContentType = ("Content-Type", "application/json;charset=utf-8")
   private val Authorization = ("Authorization", s"Basic ${config.auth.getOrElse("")}")
@@ -27,6 +27,11 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
   val AddDevice = s"$OneSignalPath/players"
   val viewDevices = s"$AddDevice?app_id=${config.id.getOrElse("")}"
   def viewDevice(id: String) = s"$AddDevice/$id?app_id=${config.id.getOrElse("")}"
+
+  def activated(state: Boolean): Boolean = {
+    active = state
+    active
+  }
 
   private def emailBody(emailType: EmailType): String = {
     emailType match {
@@ -39,7 +44,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
 
   def sendEmail(playersId: List[String], emailType: EmailType): Future[EmailResponse] = {
-    if(activated) {
+    if(active) {
       val email = Email(config.id.getOrElse(""), "Shippear", emailBody(emailType), playersId)
 
       client.url(NotificationPath)
@@ -53,7 +58,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
   }
 
   def device(playerOneSignalId: Option[String]): Future[List[String]] = {
-    if(activated){
+    if(active){
       playerOneSignalId match {
         case Some(id) =>
           client.url(viewDevice(id)).withHttpHeaders(ContentType, Authorization).get.map {

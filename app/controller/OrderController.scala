@@ -6,7 +6,7 @@ import model.internal.{AssignCarrier, Order, OrderToValidate}
 import model.request.OrderRequest
 import service.OrderService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
   extends BaseController {
@@ -62,23 +62,6 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
         constructErrorResult(s"Error cancelling order $idOrder", ex)
     }
   }
-
-  def devices(id: Option[String]) = AsyncAction { implicit request =>
-    service.device(id).map { res =>
-      Ok(res)
-    }.recover {
-      case ex: Exception => constructErrorResult(ex.getMessage, ex)
-    }
-  }
-
-  def sendEmail(id: String, typeMail: String) = AsyncAction { implicit request =>
-    service.sendEmail(id, typeMail).map { res =>
-      Ok(res)
-    }.recover {
-      case ex: Exception => constructErrorResult(ex.getMessage, ex)
-    }
-  }
-
 
   def assignCarrier = AsyncActionWithBody[AssignCarrier] { implicit request =>
     service.assignCarrier(request.content).map{
