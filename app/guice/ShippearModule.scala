@@ -3,13 +3,12 @@ package guice
 import controller._
 import dao.ShippearDBContext
 import dao.util.ShippearDAOFactory
+import external.GoogleMapsClient
 import net.codingwell.scalaguice.ScalaModule
-import repository.{CacheRepository, OrderRepository, UserRepository}
-import service.{CacheService, OrderService, UserService}
-import task.{TaskManager, TrackingCacheTask}
 import qrcodegenerator.QrCodeGenerator
-import repository.{OrderRepository, UserRepository}
-import service.{OrderService, UserService}
+import repository.{CacheRepository, OrderRepository, UserRepository}
+import service.{CacheService, OrderService, RouteMapService, UserService}
+import task.{TaskManager, TrackingCacheTask}
 
 class ShippearModule extends ScalaModule {
   override def configure(): Unit = {
@@ -42,6 +41,12 @@ class ShippearModule extends ScalaModule {
     //Tasks
     bind[TaskManager].asEagerSingleton()
     bind[TrackingCacheTask].asEagerSingleton()
+
+    //RouteMap
+    bind[RouteMapController].asEagerSingleton()
+    bind[RouteMapService].asEagerSingleton()
+    bind[GoogleMapsClient].asEagerSingleton()
+
 
   }
 }
