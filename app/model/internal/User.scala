@@ -3,7 +3,6 @@ package model.internal
 import com.fasterxml.jackson.annotation.JsonProperty
 import model.internal.OrderState.{CANCELLED, DELIVERED, ON_TRAVEL, PENDING_CARRIER, PENDING_PARTICIPANT, PENDING_PICKUP}
 import model.response.UserResponse
-import play.api.libs.json._
 
 
 case class User(@JsonProperty("_id") _id : String,
@@ -22,7 +21,6 @@ case class User(@JsonProperty("_id") _id : String,
                 transport: Option[Seq[Transport]])
 
 object User {
-
   val toBeConfirmedStates: List[String] = List(PENDING_PARTICIPANT, PENDING_CARRIER)
   val inProgressStates: List[String] = List(PENDING_PICKUP, ON_TRAVEL)
   val finalizedStates: List[String] = List(CANCELLED, DELIVERED)

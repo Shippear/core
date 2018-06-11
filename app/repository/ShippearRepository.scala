@@ -2,12 +2,13 @@ package repository
 
 import com.google.inject.Inject
 import common.Logging
+import common.serialization.{CamelCaseJsonProtocol, _}
 import dao.util.{ShippearDAO, ShippearDAOFactory}
 import org.mongodb.scala.bson.collection.immutable.Document
 
 import scala.concurrent.Future
 
-trait ShippearRepository[T] extends Logging {
+trait ShippearRepository[T] extends Logging with CamelCaseJsonProtocol{
 
   def snake2camel(in: String) = {
     if(in.toUpperCase.equals("_ID"))
@@ -15,6 +16,9 @@ trait ShippearRepository[T] extends Logging {
     else
       "_([a-z\\d])".r.replaceAllIn(in, _.group(1).toUpperCase)
   }
+
+  implicit def object2Document(obj: T): Document =
+    Document(obj.toJson)
 
   protected def replaceOrAdd[A](list: Seq[A], elem: A)(predicate: A => Boolean): Seq[A] =
     list.filterNot(predicate) :+ elem

@@ -1,9 +1,8 @@
 package service
 
-import common.serialization.CamelCaseJsonProtocol
 import repository.ShippearRepository
 
-trait Service[T] extends CamelCaseJsonProtocol {
+trait Service[T] {
 
   def repository: ShippearRepository[T]
 
