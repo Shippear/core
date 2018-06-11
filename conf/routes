@@ -28,7 +28,7 @@ POST     /shippear/orders/validate-qr-code controller.OrderController.validateQr
 
 #Mails Test
 GET      /shippear/devices                  controller.OrderController.devices(id: Option[String])
-GET      /shippear/send/:id                 controller.OrderController.sendEmail(id: String)
+GET      /shippear/send/:id/:typeMail       controller.OrderController.sendEmail(id: String, typeMail: String)
 
 # Tracking
 GET     /shippear/cache/:idUser            controller.CacheController.geolocation(idUser: String)

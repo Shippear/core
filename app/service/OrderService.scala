@@ -27,7 +27,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
   def validateQrCode(content: OrderToValidate): Future[Any] = repository.validateQrCode(content.orderId, content.userId, content.userType)
 
 
-  def sendEmail(oneSignal: String) = mailClient.sendEmail(List(oneSignal), EmailType.ORDER_ON_WAY)
+  def sendEmail(oneSignal: String, typeMail: String) = mailClient.sendEmail(List(oneSignal), typeMail)
 
   def device(userOneSignalId: Option[String]) = mailClient.device(userOneSignalId)
 

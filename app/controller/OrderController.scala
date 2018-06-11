@@ -71,8 +71,8 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  def sendEmail(id: String) = AsyncAction { implicit request =>
-    service.sendEmail(id).map { res =>
+  def sendEmail(id: String, typeMail: String) = AsyncAction { implicit request =>
+    service.sendEmail(id, typeMail).map { res =>
       Ok(res)
     }.recover {
       case ex: Exception => constructErrorResult(ex.getMessage, ex)
