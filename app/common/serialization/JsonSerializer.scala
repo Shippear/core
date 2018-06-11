@@ -30,6 +30,7 @@ object JsonSerializer {
       mapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
       mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
       mapper.configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       mapper
     }
   }

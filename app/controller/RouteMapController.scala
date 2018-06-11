@@ -1,25 +1,20 @@
 package controller
+
 import com.google.inject.Inject
 import controller.util.BaseController
-import play.api.libs.ws._
+import model.request.RouteRequest
+import service.RouteMapService
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
-import model._
-import model.response.DistanceMapReponse
+import scala.concurrent.ExecutionContext
 
-class RouteMapController @Inject() (ws: WSClient)(implicit ec: ExecutionContext) extends BaseController {
+class RouteMapController @Inject()(service: RouteMapService)(implicit ec: ExecutionContext) extends BaseController {
 
-  def findRouteMap = AsyncActionWithBody[Array[Geolocation]] { implicit r =>
-
-    val apiKey = "AIzaSyDVVJd5t5m0aIBMNIo4q6NK6Dnr5-nWVfM"
-    val request: WSRequest = ws.url(s"https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=Washington,DC&destinations=New+York+City,NY&key=$apiKey")
-    var origin = ""
-
-    request.get().map { response =>
-      Ok(DistanceMapReponse("",response.json("destination_addresses")(0).as[String]))
+  def addressInformation = AsyncActionWithBody[RouteRequest] { implicit request =>
+    service.addressInformation(request.content)
+      .map(Ok(_))
+      .recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error getting address information for ${request.content.userName}", ex)
     }
-
-
   }
 }
