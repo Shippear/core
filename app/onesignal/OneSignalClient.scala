@@ -11,20 +11,18 @@ import HTML._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class OneSignalConfig(id: Option[String], auth: Option[String], activated: Boolean)
-
 class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext) extends ConfigReader with Logging with SnakeCaseJsonProtocol {
 
-  val config = envConfiguration.getConfig("email-notification").as[OneSignalConfig]
-  var active = config.activated
+  private val config = envConfiguration.getConfig("email-notification").as[OneSignalConfig]
+  private var active = config.activated
 
   private val ContentType = ("Content-Type", "application/json;charset=utf-8")
   private val Authorization = ("Authorization", s"Basic ${config.auth.getOrElse("")}")
 
   //Paths Rest API One Signal
-  val OneSignalPath = "https://onesignal.com/api/v1"
-  val NotificationPath = s"$OneSignalPath/notifications"
-  val AddDevice = s"$OneSignalPath/players"
+  val BasePath = "https://onesignal.com/api/v1"
+  val NotificationPath = s"$BasePath/notifications"
+  val AddDevice = s"$BasePath/players"
   val viewDevices = s"$AddDevice?app_id=${config.id.getOrElse("")}"
   def viewDevice(id: String) = s"$AddDevice/$id?app_id=${config.id.getOrElse("")}"
 
@@ -73,9 +71,9 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
               res.players.map(_.identifier)
           }
       }
-    } else {
+    } else
       Future(List())
-    }
+
 
   }
 }

@@ -11,6 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 
 class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: ExecutionContext) extends ShippearRepository[Order] {
+
   def assignCarrier(orderId : String, carrierId : String, qrCode : Array[Byte]): Future[Unit] ={
     for{
       order <- super.findOneById(orderId)
