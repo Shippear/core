@@ -28,7 +28,9 @@ object Dependencies {
     "ai.snips" %% "play-mongo-bson" % "0.4",
     "com.github.nscala-time" %% "nscala-time" % "2.18.0",
     "com.github.salat" %% "salat" % "1.11.2",
-    "com.github.kenglxn.qrgen" % "javase" % "2.4.0"
+    "com.github.kenglxn.qrgen" % "javase" % "2.4.0",
+    "com.logentries" % "logentries-appender" % "1.1.38"
+
   )
 
   val jsonDependencies = Seq(
