@@ -5,21 +5,19 @@ import dao.util.ShippearDAO
 import model.internal.OrderState.{CANCELLED, PENDING_PICKUP}
 import model.internal.UserType._
 import model.internal.{Order, User}
+import onesignal.OneSignalClient
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
 
 class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: ExecutionContext) extends ShippearRepository[Order] {
 
-  def assignCarrier(orderId : String, carrierId : String, qrCode : Array[Byte]): Future[Unit] ={
+  def assignCarrier(orderId: String, carrierId: String, qrCode: Array[Byte]): Future[Order] ={
     for{
+      _ <- userRepository.findOneById(carrierId)
       order <- super.findOneById(orderId)
       newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode), state = PENDING_PICKUP)
       _ <- update(newOrder)
-      _ <- userRepository.updateUserOrder(newOrder.applicantId, newOrder)
-      _ <- userRepository.updateUserOrder(newOrder.participantId, newOrder)
-      _ <- userRepository.updateUserOrder(carrierId, newOrder)
     } yield newOrder
   }
 

@@ -40,7 +40,7 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
   def findOne(document: Document): Future[T] = {
     find(document).limit(1).toFuture.map(_.headOption).map{
       case Some(result) => result
-      case _ => throw NotFoundException(s"Document not found in collection $collectionName for _id: ${document.get("_id").getOrElse("")}")
+      case _ => throw NotFoundException(s"Document not found in collection $collectionName for params: ${document.entrySet()}")
     }
   }
 

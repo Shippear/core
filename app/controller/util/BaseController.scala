@@ -37,7 +37,7 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
       case Failure(ex) =>
         val msg = s"Error parsing from json to ${manifest.toString()}"
         error(msg, ex)
-        Future(BadRequest(Map("result" -> s"$msg. $ex")))
+        Future(BadRequest(Map("result" -> s"$msg. ${ex.getMessage}")))
       case Success(some) =>  doRequest(ShippearRequest(some, request.headers.toSimpleMap), block)
     }
 

@@ -34,6 +34,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
   private def emailBody(emailType: EmailType): String = {
     emailType match {
       case ORDER_CREATED => CREATED
+      case ORDER_WITH_CARRIER => WITH_CARRIER
       case ORDER_ON_WAY => TRAVELLING
       case ORDER_CANCELED => CANCELED
       case ORDER_FINALIZED => FINALIZED
