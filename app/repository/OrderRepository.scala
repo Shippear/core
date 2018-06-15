@@ -21,7 +21,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     } yield newOrder
   }
 
-  def validateQrCode(orderId : String, userId : String, userType : UserType): Future[Any] ={
+  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] ={
     val order = findOneById(orderId)
     order.map{ order =>
         userType match{

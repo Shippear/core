@@ -1,7 +1,7 @@
 package service
 
 import com.google.inject.Inject
-import model.internal.{AssignCarrier, Order, OrderToValidate}
+import model.internal.{AssignCarrier, Order, OrderState, OrderToValidate}
 import onesignal.{EmailType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
@@ -39,5 +39,6 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     } yield order
 
 
-  def validateQrCode(content: OrderToValidate): Future[Any] = repository.validateQrCode(content.orderId, content.userId, content.userType)
+  def validateQrCode(content: OrderToValidate): Future[Boolean] =
+    repository.validateQrCode(content.orderId, content.userId, content.userType)
 }

@@ -52,11 +52,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def cancelOrder(idOrder: String) = AsyncAction { implicit request =>
     service.cancelOrder(idOrder).map {
-      case (aId, pId, cId) =>
-        val OneSignalId = "one_signal_id"
-        Ok(cId.foldLeft(Map(s"applicant_$OneSignalId" -> aId, s"participant_$OneSignalId" -> pId)) {
-          case (map, signalId) => map + (s"carrier_$OneSignalId" -> signalId)
-        })
+      _ => Ok(Map("result" -> s"Order $idOrder canceled successfully"))
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error cancelling order $idOrder", ex)
@@ -72,13 +68,14 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+  //TODO ver si se actualiza el estado de la orden aca o en otra pegada
   def validateQrCode = AsyncActionWithBody[OrderToValidate] { implicit request =>
     service.validateQrCode(request.content).map{
       case true => Ok(Map("result" -> "QR Code validate successfully"))
-      case false => Forbidden(Map("result" -> "Wrong QR Code"))
+      case _ => Forbidden(Map("result" -> "Wrong QR Code"))
     }.recover{
       case ex: Exception =>
-        constructErrorResult(s"Error to validate Qr Code", ex)
+        constructErrorResult(s"Error to validate QR Code", ex)
     }
   }
 
