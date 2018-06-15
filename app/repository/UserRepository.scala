@@ -2,7 +2,7 @@ package repository
 
 import com.google.inject.Inject
 import dao.util.ShippearDAO
-import model.{Order, User}
+import model.internal.{Order, User}
 
 import scala.concurrent.ExecutionContext
 
@@ -15,8 +15,8 @@ class UserRepository @Inject()(implicit ec: ExecutionContext) extends ShippearRe
   def updateUserOrder(id: String, order: Order) = {
     for {
       user <- dao.findOneById(id)
-      result <- dao.replaceOne(copyNewUser(user, order))
-    } yield result
+      _ <- dao.replaceOne(copyNewUser(user, order))
+    } yield user
   }
 
 

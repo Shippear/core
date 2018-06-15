@@ -1,7 +1,6 @@
 package dao.util
 
 import ai.snips.bsonmacros
-import ai.snips.bsonmacros.BaseDAO
 import ai.snips.bsonmacros.BsonMagnets.CanBeBsonValue
 import com.google.inject.Inject
 import common.{ConfigReader, Logging}
@@ -9,10 +8,13 @@ import dao.ShippearDBContext
 import database.MongoConfiguration
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import org.mongodb.scala.bson.Document
+import org.bson.{BsonDocument, BsonDocumentReader, BsonDocumentWriter}
+import org.bson.codecs.{Decoder, DecoderContext, Encoder, EncoderContext}
+import org.bson.codecs.configuration.CodecRegistry
+import org.mongodb.scala.FindObservable
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Filters
-import org.mongodb.scala.{FindObservable, MongoCollection}
+import org.mongodb.scala.bson.{BsonDocument, Document}
+import org.mongodb.scala.model.{Filters, UpdateOptions}
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,40 +22,43 @@ import scala.reflect.ClassTag
 
 class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBContext)(implicit ct: ClassTag[T],
                                                              ec: ExecutionContext) extends ConfigReader with Logging{
-
-  private val base = new BaseDAO[T] {
-    lazy val collection: MongoCollection[T] = dbContext.database(config.database).getCollection[T](collectionName)
-
-    def getId(doc: Document) = bsonmacros.toDBObject(doc).get("_id").asString()
-  }
-
+  private val ID = "_id"
   private val config = envConfiguration.as[MongoConfiguration]("mongodb")
+  private lazy val collection = dbContext.database(config.database).getCollection[T](collectionName)
+  implicit val codecs = dbContext.codecRegistry
+
+
+  private def getId(it: T)= bsonmacros.toDBObject(it).get(ID)
+
+  def byIdSelector(id: CanBeBsonValue): Document = Document(ID -> id.value)
+
+  def find(bson: Document): FindObservable[T] = collection.find(bson)
 
   def findOneById(id: CanBeBsonValue): Future[T] =
-    findOne(base.byIdSelector(id))
+    findOne(byIdSelector(id))
 
   def findOne(document: Document): Future[T] = {
-   base.findOne(document).map{
+    find(document).limit(1).toFuture.map(_.headOption).map{
       case Some(result) => result
-      case _ => throw NotFoundException(s"Document not found in collection $collectionName for id ${base.getId(document)}")
+      case _ => throw NotFoundException(s"Document not found in collection $collectionName for params: ${document.entrySet()}")
     }
   }
 
-  def updateOneById(id: CanBeBsonValue, update: Document): Future[_] = base.updateOneById(base.byIdSelector(id), update)
-
-  def replaceOne(it: T): Future[_] = base.replaceOne(it)
-
-  def insertOne(it: T): Future[_] = base.insertOne(it)
-
-  def upsertOne(it: T): Future[_] = base.upsertOne(it)
-
-  def all: Future[Seq[T]] = base.all.toFuture
-
-  def find(bson: Document): FindObservable[T] = base.find(bson)
-
   def findByFilters(filters: Bson): Future[Seq[T]] =
-    base.find(Document(filters.toBsonDocument(Filters.getClass, dbContext.codecRegistry))).toFuture
+    find(Document(filters.toBsonDocument(Filters.getClass, codecs))).toFuture
 
+
+  def updateOneById(id: CanBeBsonValue, update: Document): Future[_] =
+    collection.updateOne(byIdSelector(id), update).toFuture
+
+  def replaceOne(it: T): Future[_] = collection.replaceOne(byIdSelector(getId(it)), it).toFuture
+
+  def insertOne(it: T): Future[_] = collection.insertOne(it).toFuture()
+
+  def upsertOne(it: T): Future[_] =  collection.replaceOne(byIdSelector(getId(it)), it,
+    UpdateOptions().upsert(true)).toFuture
+
+  def all: Future[Seq[T]] = collection.find().toFuture()
 
 }
 

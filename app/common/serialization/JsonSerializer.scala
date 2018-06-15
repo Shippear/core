@@ -26,9 +26,10 @@ object JsonSerializer {
       val mapper = new ObjectMapper() with ScalaObjectMapper
       mapper.registerModule(DefaultScalaModule)
       mapper.registerModule(new JodaModule)
-      mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"))
+      mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"))
       mapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
       mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+      mapper.configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
       mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       mapper
     }
