@@ -15,8 +15,8 @@ class UserRepository @Inject()(implicit ec: ExecutionContext) extends ShippearRe
   def updateUserOrder(id: String, order: Order) = {
     for {
       user <- dao.findOneById(id)
-      result <- dao.replaceOne(copyNewUser(user, order))
-    } yield result
+      _ <- dao.replaceOne(copyNewUser(user, order))
+    } yield user
   }
 
 

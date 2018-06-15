@@ -20,7 +20,6 @@ trait ShippearRepository[T] extends Logging with CamelCaseJsonProtocol{
   implicit def object2Document(obj: T): Document =
     Document(obj.toJson)
 
-
   protected def replaceOrAdd[A](list: Seq[A], elem: A)(predicate: A => Boolean): Seq[A] =
     list.filterNot(predicate) :+ elem
 

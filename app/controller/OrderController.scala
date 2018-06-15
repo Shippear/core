@@ -6,7 +6,7 @@ import model.internal.{AssignCarrier, Order, OrderToValidate}
 import model.request.OrderRequest
 import service.OrderService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
   extends BaseController {
@@ -14,7 +14,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def createOrder = AsyncActionWithBody[OrderRequest] { implicit request =>
     val order: Order = request.content
-    service.create(order).map { _ =>
+    service.createOrder(order).map { _ =>
       info(s"Order ${order._id} created")
       Ok(Map("_id" -> s"${order._id}"))
     }.recover {
@@ -52,11 +52,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def cancelOrder(idOrder: String) = AsyncAction { implicit request =>
     service.cancelOrder(idOrder).map {
-      case (aId, pId, cId) =>
-        val OneSignalId = "OneSignalId"
-        Ok(cId.foldLeft(Map(s"applicant$OneSignalId" -> aId, s"participant$OneSignalId" -> pId)) {
-          case (map, signalId) => map + (s"carrier$OneSignalId" -> signalId)
-        })
+      _ => Ok(Map("result" -> s"Order $idOrder canceled successfully"))
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error cancelling order $idOrder", ex)
@@ -65,20 +61,21 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def assignCarrier = AsyncActionWithBody[AssignCarrier] { implicit request =>
     service.assignCarrier(request.content).map{
-      _ => Ok(Map("result" -> s"Order assigned to carrier successfully"))
+      order => Ok(Map("result" -> s"Order ${order._id} assigned to carrier ${request.content.carrierId} successfully"))
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error updating order", ex)
     }
   }
 
+  //TODO ver si se actualiza el estado de la orden aca o en otra pegada
   def validateQrCode = AsyncActionWithBody[OrderToValidate] { implicit request =>
     service.validateQrCode(request.content).map{
       case true => Ok(Map("result" -> "QR Code validate successfully"))
-      case false => Forbidden(Map("result" -> "Wrong QR Code"))
+      case _ => Forbidden(Map("result" -> "Wrong QR Code"))
     }.recover{
       case ex: Exception =>
-        constructErrorResult(s"Error to validate Qr Code", ex)
+        constructErrorResult(s"Error to validate QR Code", ex)
     }
   }
 

@@ -26,6 +26,11 @@ POST     /shippear/orders/cancel/:idOrder  controller.OrderController.cancelOrde
 POST     /shippear/orders/assign-carrier   controller.OrderController.assignCarrier
 POST     /shippear/orders/validate-qr-code controller.OrderController.validateQrCode
 
+#Mails Test
+GET      /shippear/mail/devices             controller.MailController.devices(id: Option[String])
+GET      /shippear/mail/send/:id/:typeMail  controller.MailController.sendEmail(id: String, typeMail: String)
+GET      /shippear/mail/activate/:status    controller.MailController.activate(status: Boolean)
+
 # Tracking
 GET     /shippear/cache/:idUser            controller.CacheController.geolocation(idUser: String)
 POST    /shippear/cache                    controller.CacheController.updateLocation

@@ -5,6 +5,6 @@ case class Address(geolocation: Geolocation,
                    street: String,
                    number: Int,
                    zipCode: String,
-                   appartament: Option[String],
+                   apartment: Option[String],
                    city: City,
                    public: Boolean)

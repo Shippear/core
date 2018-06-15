@@ -40,7 +40,7 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
 
   def updateUser = AsyncActionWithBody[User] { implicit request =>
     service.update(request.content).map{
-      _ => Ok(s"User ${request.content.userName} updated successfully")
+      _ => Ok(Map("result" -> s"User ${request.content.userName} updated successfully"))
     }.recover {
     case ex: Exception =>
       constructErrorResult(s"Error updating user ${request.content.userName}", ex)

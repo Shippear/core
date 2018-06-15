@@ -3,7 +3,8 @@ package external
 import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import model.internal.{Address, Geolocation}
-import model.response.{ApiMapsResponse, DistanceMapResponse}
+import model.response.DistanceMapResponse
+import model.response.apigoogleresponse.ApiMapsResponse
 import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -12,6 +13,8 @@ class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) ex
 
   val ApiKey = "AIzaSyDVVJd5t5m0aIBMNIo4q6NK6Dnr5-nWVfM"
   val DistanceMatrixUrl = "https://maps.googleapis.com/maps/api/distancematrix/json"
+  val Origins = "origins"
+  val Destinations = "destinations"
 
   def searchDestinationsData(origin: Geolocation, listAddress: Seq[Address]) = {
     val originGeolocation = s"${origin.latitude},${origin.longitude}"
@@ -22,7 +25,7 @@ class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) ex
 
       val apiResponse: Future[WSResponse] =
         ws.url(DistanceMatrixUrl)
-          .withQueryStringParameters(("origins", originGeolocation), ("destinations", destinationGeolocation), ("key", ApiKey))
+          .withQueryStringParameters((Origins, originGeolocation), (Destinations, destinationGeolocation), ("key", ApiKey))
           .get
 
 
