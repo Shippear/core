@@ -4,7 +4,7 @@ import java.io.{FileOutputStream, OutputStream}
 import java.nio.file.Files
 import java.util.Date
 
-import dao.embbebedmongo.MongoTest
+import embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import javax.imageio.ImageIO
 import model._

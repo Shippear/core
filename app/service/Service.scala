@@ -10,6 +10,8 @@ trait Service[T] {
 
   def findBy(params: Map[String, String]) = repository.findBy(params)
 
+  def findById(id: String) = repository.findOneById(id)
+
   def update(doc: T) = repository.update(doc)
 
   def all = repository.all

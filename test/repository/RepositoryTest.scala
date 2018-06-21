@@ -2,7 +2,7 @@ package repository
 
 import java.util.Date
 
-import dao.embbebedmongo.MongoTest
+import embbebedmongo.MongoTest
 import dao.util.ShippearDAO
 import model.internal.OrderState._
 import model.internal.UserType.{APPLICANT, CARRIER}

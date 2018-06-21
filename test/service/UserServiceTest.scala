@@ -57,9 +57,9 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
       contactInfo, "photoUrl", Seq(address), orders, Seq(paymentMethod), None, None, None)
 
     val repo = mock[UserRepository]
-    when(repo.findBy(any[Map[String, String]])).thenReturn(Future(user))
+    when(repo.findOneById(any[String])).thenReturn(Future(user))
 
-    "Should classified by order state" in {
+    "classify by order state" in {
       val service = new UserService(repo)
 
       val userResponse = await(service.ordersByState("bla"))

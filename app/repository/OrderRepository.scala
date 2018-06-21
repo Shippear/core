@@ -21,15 +21,13 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     } yield newOrder
   }
 
-  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] ={
-    val order = findOneById(orderId)
-    order.map{ order =>
+  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] =
+    findOneById(orderId).map{ order =>
         userType match{
         case APPLICANT => order.applicantId.equals(userId)
         case PARTICIPANT => order.participantId.equals(userId)
         case CARRIER =>  order.carrierId.getOrElse(throw NotFoundException("Carrier not found")).equals(userId)
         }
-    }
   }
 
   override def collectionName: String = "orders"
