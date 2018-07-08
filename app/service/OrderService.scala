@@ -1,6 +1,7 @@
 package service
 
 import com.google.inject.Inject
+import model.internal.OrderState.OrderState
 import model.internal._
 import onesignal.{EmailType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
@@ -49,11 +50,16 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     carrier.orders match {
       case Some(list) =>
         val assigned = list.filter{
-          order => order.carrierId.getOrElse("").equals(carrier._id) &&
-            order.state.equals(OrderState.ON_TRAVEL.toString)
+          order =>
+            val carrierId = order.carrierId.getOrElse("")
+            val orderState: OrderState = order.state
+
+            carrierId.equals(carrier._id) &&
+              (orderState.equals(OrderState.ON_TRAVEL) || orderState.equals(OrderState.PENDING_PICKUP))
+
         }
 
-        if(assigned.size > 3) throw ShippearException(s"Carrier with id ${carrier._id} already has 3 orders assigned")
+        if(assigned.size == 3) throw ShippearException(s"Carrier with id ${carrier._id} already has 3 orders assigned")
       case _ => ()
     }
 }
