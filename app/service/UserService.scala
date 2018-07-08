@@ -6,7 +6,7 @@ import common.Logging
 import model.internal.{Address, User}
 import model.response.UserResponse
 import repository.UserRepository
-import service.Exception.InvalidAddressException
+import service.Exception.ShippearException
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,14 +17,14 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
     if(validateAddresses(user.addresses))
       super.create(user)
     else
-      throw InvalidAddressException(s"User ${user.userName} doesn't have a public address")
+      throw ShippearException(s"User ${user.userName} doesn't have a public address")
   }
 
   override def update(user: User): Future[_] = {
     if(validateAddresses(user.addresses))
       super.update(user)
     else
-     throw InvalidAddressException(s"User ${user.userName} doesn't have a public address")
+     throw ShippearException(s"User ${user.userName} doesn't have a public address")
   }
 
   private def validateAddresses(addresses: Seq[Address]) = addresses.exists(_.public)

@@ -85,8 +85,9 @@ class RepositoryTest extends MongoTest {
     }
 
     "Assign carrier" in {
+      when(user._id).thenReturn(carrierId)
       await(repo.create(order))
-      await(repo.assignCarrier(idOrder, carrierId , qrCode))
+      await(repo.assignCarrier(idOrder, user , qrCode))
 
       val saveOrderWithCarrier = await(repo.findOneById(idOrder))
 

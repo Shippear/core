@@ -1,4 +1,4 @@
 package service.Exception
 
-case class InvalidAddressException(message: String)
+case class ShippearException(message: String)
   extends RuntimeException(message)
