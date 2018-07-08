@@ -1,4 +1,4 @@
-package dao.embbebedmongo
+package embbebedmongo
 
 import com.google.inject.Inject
 import dao.ShippearDBContext

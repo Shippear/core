@@ -1,4 +1,4 @@
-package dao.embbebedmongo
+package embbebedmongo
 
 import common.{ConfigReader, Logging}
 import database.MongoConfiguration

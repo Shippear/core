@@ -3,8 +3,8 @@ package external
 import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import model.internal.{Address, Geolocation}
-import model.response.DistanceMapResponse
 import model.response.apigoogleresponse.ApiMapsResponse
+import model.response.price.RouteDetail
 import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,7 +16,7 @@ class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) ex
   val Origins = "origins"
   val Destinations = "destinations"
 
-  def searchDestinationsData(origin: Geolocation, listAddress: Seq[Address]) = {
+  def searchDestinationsData(origin: Geolocation, listAddress: Seq[Address]): Seq[Future[List[RouteDetail]]] = {
     val originGeolocation = s"${origin.latitude},${origin.longitude}"
 
    listAddress.map { address =>
@@ -35,7 +35,7 @@ class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) ex
         apiMapsResponse.rows.flatMap {
           row =>
             row.elements.map {
-              elem => DistanceMapResponse(origin, address.geolocation, elem.distance.text, elem.duration.text)
+              elem => RouteDetail(origin, address.geolocation, elem.distance.text, elem.duration.text)
             }
         }
       }

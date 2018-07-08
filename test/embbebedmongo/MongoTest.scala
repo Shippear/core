@@ -1,4 +1,4 @@
-package dao.embbebedmongo
+package embbebedmongo
 
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
