@@ -55,7 +55,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {
       // 2 Orders
       val orders = Some(List(order_1, order_2))
-      val user = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312",
+      val user = User(carrierId, "oneSignalId", "usxerName", "firstName", "lastName", "36121312",
         contactInfo, "photoUrl", Seq(address), orders , Seq(paymentMethod), None, None, None)
 
       orderService.validateCarrier(user)

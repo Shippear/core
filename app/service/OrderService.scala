@@ -37,10 +37,12 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     for {
       carrier <- userRepository.findOneById(content.carrierId)
       _ = validateCarrier(carrier)
-      order <- repository.assignCarrier(content.orderId, carrier, qrCodeGenerator.generateQrImage(content.orderId))
-      list = List(order.applicantId, order.participantId) ++ order.carrierId
+      order <- repository.findOneById(content.orderId)
+      _ = validateOrderState(order.state, OrderState.PENDING_CARRIER)
+      newOrder <- repository.assignCarrier(order, carrier, qrCodeGenerator.generateQrImage(content.orderId))
+      list = List(newOrder.applicantId, newOrder.participantId) ++ newOrder.carrierId
       _ = mailClient.sendEmail(list, EmailType.ORDER_WITH_CARRIER)
-    } yield order
+    } yield newOrder
 
 
   def validateQrCode(content: OrderToValidate): Future[Boolean] =
@@ -62,4 +64,8 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
         if(assigned.size == 3) throw ShippearException(s"Carrier with id ${carrier._id} already has 3 orders assigned")
       case _ => ()
     }
+
+  def validateOrderState(orderState: OrderState, expectingState: OrderState) = {
+    if(!orderState.equals(expectingState)) throw ShippearException(s"Order must be in state $expectingState, not in $orderState")
+  }
 }

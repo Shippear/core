@@ -47,10 +47,9 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
 
   }
 
-  def assignCarrier(orderId: String, carrier: User, qrCode: Array[Byte]): Future[Order] ={
+  def assignCarrier(order: Order, carrier: User, qrCode: Array[Byte]): Future[Order] = {
+    val newOrder = order.copy(carrierId = Some(carrier._id), qrCode = Some(qrCode), state = PENDING_PICKUP)
     for{
-      order <- super.findOneById(orderId)
-      newOrder = order.copy(carrierId = Some(carrier._id), qrCode = Some(qrCode), state = PENDING_PICKUP)
       _ <- update(newOrder)
     } yield newOrder
   }
