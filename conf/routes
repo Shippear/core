@@ -37,7 +37,7 @@ POST    /shippear/cache                    controller.CacheController.updateLoca
 POST    /shippear/cache/active/:status     controller.CacheController.active(status: Boolean)
 
 # Route Distances and Prices
-POST    /shippear/routes/information       controller.RouteMapController.addressInformation
+POST    /shippear/routes/information       controller.RouteMapController.priceInformation
 
 # Serve static assets under public directory
 GET     /*file                             controller.FrontendController.assetOrDefault(file)

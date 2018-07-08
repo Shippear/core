@@ -3,18 +3,18 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.request.RouteRequest
-import service.RouteMapService
+import service.RoutePriceService
 
 import scala.concurrent.ExecutionContext
 
-class RouteMapController @Inject()(service: RouteMapService)(implicit ec: ExecutionContext) extends BaseController {
+class RouteMapController @Inject()(service: RoutePriceService)(implicit ec: ExecutionContext) extends BaseController {
 
-  def addressInformation = AsyncActionWithBody[RouteRequest] { implicit request =>
-    service.addressInformation(request.content)
+  def priceInformation = AsyncActionWithBody[RouteRequest] { implicit request =>
+    service.priceInformation(request.content)
       .map(Ok(_))
       .recover {
       case ex: Exception =>
-        constructErrorResult(s"Error getting address information for ${request.content.userName}", ex)
+        constructErrorResult(s"Error getting price information for ${request.content.userName}", ex)
     }
   }
 }

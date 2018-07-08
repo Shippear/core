@@ -7,8 +7,9 @@ import external.GoogleMapsClient
 import net.codingwell.scalaguice.ScalaModule
 import onesignal.OneSignalClient
 import qrcodegenerator.QrCodeGenerator
+import repository.price.{DistanceMultiplierRepository, SizeMultiplierRepository, WeightMultiplierRepository}
 import repository.{CacheRepository, OrderRepository, UserRepository}
-import service._
+import service.{PriceService, _}
 import task.{TaskManager, TrackingCacheTask}
 
 class ShippearModule extends ScalaModule {
@@ -50,8 +51,16 @@ class ShippearModule extends ScalaModule {
 
     //RouteMap
     bind[RouteMapController].asEagerSingleton()
-    bind[RouteMapService].asEagerSingleton()
+    bind[RoutePriceService].asEagerSingleton()
     bind[GoogleMapsClient].asEagerSingleton()
+
+    //Prices
+    bind[PriceService].asEagerSingleton()
+
+    //Multipliers for price
+    bind[SizeMultiplierRepository].asEagerSingleton()
+    bind[WeightMultiplierRepository].asEagerSingleton()
+    bind[DistanceMultiplierRepository].asEagerSingleton()
 
   }
 }

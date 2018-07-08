@@ -8,17 +8,18 @@ import model.common.IdGenerator
 import model.internal._
 
 case class OrderRequest(@JsonProperty("_id") _id: Option[String],
-                         applicantId: String,
-                         participantId: String,
-                         carrierId: Option[String],
+                        applicantId: String,
+                        participantId: String,
+                        carrierId: Option[String],
+                        description: String,
                         @JsonScalaEnumeration(classOf[OrderStateType]) state: OrderState.OrderState,
                         @JsonScalaEnumeration(classOf[OperationTypeType])operationType: OperationType.OperationType,
-                         route: Route,
-                         availableFrom: Date,
-                         availableTo: Date,
-                         awaitFrom: Option[Date],
-                         awaitTo: Option[Date],
-                         qrCode: Option[Array[Byte]])
+                        route: Route,
+                        availableFrom: Date,
+                        availableTo: Date,
+                        awaitFrom: Option[Date],
+                        awaitTo: Option[Date],
+                        qrCode: Option[Array[Byte]])
 
 
 object OrderRequest extends IdGenerator {
@@ -28,6 +29,7 @@ object OrderRequest extends IdGenerator {
       request.applicantId,
       request.participantId,
       request.carrierId,
+      request.description,
       request.state,
       request.operationType,
       request.route,
