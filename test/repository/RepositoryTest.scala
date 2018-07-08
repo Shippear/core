@@ -4,7 +4,7 @@ import java.util.Date
 
 import embbebedmongo.MongoTest
 import dao.util.ShippearDAO
-import model.internal.OrderState._
+import model.internal.OrderState.{PENDING_PARTICIPANT, _}
 import model.internal.UserType.{APPLICANT, CARRIER}
 import model.internal._
 import org.mockito.Matchers.any
@@ -46,7 +46,7 @@ class RepositoryTest extends MongoTest {
     val route = Route(origin, destination)
     val carrierId = "791"
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
-    val order = Order(idOrder, idUser, "11111", Some("carrierId"),
+    val order = Order(idOrder, idUser, "11111", Some("carrierId"), "description",
       PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
     "Save a new order" in {
@@ -139,8 +139,8 @@ class RepositoryTest extends MongoTest {
   val destinationCity = City(5, "Balvanera")
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
-  val order = Order("idOrder", idUser, "11111", Some("carrierId"),
-    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+  val order = Order("idOrder", idUser, "11111", Some("carrierId"), "description",
+    PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
 
     "Create a new order into the user" in {
@@ -185,8 +185,8 @@ class RepositoryTest extends MongoTest {
 
       //Creating another order
       val newOrderId = "11111"
-      val newOrder = Order(newOrderId, idUser, "11111", Some("carrierId"),
-        "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+      val newOrder = Order(newOrderId, idUser, "11111", Some("carrierId"), "description",
+        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
       await(repo.updateUserOrder(idUser, newOrder))
 

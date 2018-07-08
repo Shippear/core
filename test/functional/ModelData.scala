@@ -64,7 +64,7 @@ trait ModelData {
 
   val almagroToSaavedra = Route(almagroAddress, saavedraAddress)
 
-  val orderWithoutCarrier = Order(orderId_1, marcelo._id, lucas._id, None,
+  val orderWithoutCarrier = Order(orderId_1, marcelo._id, lucas._id, None, "description",
       OrderState.PENDING_PARTICIPANT, OperationType.SENDER,
       almagroToSaavedra, new Date, new Date,
       Some(new Date), Some(new Date), None)

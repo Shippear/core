@@ -26,21 +26,21 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
 
   "OrdersByState" should {
 
-    val toBeConfirmed_1 = Order("1", "12345", "123", Some("carrierId"),
+    val toBeConfirmed_1 = Order("1", "12345", "123", Some("carrierId"), "description",
       PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val toBeConfirmed_2 = Order("2", "12345", "123", Some("carrierId"),
+    val toBeConfirmed_2 = Order("2", "12345", "123", Some("carrierId"), "description",
       PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
-    val inProgress_1 = Order("3", "12345", "123", Some("carrierId"),
+    val inProgress_1 = Order("3", "12345", "123", Some("carrierId"), "description",
       PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val inProgress_2 = Order("4", "12345", "123", Some("carrierId"),
+    val inProgress_2 = Order("4", "12345", "123", Some("carrierId"), "description",
       PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val inProgress_3 = Order("5", "12345", "123", Some("carrierId"),
+    val inProgress_3 = Order("5", "12345", "123", Some("carrierId"), "description",
       ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
-    val finalized_1 = Order("6", "12345", "123", Some("carrierId"),
+    val finalized_1 = Order("6", "12345", "123", Some("carrierId"), "description",
       DELIVERED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val finalized_2 = Order("7", "12345", "123", Some("carrierId"),
+    val finalized_2 = Order("7", "12345", "123", Some("carrierId"), "description",
       CANCELLED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
 

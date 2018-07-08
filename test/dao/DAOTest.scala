@@ -39,12 +39,12 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val route = Route(origin, destination)
 
   lazy val participantId = "11111"
-  val order = Order("123", "12345", participantId, Some("carrierId"),
+  val order = Order("123", "12345", participantId, Some("carrierId"), "description",
     PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
 
   val qrCodeGenerator = new QrCodeGenerator
   val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
-  val orderWithQrCode = Order("123", "12345", participantId, Some("carrierId"),
+  val orderWithQrCode = Order("123", "12345", participantId, Some("carrierId"), "description",
     "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some(qrCode))
 
   "OrderDAO" should{

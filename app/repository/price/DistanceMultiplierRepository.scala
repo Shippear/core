@@ -2,16 +2,17 @@ package repository.price
 
 import com.google.inject.Inject
 import dao.util.ShippearDAO
-import model.internal.price.{DistanceMultiplier, SizeMultiplier}
+import model.internal.price.DistanceMultiplier
 
 import scala.concurrent.ExecutionContext
 
 class DistanceMultiplierRepository  @Inject()(implicit ec: ExecutionContext) extends MultiplierRepository[DistanceMultiplier]{
-  override def collectionName: String = "distance-multiplier"
 
+  override def Key = "distance"
+  override def collectionName: String = "distance-multiplier"
   override def dao: ShippearDAO[DistanceMultiplier] = daoFactory[DistanceMultiplier](collectionName)
 
-  val Scenario = "Scenario"
+  val Scenario = "scenario"
 
   def multiplierByScenario(scenario: String) = {
     dao.findOne(Map(Scenario -> scenario)).map{result => result.multiplier}
