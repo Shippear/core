@@ -12,24 +12,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: ExecutionContext) extends ShippearRepository[Order] {
 
-  def assignCarrier(orderId: String, carrierId: String, qrCode: Array[Byte]): Future[Order] ={
-    for{
-      _ <- userRepository.findOneById(carrierId)
-      order <- super.findOneById(orderId)
-      newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode), state = PENDING_PICKUP)
-      _ <- update(newOrder)
-    } yield newOrder
-  }
-
-  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] =
-    findOneById(orderId).map{ order =>
-        userType match{
-        case APPLICANT => order.applicantId.equals(userId)
-        case PARTICIPANT => order.participantId.equals(userId)
-        case CARRIER =>  order.carrierId.getOrElse(throw NotFoundException("Carrier not found")).equals(userId)
-        }
-  }
-
   override def collectionName: String = "orders"
 
   override lazy val dao: ShippearDAO[Order] = daoFactory[Order](collectionName)
@@ -65,6 +47,24 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
 
   }
 
+  def assignCarrier(orderId: String, carrierId: String, qrCode: Array[Byte]): Future[Order] ={
+    for{
+      _ <- userRepository.findOneById(carrierId)
+      order <- super.findOneById(orderId)
+      newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode), state = PENDING_PICKUP)
+      _ <- update(newOrder)
+    } yield newOrder
+  }
+
+  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] =
+    findOneById(orderId).map{ order =>
+      userType match{
+        case APPLICANT => order.applicantId.equals(userId)
+        case PARTICIPANT => order.participantId.equals(userId)
+        case CARRIER =>  order.carrierId.getOrElse(throw NotFoundException("Carrier not found")).equals(userId)
+      }
+    }
+
   private def findCarrier(id: Option[String]): Future[Option[User]] = {
    id match {
       case Some(carrierId) => userRepository.findOneById(carrierId).map(Some(_)).recover {case _: NotFoundException => None}
@@ -79,6 +79,5 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
       case _ => Future.successful(Unit)
     }
   }
-
 
 }
