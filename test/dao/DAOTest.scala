@@ -1,13 +1,10 @@
 package dao
 
-import java.io.{FileOutputStream, OutputStream}
-import java.nio.file.Files
 import java.util.Date
 
-import embbebedmongo.MongoTest
 import dao.util.ShippearDAO
-import javax.imageio.ImageIO
-import model._
+import embbebedmongo.MongoTest
+import model.internal.OrderState._
 import model.internal._
 import org.joda.time.DateTime
 import org.mongodb.scala.model.Filters
@@ -15,13 +12,8 @@ import play.api.test.Helpers.{await, _}
 import qrcodegenerator.QrCodeGenerator
 import repository.ShippearRepository
 import service.Exception.NotFoundException
-import OrderState._
-import akka.stream.TLSClientAuth
-import io.jsonwebtoken.lang.Assert
-import org.reflections.util.FilterBuilder.Matcher
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.tools.nsc.classpath.FileUtils
 
 
 class DAOTest extends MongoTest with ShippearRepository[Order] {

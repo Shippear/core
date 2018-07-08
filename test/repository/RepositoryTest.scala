@@ -176,7 +176,7 @@ class RepositoryTest extends MongoTest {
 
     }
 
-    "Add a new order if the user already has a one" in {
+    "Add a new order if the user has already one" in {
       await(repo.create(user))
       await(repo.updateUserOrder(idUser, order))
 

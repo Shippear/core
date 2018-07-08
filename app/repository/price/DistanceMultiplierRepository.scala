@@ -6,7 +6,7 @@ import model.internal.price.DistanceMultiplier
 
 import scala.concurrent.ExecutionContext
 
-class DistanceMultiplierRepository  @Inject()(implicit ec: ExecutionContext) extends MultiplierRepository[DistanceMultiplier]{
+class DistanceMultiplierRepository @Inject()(implicit ec: ExecutionContext) extends MultiplierRepository[DistanceMultiplier]{
 
   override def Key = "distance"
   override def collectionName: String = "distance-multiplier"
