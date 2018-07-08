@@ -47,11 +47,10 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
 
   }
 
-  def assignCarrier(orderId: String, carrierId: String, qrCode: Array[Byte]): Future[Order] ={
+  def assignCarrier(orderId: String, carrier: User, qrCode: Array[Byte]): Future[Order] ={
     for{
-      _ <- userRepository.findOneById(carrierId)
       order <- super.findOneById(orderId)
-      newOrder = order.copy(carrierId = Some(carrierId), qrCode = Some(qrCode), state = PENDING_PICKUP)
+      newOrder = order.copy(carrierId = Some(carrier._id), qrCode = Some(qrCode), state = PENDING_PICKUP)
       _ <- update(newOrder)
     } yield newOrder
   }
@@ -71,7 +70,6 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
       case None => Future.successful(None)
     }
   }
-
 
   private def updateCarrier(order: Order): Future[_] = {
     order.carrierId match {

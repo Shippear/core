@@ -4,7 +4,7 @@ import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
 import play.api.mvc.{InjectedController, Request, _}
-import service.Exception.{InternalServerErrorException, InvalidAddressException, NotFoundException}
+import service.Exception.{ShippearException, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -71,7 +71,7 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
     error(message, ex)
     ex match {
       case NotFoundException(msg) => NotFound(Map("result" -> s"$msg. ${ex.getMessage}"))
-      case _: IllegalArgumentException | _: InvalidAddressException | _ : ParseBodyException => BadRequest(Map("result" -> s"$message. ${ex.getMessage}"))
+      case _: IllegalArgumentException | _: ShippearException => BadRequest(Map("result" -> s"$message. ${ex.getMessage}"))
       case _ => InternalServerError(Map("result" -> s"$message. ${ex.getMessage}"))
     }
 

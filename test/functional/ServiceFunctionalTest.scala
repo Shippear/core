@@ -5,7 +5,7 @@ import model.internal.OrderState._
 import model.internal.{AssignCarrier, OrderState, OrderToValidate, UserType}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.Helpers.{await, _}
-import service.Exception.InvalidAddressException
+import service.Exception.ShippearException
 import service.{OrderService, UserService}
 
 class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with ModelData {
@@ -52,7 +52,7 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       val boedoAddressPrivate = boedoAddress.copy(public = false)
       val marceloNewAddressFail = marcelo.copy(addresses = Seq(boedoAddressPrivate))
 
-      intercept[InvalidAddressException]{
+      intercept[ShippearException]{
         userService.update(marceloNewAddressFail)
       }
 
