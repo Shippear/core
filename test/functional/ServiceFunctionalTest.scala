@@ -76,7 +76,6 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
 
       //---------
 
-      //TODO agregar validacion de que al asignar el carrier, la orden tenga state PENDING_CARRIER
       // 3. Assigning carrier German
       await(userService.create(german))
 
