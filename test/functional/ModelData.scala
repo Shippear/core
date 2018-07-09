@@ -67,7 +67,7 @@ trait ModelData {
   val orderWithoutCarrier = Order(orderId_1, marcelo._id, lucas._id, None, "description",
       OrderState.PENDING_PARTICIPANT, OperationType.SENDER,
       almagroToSaavedra, new Date, new Date,
-      Some(new Date), Some(new Date), None)
+      Some(new Date), Some(new Date), None, None)
 
 }
 
