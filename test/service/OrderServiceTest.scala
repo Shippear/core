@@ -40,7 +40,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val contactInfo = ContactInfo("email@email.com", "011123119")
   val city = City(2, "Almagro")
   val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
-  val paymentMethod = PaymentMethod("ownerName", "123", "02/20", "securityCode", "VISA")
+  val paymentMethod = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
 
 
   "Order Service" should {
