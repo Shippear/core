@@ -25,14 +25,14 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val route = Route(origin, destination)
 
   val order_1 = Order("1", "12345", "123", Some(carrierId), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
   val order_2 = Order("2", "12345", "123", Some(carrierId), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
   val order_3 = Order("3", "12345", "123", Some(carrierId), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
   val order_bla = Order("4", carrierId, "123", Some("other"), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
 
   //User

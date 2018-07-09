@@ -47,7 +47,7 @@ class RepositoryTest extends MongoTest {
     val carrierId = "791"
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
     val order = Order(idOrder, idUser, "11111", Some("carrierId"), "description",
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -141,7 +141,7 @@ class RepositoryTest extends MongoTest {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
   val order = Order("idOrder", idUser, "11111", Some("carrierId"), "description",
-    PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
 
     "Create a new order into the user" in {
@@ -187,7 +187,7 @@ class RepositoryTest extends MongoTest {
       //Creating another order
       val newOrderId = "11111"
       val newOrder = Order(newOrderId, idUser, "11111", Some("carrierId"), "description",
-        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
       await(repo.updateUserOrder(idUser, newOrder))
 

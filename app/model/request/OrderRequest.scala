@@ -19,7 +19,8 @@ case class OrderRequest(@JsonProperty("_id") _id: Option[String],
                         availableTo: Date,
                         awaitFrom: Option[Date],
                         awaitTo: Option[Date],
-                        qrCode: Option[Array[Byte]])
+                        qrCode: Option[Array[Byte]],
+                        ratedCarrier: Option[Boolean])
 
 
 object OrderRequest extends IdGenerator {
@@ -37,5 +38,6 @@ object OrderRequest extends IdGenerator {
       request.availableTo,
       request.awaitFrom,
       request.awaitTo,
-      request.qrCode)
+      request.qrCode,
+      request.ratedCarrier)
 }
