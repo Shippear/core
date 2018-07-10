@@ -58,6 +58,15 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+  def assignParticipant = AsyncActionWithBody[String] { implicit request =>
+    service.assignParticipant(request.content).map{
+      order => Ok(Map("result" -> s"Order ${order._id} assigned to participant ${request.content} successfully"))
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error updating order", ex)
+    }
+  }
+
   def assignCarrier = AsyncActionWithBody[AssignCarrier] { implicit request =>
     service.assignCarrier(request.content).map{
       order => Ok(Map("result" -> s"Order ${order._id} assigned to carrier ${request.content.carrierId} successfully"))
