@@ -58,8 +58,8 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  def assignParticipant = AsyncActionWithBody[String] { implicit request =>
-    service.assignParticipant(request.content).map{
+  def confirmParticipant(idOrder: String) = AsyncAction { implicit request =>
+    service.confirmParticipant(idOrder).map{
       order => Ok(Map("result" -> s"Order ${order._id} assigned to participant ${request.content} successfully"))
     }.recover {
       case ex: Exception =>

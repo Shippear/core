@@ -60,7 +60,7 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       //TODO lo mejor seria armar un servicio para esto?
       // 2. The participant accepts the order
       //order = order.copy(state = OrderState.PENDING_CARRIER)
-      await(orderService.assignParticipant(order._id))
+      await(orderService.confirmParticipant(order._id))
 
       order = await(orderService.findById(order._id))
       userLucas = await(userService.findById(lucas._id))

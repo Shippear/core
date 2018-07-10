@@ -35,7 +35,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     } yield (applicantOSId, participantOSId, carrierOSId)
 
 
-  def assignParticipant(orderId: String): Future[Order] = {
+  def confirmParticipant(orderId: String): Future[Order] = {
     for {
       order <- repository.findOneById(orderId)
       _ = validateOrderState(order.state, OrderState.PENDING_PARTICIPANT)
