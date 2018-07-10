@@ -29,15 +29,15 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", "photo", "onesignal")
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
+    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
 
   //User
