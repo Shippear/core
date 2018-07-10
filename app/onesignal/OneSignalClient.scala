@@ -50,9 +50,9 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
         .withHttpHeaders(ContentType, Authorization)
         .post(email.toJson)
         .map(_.body.parseJsonTo[EmailResponse])
-    } else {
+    } else
       Future(EmailResponse("Emails Deactivated!", 0))
-    }
+
 
   }
 

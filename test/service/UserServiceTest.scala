@@ -23,24 +23,28 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
+  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal")
+  val participantData = UserDataOrder("123", "name", "last", "photo", "onesignal")
+  val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
+
 
   "OrdersByState" should {
 
-    val toBeConfirmed_1 = Order("1", "12345", "123", Some("carrierId"), "description",
+    val toBeConfirmed_1 = Order("1", applicantData, participantData, Some(carrierData), "description",
       PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
-    val toBeConfirmed_2 = Order("2", "12345", "123", Some("carrierId"), "description",
+    val toBeConfirmed_2 = Order("2", applicantData, participantData, Some(carrierData), "description",
       PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
-    val inProgress_1 = Order("3", "12345", "123", Some("carrierId"), "description",
+    val inProgress_1 = Order("3", applicantData, participantData, Some(carrierData), "description",
       PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
-    val inProgress_2 = Order("4", "12345", "123", Some("carrierId"), "description",
+    val inProgress_2 = Order("4", applicantData, participantData, Some(carrierData), "description",
       PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
-    val inProgress_3 = Order("5", "12345", "123", Some("carrierId"), "description",
+    val inProgress_3 = Order("5", applicantData, participantData, Some(carrierData), "description",
       ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
-    val finalized_1 = Order("6", "12345", "123", Some("carrierId"), "description",
+    val finalized_1 = Order("6", applicantData, participantData, Some(carrierData), "description",
       DELIVERED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
-    val finalized_2 = Order("7", "12345", "123", Some("carrierId"), "description",
+    val finalized_2 = Order("7", applicantData, participantData, Some(carrierData), "description",
       CANCELLED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None)
 
 
