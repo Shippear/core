@@ -3,6 +3,8 @@ package service
 import com.google.inject.Inject
 import model.internal.OrderState.OrderState
 import model.internal._
+import model.mapper.OrderMapper
+import model.request.OrderCreation
 import onesignal.{EmailType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
@@ -12,24 +14,24 @@ import service.Exception.ShippearException
 import scala.concurrent.{ExecutionContext, Future}
 
 class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSignalClient,
-                             qrCodeGenerator: QrCodeGenerator, userRepository: UserRepository)(implicit ec: ExecutionContext)
-  extends Service[Order]{
+                             qrCodeGenerator: QrCodeGenerator, userRepository: UserRepository)
+                            (implicit ec: ExecutionContext) extends Service[Order]{
 
-  def createOrder(newOrder: Order) = {
+  def createOrder(newOrder: OrderCreation) = {
     for {
       applicant <- userRepository.findOneById(newOrder.applicantId)
       participant <- userRepository.findOneById(newOrder.participantId)
-      result <- repository.create(newOrder)
-      list = List(applicant.onesignalId, participant.onesignalId)
-      _ = mailClient.sendEmail(list, EmailType.ORDER_CREATED)
-    } yield result
+      orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
+      _ <- repository.create(orderToSave)
+      _ = mailClient.sendEmail(List(applicant.onesignalId, participant.onesignalId), EmailType.ORDER_CREATED)
+    } yield orderToSave
   }
+
 
   def cancelOrder(id: String): Future[(String, String, Option[String])] =
     for {
       (applicantOSId, participantOSId, carrierOSId) <- repository.cancelOrder(id)
-      list = List(applicantOSId, participantOSId) ++ carrierOSId
-      _ = mailClient.sendEmail(list, EmailType.ORDER_CANCELED)
+      _ = mailClient.sendEmail(List(applicantOSId, participantOSId) ++ carrierOSId, EmailType.ORDER_CANCELED)
     } yield (applicantOSId, participantOSId, carrierOSId)
 
 
@@ -40,8 +42,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
       order <- repository.findOneById(content.orderId)
       _ = validateOrderState(order.state, OrderState.PENDING_CARRIER)
       newOrder <- repository.assignCarrier(order, carrier, qrCodeGenerator.generateQrImage(content.orderId))
-      list = List(newOrder.applicantId, newOrder.participantId) ++ newOrder.carrierId
-      _ = mailClient.sendEmail(list, EmailType.ORDER_WITH_CARRIER)
+      _ = mailClient.sendEmail(List(newOrder.applicant.oneSignalId, newOrder.participant.oneSignalId, carrier.onesignalId), EmailType.ORDER_WITH_CARRIER)
     } yield newOrder
 
 
@@ -51,13 +52,17 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
   def validateCarrier(carrier: User): Unit =
     carrier.orders match {
       case Some(list) =>
-        val assigned = list.filter{
+        val assigned = list.filter {
           order =>
-            val carrierId = order.carrierId.getOrElse("")
-            val orderState: OrderState = order.state
+            if(order.carrier.isDefined) {
+              val carrierId = order.carrier.get.id
+              val orderState: OrderState = order.state
 
-            carrierId.equals(carrier._id) &&
-              (orderState.equals(OrderState.ON_TRAVEL) || orderState.equals(OrderState.PENDING_PICKUP))
+              carrierId.equals(carrier._id) &&
+                (orderState.equals(OrderState.ON_TRAVEL) || orderState.equals(OrderState.PENDING_PICKUP))
+            }
+            else
+              false
 
         }
 

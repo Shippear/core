@@ -2,6 +2,8 @@ package dao
 
 import com.google.inject.Inject
 import common.ConfigReader
+import model.internal.OrderState
+import model.internal.OrderState.OrderState
 import model.internal._
 import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
 import play.api.inject.ApplicationLifecycle
@@ -29,6 +31,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
   private val address = Macros.createCodecProviderIgnoreNone[Address]()
   private val route = Macros.createCodecProviderIgnoreNone[Route]()
   private val order = Macros.createCodecProviderIgnoreNone[Order]()
+  private val userDataOrder = Macros.createCodecProvider[UserDataOrder]()
   private val user = Macros.createCodecProviderIgnoreNone[User]()
 
   val codecRegistry = fromRegistries(
@@ -42,6 +45,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
       address,
       route,
       order,
+      userDataOrder,
       user,
     ),
     DEFAULT_CODEC_REGISTRY

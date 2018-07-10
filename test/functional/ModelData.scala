@@ -3,6 +3,8 @@ package functional
 import java.util.Date
 
 import model.internal._
+import model.mapper.OrderMapper
+import model.request.OrderCreation
 
 trait ModelData {
 
@@ -64,10 +66,8 @@ trait ModelData {
 
   val almagroToSaavedra = Route(almagroAddress, saavedraAddress)
 
-  val orderWithoutCarrier = Order(orderId_1, marcelo._id, lucas._id, None, "description",
-      OrderState.PENDING_PARTICIPANT, OperationType.SENDER,
-      almagroToSaavedra, new Date, new Date,
-      Some(new Date), Some(new Date), None, None)
+  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, almagroToSaavedra, new Date,
+    new Date, Some(new Date), Some(new Date), None, None)
 
 }
 

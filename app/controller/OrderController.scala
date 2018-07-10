@@ -3,18 +3,17 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.{AssignCarrier, Order, OrderToValidate}
-import model.request.OrderRequest
+import model.request.OrderCreation
 import service.OrderService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
   extends BaseController {
 
 
-  def createOrder = AsyncActionWithBody[OrderRequest] { implicit request =>
-    val order: Order = request.content
-    service.createOrder(order).map { _ =>
+  def createOrder = AsyncActionWithBody[OrderCreation] { implicit request =>
+    service.createOrder(request.content).map { order =>
       info(s"Order ${order._id} created")
       Ok(Map("_id" -> s"${order._id}"))
     }.recover {

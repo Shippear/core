@@ -10,7 +10,6 @@ import service.{OrderService, UserService}
 
 class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with ModelData {
 
-
   val orderService = app.injector.instanceOf(classOf[OrderService])
   val userService = app.injector.instanceOf(classOf[UserService])
 
@@ -21,7 +20,7 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       // 1. Creating users and orders
       await(userService.create(marcelo))
       await(userService.create(lucas))
-      await(orderService.createOrder(orderWithoutCarrier))
+      val orderWithoutCarrier = await(orderService.createOrder(newOrder))
 
       var order = await(orderService.findById(orderWithoutCarrier._id))
       var userMarcelo = await(userService.findById(marcelo._id))
@@ -83,9 +82,9 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       order = await(orderService.assignCarrier(assignCarrier))
 
       toState(order.state) mustBe OrderState.PENDING_PICKUP
-      order.applicantId mustBe marcelo._id
-      order.participantId mustBe lucas._id
-      order.carrierId.get mustBe german._id
+      order.applicant.id mustBe marcelo._id
+      order.participant.id mustBe lucas._id
+      order.carrier.get.id mustBe german._id
       order.qrCode.isDefined mustBe true
 
       userMarcelo = await(userService.findById(marcelo._id))
