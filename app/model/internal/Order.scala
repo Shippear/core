@@ -17,4 +17,5 @@ case class Order(@JsonProperty("_id")_id: String,
                  awaitFrom: Option[Date],
                  awaitTo: Option[Date],
                  qrCode: Option[Array[Byte]],
-                 ratedCarrier: Option[Boolean])
+                 ratedCarrier: Option[Boolean],
+                 finalizedDate: Option[Date])
