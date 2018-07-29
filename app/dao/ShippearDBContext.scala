@@ -1,14 +1,14 @@
 package dao
 
+import java.util.concurrent.TimeUnit
+
 import com.google.inject.Inject
 import common.ConfigReader
-import model.internal.OrderState
-import model.internal.OrderState.OrderState
 import model.internal._
-import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, WriteConcern}
-import play.api.inject.ApplicationLifecycle
-import org.mongodb.scala.bson.codecs.{DEFAULT_CODEC_REGISTRY, Macros}
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.mongodb.scala.bson.codecs.{DEFAULT_CODEC_REGISTRY, Macros}
+import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, ScalaWriteConcern, WriteConcern}
+import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -52,9 +52,9 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
   )
 
   def database(name: String): MongoDatabase =
-    client.getDatabase(name).withWriteConcern(WriteConcern.ACKNOWLEDGED).withReadPreference(ReadPreference.primary()).withCodecRegistry(codecRegistry)
-
-  def ping(): Future[Unit] =
-    client.listDatabaseNames().toFuture.map(_ => ())
+    client.getDatabase(name)
+      .withWriteConcern(WriteConcern.ACKNOWLEDGED.withWTimeout(1000, TimeUnit.SECONDS))
+      .withReadPreference(ReadPreference.primary())
+      .withCodecRegistry(codecRegistry)
 
 }

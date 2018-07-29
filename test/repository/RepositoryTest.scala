@@ -101,20 +101,6 @@ class RepositoryTest extends MongoTest {
       toState(saveOrderWithCarrier.state) mustEqual PENDING_PICKUP
       saveOrderWithCarrier.carrier mustBe Some(carrierData)
     }
-
-    "Validate QR Code successfully" in {
-      await(repo.create(order))
-
-      val result = await(repo.validateQrCode(idOrder,idUser,APPLICANT))
-      result equals true
-    }
-
-    "Wrong QR Code" in {
-      await(repo.create(order))
-
-      val result = await(repo.validateQrCode(idOrder,idUser,CARRIER))
-      result equals false
-    }
   }
 
 

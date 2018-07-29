@@ -55,14 +55,6 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     } yield newOrder
   }
 
-  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] =
-    findOneById(orderId).map{ order =>
-      userType match{
-        case APPLICANT => order.applicant.id.equals(userId)
-        case PARTICIPANT => order.participant.id.equals(userId)
-        case CARRIER =>  order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(userId)
-      }
-    }
 
   private def findCarrier(carrier: Option[UserDataOrder]): Future[Option[User]] = {
    carrier match {
