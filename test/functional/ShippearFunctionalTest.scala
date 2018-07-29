@@ -8,9 +8,6 @@ import play.api.test.Helpers.{await, _}
 import service.Exception.ShippearException
 import service.{OrderService, UserService}
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-
 class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with ModelData {
 
   val orderService = app.injector.instanceOf(classOf[OrderService])
@@ -109,7 +106,7 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       val orderTravel = await(orderService.findById(order._id))
       toState(orderTravel.state) mustBe OrderState.ON_TRAVEL
 
-      val userMarceloTravel = Await.result(userService.findById(marcelo._id), Duration.Inf)
+      val userMarceloTravel = await(userService.findById(marcelo._id))
       val userLucasTravel = await(userService.findById(lucas._id))
       val userGermanTravel = await(userService.findById(german._id))
 
