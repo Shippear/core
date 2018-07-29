@@ -2,10 +2,14 @@ package service
 
 import java.util.Date
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import model.internal._
 import model.internal.OrderState.ON_TRAVEL
 import model.internal.UserType.{APPLICANT, CARRIER}
+import model.request.OrderCreation
 import onesignal.OneSignalClient
+import org.joda.time.DateTime
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.await
@@ -61,6 +65,28 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     val userRepo = mock[UserRepository]
 
     val orderService = new OrderService(repo, mailClient, qrGenerator, userRepo)
+
+    "Validate the order data" in {
+      val today = DateTime.now().plusSeconds(30)
+      val yesterday = today.minusDays(1)
+      val tomorrow = today.plusDays(1)
+      val afterTomorow = today.plusDays(2)
+
+      val orderCreation = OrderCreation(None, "a", "b", "description",
+        OperationType.SENDER, route, today.toDate, tomorrow.toDate, None, None, None, None)
+
+      orderService.validateOrder(orderCreation)
+
+      val orderCreationInvalidBegin = orderCreation.copy(availableFrom = yesterday.toDate)
+      intercept[ShippearException]{
+        orderService.validateOrder(orderCreationInvalidBegin)
+      }
+
+      val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorow.toDate, availableTo = tomorrow.toDate)
+      intercept[ShippearException]{
+        orderService.validateOrder(orderCreationInvalidRange)
+      }
+    }
 
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {
       // 2 Orders

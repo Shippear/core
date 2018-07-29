@@ -1,5 +1,7 @@
 package service
 
+import java.util.Date
+
 import com.google.inject.Inject
 import model.internal.OrderState.OrderState
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
@@ -7,6 +9,7 @@ import model.internal._
 import model.mapper.OrderMapper
 import model.request.OrderCreation
 import onesignal.{EmailType, OneSignalClient}
+import org.joda.time.DateTime
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
@@ -19,13 +22,22 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
                             (implicit ec: ExecutionContext) extends Service[Order]{
 
   def createOrder(newOrder: OrderCreation) = {
-    for {
-      applicant <- userRepository.findOneById(newOrder.applicantId)
-      participant <- userRepository.findOneById(newOrder.participantId)
-      orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
-      _ <- repository.create(orderToSave)
-      _ = mailClient.sendEmail(List(applicant.onesignalId, participant.onesignalId), EmailType.ORDER_CREATED)
-    } yield orderToSave
+    validateOrder(newOrder)
+      for {
+        applicant <- userRepository.findOneById(newOrder.applicantId)
+        participant <- userRepository.findOneById(newOrder.participantId)
+        orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
+        _ <- repository.create(orderToSave)
+        _ = mailClient.sendEmail(List(applicant.onesignalId, participant.onesignalId), EmailType.ORDER_CREATED)
+      } yield orderToSave
+  }
+
+  def validateOrder(order: OrderCreation) = {
+    val beginDate = order.availableFrom
+    val endDate = order.availableTo
+
+    if(beginDate.before(DateTime.now().toDate) || beginDate.after(endDate))
+      throw ShippearException(s"The order has an invalid date range with from: $beginDate and to: $endDate")
   }
 
 

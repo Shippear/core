@@ -5,6 +5,7 @@ import java.util.Date
 import model.internal._
 import model.mapper.OrderMapper
 import model.request.OrderCreation
+import org.joda.time.DateTime
 
 trait ModelData {
 
@@ -66,8 +67,13 @@ trait ModelData {
 
   val almagroToSaavedra = Route(almagroAddress, saavedraAddress)
 
-  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, almagroToSaavedra, new Date,
-    new Date, Some(new Date), Some(new Date), None, None)
+  val today = DateTime.now().plusSeconds(30)
+  val yesterday = today.minusDays(1)
+  val tomorrow = today.plusDays(1)
+  val afterTomorow = today.plusDays(2)
+
+  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, almagroToSaavedra, today.toDate,
+    tomorrow.toDate, Some(new Date), Some(new Date), None, None)
 
 }
 
