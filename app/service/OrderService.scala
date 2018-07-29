@@ -2,6 +2,7 @@ package service
 
 import com.google.inject.Inject
 import model.internal.OrderState.OrderState
+import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
 import model.internal._
 import model.mapper.OrderMapper
 import model.request.OrderCreation
@@ -9,7 +10,7 @@ import onesignal.{EmailType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
-import service.Exception.ShippearException
+import service.Exception.{NotFoundException, ShippearException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -54,8 +55,33 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     } yield newOrder
 
 
-  def validateQrCode(content: OrderToValidate): Future[Boolean] =
-    repository.validateQrCode(content.orderId, content.userId, content.userType)
+  def validateQrCode(orderToValidate: OrderToValidate): Future[Boolean] = {
+    for {
+      order <- repository.findOneById(orderToValidate.orderId)
+      verification = verifyQR(orderToValidate, order)
+      _ <- updateOrderStatus(order, orderToValidate.userType, verification)
+    } yield verification
+  }
+
+
+  def verifyQR(orderToValidate: OrderToValidate, order: Order) = {
+    orderToValidate.userType match{
+      case APPLICANT => order.applicant.id.equals(orderToValidate.userId)
+      case PARTICIPANT => order.participant.id.equals(orderToValidate.userId)
+      case CARRIER =>  order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(orderToValidate.userId)
+    }
+  }
+
+  def updateOrderStatus(order: Order, userType: UserType, verification: Boolean): Future[_] = {
+    if(verification) {
+      val newOrder = userType match {
+        case UserType.CARRIER => order.copy(state = OrderState.ON_TRAVEL)
+        case _ => order.copy(state = OrderState.DELIVERED)
+      }
+      repository.update(newOrder)
+    } else Future.successful(Unit)
+
+  }
 
   def validateCarrier(carrier: User): Unit =
     carrier.orders match {

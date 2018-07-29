@@ -76,7 +76,6 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  //TODO ver si se actualiza el estado de la orden aca o en otra pegada
   def validateQrCode = AsyncActionWithBody[OrderToValidate] { implicit request =>
     service.validateQrCode(request.content).map{
       case true => Ok(Map("result" -> "QR Code validate successfully"))

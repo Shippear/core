@@ -8,12 +8,15 @@ import play.api.test.Helpers.{await, _}
 import service.Exception.ShippearException
 import service.{OrderService, UserService}
 
-class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with ModelData {
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
+class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with ModelData {
 
   val orderService = app.injector.instanceOf(classOf[OrderService])
   val userService = app.injector.instanceOf(classOf[UserService])
 
-  "Functional Test" should {
+  "Shippear Functional Test" should {
 
     "have full order flow consistency" in {
 
@@ -25,6 +28,7 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       var order = await(orderService.findById(orderWithoutCarrier._id))
       var userMarcelo = await(userService.findById(marcelo._id))
       var userLucas = await(userService.findById(lucas._id))
+
 
       // Checking consistency between them
       val marceloOrders = userMarcelo.orders.get
@@ -57,9 +61,7 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
 
       //---------
 
-      //TODO lo mejor seria armar un servicio para esto?
       // 2. The participant accepts the order
-      //order = order.copy(state = OrderState.PENDING_CARRIER)
       await(orderService.confirmParticipant(order._id))
 
       order = await(orderService.findById(order._id))
@@ -99,21 +101,25 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       toState(orderLucas.state) mustBe OrderState.PENDING_PICKUP
       toState(orderGerman.state) mustBe OrderState.PENDING_PICKUP
 
-      // TODO al verificar el QR, si lo hace el CARRIER, entonces tiene que cambiar el estado a ON_TRAVEL
-      // 4. Verification code
-
+      // 4. Verification code of CARRIER -> STATE = ON_TRAVEL
       val validateCarrier = OrderToValidate(order._id, german._id, UserType.CARRIER)
       val validationCarrier = await(orderService.validateQrCode(validateCarrier))
       validationCarrier mustBe true
 
-      val validateApplicant = OrderToValidate(order._id, marcelo._id, UserType.APPLICANT)
-      val validationApplicant = await(orderService.validateQrCode(validateApplicant))
-      validationApplicant mustBe true
+      val orderTravel = await(orderService.findById(order._id))
+      toState(orderTravel.state) mustBe OrderState.ON_TRAVEL
 
-      val validateParticipant = OrderToValidate(order._id, lucas._id, UserType.PARTICIPANT)
-      val validationParticipant = await(orderService.validateQrCode(validateParticipant))
-      validationParticipant mustBe true
+      val userMarceloTravel = Await.result(userService.findById(marcelo._id), Duration.Inf)
+      val userLucasTravel = await(userService.findById(lucas._id))
+      val userGermanTravel = await(userService.findById(german._id))
 
+      orderMarcelo = userMarceloTravel.orders.get.head
+      orderLucas = userLucasTravel.orders.get.head
+      orderGerman = userGermanTravel.orders.get.head
+
+      toState(orderMarcelo.state) mustBe OrderState.ON_TRAVEL
+      toState(orderLucas.state) mustBe OrderState.ON_TRAVEL
+      toState(orderGerman.state) mustBe OrderState.ON_TRAVEL
 
       // Fail cases
       val validationFail = OrderToValidate(order._id, nazareno._id, UserType.CARRIER)
@@ -122,14 +128,11 @@ class ServiceFunctionalTest extends MongoTest with GuiceOneServerPerSuite with M
       await(orderService.validateQrCode(validationFail.copy(userType = UserType.APPLICANT))) mustBe false
 
 
-      //TODO este update no deberia estar mas si se hace lo de arriba!
-      await(orderService.update(order.copy(state = OrderState.ON_TRAVEL)))
-
-
-      //TODO Hacer un servcio para esto?, Habria que tener en cuenta al actualizar el "score"
       // 5. Order delivered
-      order = order.copy(state = OrderState.DELIVERED)
-      await(orderService.update(order))
+      // Validating QR code of APPLICANT
+      val validateApplicant = OrderToValidate(order._id, marcelo._id, UserType.APPLICANT)
+      val validationApplicant = await(orderService.validateQrCode(validateApplicant))
+      validationApplicant mustBe true
 
       order = await(orderService.findById(order._id))
       userMarcelo = await(userService.findById(marcelo._id))
