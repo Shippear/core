@@ -30,21 +30,21 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
 
   "OrdersByState" should {
 
-    val toBeConfirmed_1 = Order("1", applicantData, participantData, Some(carrierData), "description",
+    val toBeConfirmed_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
-    val toBeConfirmed_2 = Order("2", applicantData, participantData, Some(carrierData), "description",
+    val toBeConfirmed_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
-    val inProgress_1 = Order("3", applicantData, participantData, Some(carrierData), "description",
+    val inProgress_1 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
-    val inProgress_2 = Order("4", applicantData, participantData, Some(carrierData), "description",
+    val inProgress_2 = Order("4", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
-    val inProgress_3 = Order("5", applicantData, participantData, Some(carrierData), "description",
+    val inProgress_3 = Order("5", applicantData, participantData, Some(carrierData), 123, "description",
       ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
-    val finalized_1 = Order("6", applicantData, participantData, Some(carrierData), "description",
+    val finalized_1 = Order("6", applicantData, participantData, Some(carrierData), 123, "description",
       DELIVERED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
-    val finalized_2 = Order("7", applicantData, participantData, Some(carrierData), "description",
+    val finalized_2 = Order("7", applicantData, participantData, Some(carrierData), 123, "description",
       CANCELLED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
 
@@ -56,7 +56,7 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
-    val paymentMethod = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
+    val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
     val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
       contactInfo, "photoUrl", Seq(address), orders, Seq(paymentMethod), None, None, None)
 

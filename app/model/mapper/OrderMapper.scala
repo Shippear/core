@@ -3,6 +3,7 @@ package model.mapper
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
+import org.joda.time.DateTime
 
 object OrderMapper extends IdGenerator {
 
@@ -19,10 +20,13 @@ object OrderMapper extends IdGenerator {
     val participantData = extractUserData(participant)
     val carrierData = carrier.map(extractUserData)
 
+    val orderNumber = DateTime.now().getMillis
+
     Order(orderCreation._id.getOrElse(generateId),
       applicantData,
       participantData,
       carrierData,
+      orderNumber,
       orderCreation.description,
       OrderState.PENDING_PARTICIPANT,
       orderCreation.operationType,
