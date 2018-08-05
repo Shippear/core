@@ -67,13 +67,13 @@ trait ModelData {
 
   val almagroToSaavedra = Route(almagroAddress, saavedraAddress)
 
-  val today = DateTime.now().plusSeconds(30)
+  val today = DateTime.now().plusMinutes(10)
   val yesterday = today.minusDays(1)
   val tomorrow = today.plusDays(1)
   val afterTomorow = today.plusDays(2)
 
   val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, almagroToSaavedra, today.toDate,
-    tomorrow.toDate, Some(new Date), Some(new Date), None, None)
+    tomorrow.toDate, None, None)
 
 }
 

@@ -1,9 +1,12 @@
 package model.mapper
 
+import java.util.Date
+
+import com.github.nscala_time.time.Imports.DateTime
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
-import org.joda.time.DateTime
+import org.joda.time.Minutes
 
 object OrderMapper extends IdGenerator {
 
@@ -22,6 +25,8 @@ object OrderMapper extends IdGenerator {
 
     val orderNumber = DateTime.now().getMillis
 
+    val awaitTo = calculateAwait(orderCreation.availableFrom, orderCreation.availableTo)
+
     Order(orderCreation._id.getOrElse(generateId),
       applicantData,
       participantData,
@@ -33,8 +38,7 @@ object OrderMapper extends IdGenerator {
       orderCreation.route,
       orderCreation.availableFrom,
       orderCreation.availableTo,
-      orderCreation.awaitFrom,
-      orderCreation.awaitTo,
+      awaitTo,
       orderCreation.qrCode,
       orderCreation.ratedCarrier,
       None
@@ -42,5 +46,16 @@ object OrderMapper extends IdGenerator {
 
   }
 
+  def calculateAwait(availableFrom: Date, availableTo: Date): Option[Date] = {
+    val dateTimeFrom: DateTime = new DateTime(availableFrom)
+    val dateTimeTo: DateTime = new DateTime(availableTo)
+
+    val minutes = Minutes.minutesBetween(dateTimeFrom.toDateTime, dateTimeTo.toDateTime)
+
+    Some(dateTimeFrom.plusMinutes(minutes.getMinutes).toDate)
+
+  }
+
 
 }
+

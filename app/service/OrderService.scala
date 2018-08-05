@@ -1,7 +1,5 @@
 package service
 
-import java.util.Date
-
 import com.google.inject.Inject
 import model.internal.OrderState.OrderState
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
@@ -36,7 +34,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     val beginDate = order.availableFrom
     val endDate = order.availableTo
 
-    if(beginDate.before(DateTime.now().toDate) || beginDate.after(endDate))
+    if(beginDate.before(DateTime.now().minusMinutes(5).toDate) || beginDate.after(endDate))
       throw ShippearException(s"The order has an invalid date range with from: $beginDate and to: $endDate")
   }
 

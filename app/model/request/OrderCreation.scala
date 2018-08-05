@@ -15,7 +15,5 @@ case class OrderCreation(@JsonProperty("_id") _id: Option[String],
                          route: Route,
                          availableFrom: Date,
                          availableTo: Date,
-                         awaitFrom: Option[Date],
-                         awaitTo: Option[Date],
                          qrCode: Option[Array[Byte]],
                          ratedCarrier: Option[Boolean])
