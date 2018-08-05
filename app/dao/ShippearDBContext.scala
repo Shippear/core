@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import com.google.inject.Inject
 import common.ConfigReader
 import model.internal._
+import model.internal.price.{DistanceMultiplier, SizeMultiplier, WeightMultiplier}
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.bson.codecs.{DEFAULT_CODEC_REGISTRY, Macros}
 import org.mongodb.scala.{MongoClient, MongoDatabase, ReadPreference, ScalaWriteConcern, WriteConcern}
@@ -24,6 +25,9 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
 
   private val transport = Macros.createCodecProviderIgnoreNone[Transport]()
   private val geolocation = Macros.createCodecProviderIgnoreNone[Geolocation]()
+  private val sizeMultiplier = Macros.createCodecProviderIgnoreNone[SizeMultiplier]()
+  private val distanceMultiplier = Macros.createCodecProviderIgnoreNone[DistanceMultiplier]()
+  private val weightMultiplier= Macros.createCodecProviderIgnoreNone[WeightMultiplier]()
   private val cacheGeolocation = Macros.createCodecProviderIgnoreNone[CacheGeolocation]()
   private val paymentMethods = Macros.createCodecProviderIgnoreNone[PaymentMethod]()
   private val contactInfo = Macros.createCodecProviderIgnoreNone[ContactInfo]()
@@ -36,6 +40,9 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
 
   val codecRegistry = fromRegistries(
     fromProviders(
+      sizeMultiplier,
+      distanceMultiplier,
+      weightMultiplier,
       transport,
       geolocation,
       cacheGeolocation,

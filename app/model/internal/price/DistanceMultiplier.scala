@@ -1,4 +1,4 @@
 package model.internal.price
 
-case class DistanceMultiplier(distance: String, multiplier: Double) extends Multiplier
+case class DistanceMultiplier(scenario: String, multiplier: Double) extends Multiplier
 
