@@ -44,10 +44,12 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(1, "Nuñez")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
-    val carrierId = "791"
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
-    val order = Order(idOrder, idUser, "11111", Some("carrierId"), "description",
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    val applicantData = UserDataOrder(idUser, "name", "last", "photo", "onesignal")
+    val participantData = UserDataOrder("11111", "name", "last", "photo", "onesignal")
+    val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
+    val order = Order(idOrder, applicantData, participantData, Some(carrierData), "description",
+      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -61,14 +63,15 @@ class RepositoryTest extends MongoTest {
       await(repo.create(order))
 
       val savedOrder = await(repo.findOneById(idOrder))
-      val newOrder = savedOrder.copy(applicantId = "newId")
+      val newApplicant = applicantData.copy(id = "newId")
+      val newOrder = savedOrder.copy(applicant = newApplicant)
       await(repo.update(newOrder))
 
       val a = await(repo.all)
       a.size mustBe 1
 
       val result = await(repo.findOneById(idOrder))
-      result.applicantId mustEqual "newId"
+      result.applicant.id mustEqual "newId"
 
     }
 
@@ -85,28 +88,18 @@ class RepositoryTest extends MongoTest {
     }
 
     "Assign carrier" in {
-      when(user._id).thenReturn(carrierId)
+      when(user._id).thenReturn(carrierData.id)
+      when(user.firstName).thenReturn("name")
+      when(user.lastName).thenReturn("last")
+      when(user.photoUrl).thenReturn("photo")
+      when(user.onesignalId).thenReturn("onesignal")
       await(repo.create(order))
       await(repo.assignCarrier(order, user , qrCode))
 
       val saveOrderWithCarrier = await(repo.findOneById(idOrder))
 
       toState(saveOrderWithCarrier.state) mustEqual PENDING_PICKUP
-      saveOrderWithCarrier.carrierId mustBe Some(carrierId)
-    }
-
-    "Validate QR Code successfully" in {
-      await(repo.create(order))
-
-      val result = await(repo.validateQrCode(idOrder,idUser,APPLICANT))
-      result equals true
-    }
-
-    "Wrong QR Code" in {
-      await(repo.create(order))
-
-      val result = await(repo.validateQrCode(idOrder,idUser,CARRIER))
-      result equals false
+      saveOrderWithCarrier.carrier mustBe Some(carrierData)
     }
   }
 
@@ -120,38 +113,41 @@ class RepositoryTest extends MongoTest {
 
   }
 
-  val repo = new UserRepoTest
+    val repo = new UserRepoTest
 
-  //User
-  val idUser = "123"
-  val geolocation = Geolocation(132, -123)
-  val contactInfo = ContactInfo("email@email.com", "011123119")
-  val city = City(2, "Almagro")
-  val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
-  val paymentMethod = PaymentMethod("ownerName", "123", "02/20", "securityCode", "VISA")
-  val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
-    contactInfo, "photoUrl", Seq(address), None, Seq(paymentMethod), None, None, None)
+    //User
+    val idUser = "123"
+    val geolocation = Geolocation(132, -123)
+    val contactInfo = ContactInfo("email@email.com", "011123119")
+    val city = City(2, "Almagro")
+    val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
+    val paymentMethod = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
+    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
+      contactInfo, "photoUrl", Seq(address), None, Seq(paymentMethod), None, None, None)
 
-  //Order
-  val originGeolocation = Geolocation(132, -123)
-  val originCity = City(1, "Parque Patricios")
-  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
-  val destinationGeolocation = Geolocation(132, -123)
-  val destinationCity = City(5, "Balvanera")
-  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
-  val route = Route(origin, destination)
-  val order = Order("idOrder", idUser, "11111", Some("carrierId"), "description",
-    PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    //Order
+    val originGeolocation = Geolocation(132, -123)
+    val originCity = City(1, "Parque Patricios")
+    val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
+    val destinationGeolocation = Geolocation(132, -123)
+    val destinationCity = City(5, "Balvanera")
+    val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+    val route = Route(origin, destination)
+    val applicantData = UserDataOrder(idUser, "name", "last", "photo", "oneSignal")
+    val participantData = UserDataOrder("11111", "name", "last", "photo", "oneSignal")
+    val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "oneSignal")
+    val order = Order("idOrder", applicantData, participantData, Some(carrierData), "description",
+      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
 
     "Create a new order into the user" in {
 
       await(repo.create(user))
 
-      await(repo.updateUserOrder(idUser, order))
+      await(repo.updateUserOrder(applicantData.id, order))
 
       //Comparing order ids
-      val updatedUser = await(repo.findOneById(idUser))
+      val updatedUser = await(repo.findOneById(applicantData.id))
       updatedUser.orders.get.head._id mustEqual order._id
 
     }
@@ -159,18 +155,19 @@ class RepositoryTest extends MongoTest {
     "Update an existing order" in {
       await(repo.create(user))
 
-      await(repo.updateUserOrder(idUser, order))
+      await(repo.updateUserOrder(applicantData.id, order))
 
       //Comparing order ids
-      var updatedUser = await(repo.findOneById(idUser))
+      var updatedUser = await(repo.findOneById(applicantData.id))
       var orders = updatedUser.orders.get
 
       orders.head._id mustEqual order._id
       //Updating the order
-      val newOrder = order.copy(carrierId = Some("otherCarrierId"))
-      await(repo.updateUserOrder(idUser, newOrder))
+      val newCarrier = carrierData.copy(id = "otherCarrierId")
+      val newOrder = order.copy(carrier = Some(newCarrier))
+      await(repo.updateUserOrder(applicantData.id, newOrder))
 
-      updatedUser = await(repo.findOneById(idUser))
+      updatedUser = await(repo.findOneById(applicantData.id))
       orders = updatedUser.orders.get
       orders.size mustEqual 1
       orders.head._id mustEqual order._id
@@ -186,12 +183,12 @@ class RepositoryTest extends MongoTest {
 
       //Creating another order
       val newOrderId = "11111"
-      val newOrder = Order(newOrderId, idUser, "11111", Some("carrierId"), "description",
-        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+      val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), "description",
+        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
-      await(repo.updateUserOrder(idUser, newOrder))
+      await(repo.updateUserOrder(applicantData.id, newOrder))
 
-      val u2 = await(repo.findOneById(idUser))
+      val u2 = await(repo.findOneById(applicantData.id))
       u2.orders.get.size mustBe 2
 
     }

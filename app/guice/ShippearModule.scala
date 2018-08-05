@@ -4,6 +4,7 @@ import controller._
 import dao.ShippearDBContext
 import dao.util.ShippearDAOFactory
 import external.GoogleMapsClient
+import model.mapper.OrderMapper
 import net.codingwell.scalaguice.ScalaModule
 import onesignal.OneSignalClient
 import qrcodegenerator.QrCodeGenerator

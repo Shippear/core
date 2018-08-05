@@ -4,8 +4,8 @@ import com.google.inject.Inject
 import dao.util.ShippearDAO
 import model.internal.OrderState.{CANCELLED, PENDING_PICKUP}
 import model.internal.UserType._
-import model.internal.{Order, User}
-import onesignal.OneSignalClient
+import model.internal.{Order, User, UserDataOrder}
+import model.mapper.OrderMapper
 import service.Exception.NotFoundException
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -19,8 +19,8 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
   override def create(order: Order) = {
     for {
       result <- super.create(order)
-      _ <- userRepository.updateUserOrder(order.applicantId, order)
-      _ <- userRepository.updateUserOrder(order.participantId, order)
+      _ <- userRepository.updateUserOrder(order.applicant.id, order)
+      _ <- userRepository.updateUserOrder(order.participant.id, order)
     } yield result
 
   }
@@ -28,8 +28,8 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
   override def update(order: Order) = {
     for {
       result <- super.update(order)
-      _ <- userRepository.updateUserOrder(order.applicantId, order)
-      _ <- userRepository.updateUserOrder(order.participantId, order)
+      _ <- userRepository.updateUserOrder(order.applicant.id, order)
+      _ <- userRepository.updateUserOrder(order.participant.id, order)
       _ <- updateCarrier(order)
     } yield result
   }
@@ -40,39 +40,32 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
       order <- super.findOneById(id)
       updateOrder = order.copy(state = CANCELLED)
       _ <- update(updateOrder)
-      applicant <- userRepository.findOneById(order.applicantId)
-      participant <- userRepository.findOneById(order.participantId)
-      someCarrier <- findCarrier(order.carrierId)
+      applicant <- userRepository.findOneById(order.applicant.id)
+      participant <- userRepository.findOneById(order.participant.id)
+      someCarrier <- findCarrier(order.carrier)
     } yield (applicant.onesignalId, participant.onesignalId, someCarrier.map(_.onesignalId))
 
   }
 
   def assignCarrier(order: Order, carrier: User, qrCode: Array[Byte]): Future[Order] = {
-    val newOrder = order.copy(carrierId = Some(carrier._id), qrCode = Some(qrCode), state = PENDING_PICKUP)
+    val carrierData = OrderMapper.extractUserData(carrier)
+    val newOrder = order.copy(carrier = Some(carrierData), qrCode = Some(qrCode), state = PENDING_PICKUP)
     for{
       _ <- update(newOrder)
     } yield newOrder
   }
 
-  def validateQrCode(orderId: String, userId: String, userType: UserType): Future[Boolean] =
-    findOneById(orderId).map{ order =>
-      userType match{
-        case APPLICANT => order.applicantId.equals(userId)
-        case PARTICIPANT => order.participantId.equals(userId)
-        case CARRIER =>  order.carrierId.getOrElse(throw NotFoundException("Carrier not found")).equals(userId)
-      }
-    }
 
-  private def findCarrier(id: Option[String]): Future[Option[User]] = {
-   id match {
-      case Some(carrierId) => userRepository.findOneById(carrierId).map(Some(_)).recover {case _: NotFoundException => None}
+  private def findCarrier(carrier: Option[UserDataOrder]): Future[Option[User]] = {
+   carrier match {
+      case Some(data) => userRepository.findOneById(data.id).map(Some(_)).recover {case _: NotFoundException => None}
       case None => Future.successful(None)
     }
   }
 
   private def updateCarrier(order: Order): Future[_] = {
-    order.carrierId match {
-      case Some(id) => userRepository.updateUserOrder(id, order)
+    order.carrier match {
+      case Some(carrier) => userRepository.updateUserOrder(carrier.id, order)
       case _ => Future.successful(Unit)
     }
   }

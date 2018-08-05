@@ -5,9 +5,9 @@ import java.util.Date
 import com.fasterxml.jackson.annotation.JsonProperty
 
 case class Order(@JsonProperty("_id")_id: String,
-                 applicantId: String,
-                 participantId: String,
-                 carrierId: Option[String],
+                 applicant: UserDataOrder,
+                 participant: UserDataOrder,
+                 carrier: Option[UserDataOrder],
                  description: String,
                  state: String,
                  operationType: String,
@@ -16,4 +16,6 @@ case class Order(@JsonProperty("_id")_id: String,
                  availableTo: Date,
                  awaitFrom: Option[Date],
                  awaitTo: Option[Date],
-                 qrCode: Option[Array[Byte]])
+                 qrCode: Option[Array[Byte]],
+                 ratedCarrier: Option[Boolean],
+                 finalizedDate: Option[Date])

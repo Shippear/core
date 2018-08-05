@@ -23,25 +23,29 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
+  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal")
+  val participantData = UserDataOrder("123", "name", "last", "photo", "onesignal")
+  val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
+
 
   "OrdersByState" should {
 
-    val toBeConfirmed_1 = Order("1", "12345", "123", Some("carrierId"), "description",
-      PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val toBeConfirmed_2 = Order("2", "12345", "123", Some("carrierId"), "description",
-      PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    val toBeConfirmed_1 = Order("1", applicantData, participantData, Some(carrierData), "description",
+      PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
+    val toBeConfirmed_2 = Order("2", applicantData, participantData, Some(carrierData), "description",
+      PENDING_CARRIER, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
-    val inProgress_1 = Order("3", "12345", "123", Some("carrierId"), "description",
-      PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val inProgress_2 = Order("4", "12345", "123", Some("carrierId"), "description",
-      PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val inProgress_3 = Order("5", "12345", "123", Some("carrierId"), "description",
-      ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    val inProgress_1 = Order("3", applicantData, participantData, Some(carrierData), "description",
+      PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
+    val inProgress_2 = Order("4", applicantData, participantData, Some(carrierData), "description",
+      PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
+    val inProgress_3 = Order("5", applicantData, participantData, Some(carrierData), "description",
+      ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
-    val finalized_1 = Order("6", "12345", "123", Some("carrierId"), "description",
-      DELIVERED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
-    val finalized_2 = Order("7", "12345", "123", Some("carrierId"), "description",
-      CANCELLED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+    val finalized_1 = Order("6", applicantData, participantData, Some(carrierData), "description",
+      DELIVERED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
+    val finalized_2 = Order("7", applicantData, participantData, Some(carrierData), "description",
+      CANCELLED, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
 
     val orders = Some(Seq(toBeConfirmed_1, toBeConfirmed_2, inProgress_1, inProgress_2, inProgress_3, finalized_1, finalized_2))
@@ -52,7 +56,7 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
-    val paymentMethod = PaymentMethod("ownerName", "123", "02/20", "securityCode", "VISA")
+    val paymentMethod = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
     val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
       contactInfo, "photoUrl", Seq(address), orders, Seq(paymentMethod), None, None, None)
 

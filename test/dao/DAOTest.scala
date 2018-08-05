@@ -30,14 +30,18 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
+  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal")
   lazy val participantId = "11111"
-  val order = Order("123", "12345", participantId, Some("carrierId"), "description",
-    PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None)
+  val participantData = UserDataOrder(participantId, "name", "last", "photo", "onesignal")
+
+
+  val order = Order("123", applicantData, participantData, None, "description",
+    PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
   val qrCodeGenerator = new QrCodeGenerator
   val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
-  val orderWithQrCode = Order("123", "12345", participantId, Some("carrierId"), "description",
-    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some(qrCode))
+  val orderWithQrCode = Order("123", applicantData, participantData, None, "description",
+    "state", "operationType", route, new Date, new Date, Some(new Date), Some(new Date), Some(qrCode), None, None)
 
   "OrderDAO" should{
     "Save an object" in {
@@ -46,16 +50,17 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
     }
 
     "Update an object" in {
-      order.participantId mustBe participantId
+      order.participant.id mustBe participantId
       await(dao.all).size mustBe 0
       await(dao.insertOne(order))
       await(dao.all).size mustBe 1
       val orderFound = await(dao.findOneById(order._id) )
 
-      val newOrder = orderFound.copy(participantId = "bla")
+      val newParticipant = participantData.copy(id = "bla")
+      val newOrder = orderFound.copy(participant = newParticipant)
       await(dao.replaceOne(newOrder))
       val newOrderFound = await(dao.findOneById(order._id))
-      newOrderFound.participantId mustBe "bla"
+      newOrderFound.participant.id mustBe "bla"
     }
 
     "Throw a NotFoundException when and object doesn't exists in the DB" in {
@@ -69,8 +74,8 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
       //Filters
       //eq
-      await(dao.findByFilters(Filters.eq("participantId", participantId))).size mustBe 1
-      await(dao.findByFilters(Filters.eq("participantId", "AAAA"))).size mustBe 0
+      await(dao.findByFilters(Filters.eq("participant.id", participantId))).size mustBe 1
+      await(dao.findByFilters(Filters.eq("participant.id", "AAAA"))).size mustBe 0
 
       //greater than & lower than
       val availableFrom = new DateTime().minusDays(1).toDate
@@ -78,11 +83,11 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
       await(dao.findByFilters(Filters.lt("availableFrom", availableFrom))).size mustBe 0
 
       //using and
-      val filterAnd = Filters.and(Filters.eq("participantId", participantId), Filters.lt("availableFrom", availableFrom))
+      val filterAnd = Filters.and(Filters.eq("participant.id", participantId), Filters.lt("availableFrom", availableFrom))
       await(dao.findByFilters(filterAnd)).size mustBe 0
 
       //using or
-      val filterOr = Filters.or(Filters.eq("participantId", participantId), Filters.lt("availableFrom", availableFrom))
+      val filterOr = Filters.or(Filters.eq("participant.id", participantId), Filters.lt("availableFrom", availableFrom))
       await(dao.findByFilters(filterOr)).size mustBe 1
     }
 

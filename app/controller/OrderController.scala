@@ -3,18 +3,17 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.{AssignCarrier, Order, OrderToValidate}
-import model.request.OrderRequest
+import model.request.OrderCreation
 import service.OrderService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionContext)
   extends BaseController {
 
 
-  def createOrder = AsyncActionWithBody[OrderRequest] { implicit request =>
-    val order: Order = request.content
-    service.createOrder(order).map { _ =>
+  def createOrder = AsyncActionWithBody[OrderCreation] { implicit request =>
+    service.createOrder(request.content).map { order =>
       info(s"Order ${order._id} created")
       Ok(Map("_id" -> s"${order._id}"))
     }.recover {
@@ -59,6 +58,15 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+  def confirmParticipant(idOrder: String) = AsyncAction { implicit request =>
+    service.confirmParticipant(idOrder).map{
+      order => Ok(Map("result" -> s"Order ${order._id} assigned to participant ${order._id} successfully"))
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error updating order", ex)
+    }
+  }
+
   def assignCarrier = AsyncActionWithBody[AssignCarrier] { implicit request =>
     service.assignCarrier(request.content).map{
       order => Ok(Map("result" -> s"Order ${order._id} assigned to carrier ${request.content.carrierId} successfully"))
@@ -68,7 +76,6 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  //TODO ver si se actualiza el estado de la orden aca o en otra pegada
   def validateQrCode = AsyncActionWithBody[OrderToValidate] { implicit request =>
     service.validateQrCode(request.content).map{
       case true => Ok(Map("result" -> "QR Code validate successfully"))

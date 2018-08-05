@@ -3,6 +3,9 @@ package functional
 import java.util.Date
 
 import model.internal._
+import model.mapper.OrderMapper
+import model.request.OrderCreation
+import org.joda.time.DateTime
 
 trait ModelData {
 
@@ -18,9 +21,9 @@ trait ModelData {
   val contactInfo = ContactInfo("email@email.com", "phone")
 
   //--------Payment Methods------------
-  val visa = PaymentMethod("ownerName", "123", "02/20", "securityCode", "VISA")
-  val masterCard = PaymentMethod("ownerName", "123", "02/20", "securityCode", "MASTER CARD")
-  val visaDebito = PaymentMethod("ownerName", "123", "02/20", "securityCode", "VISA DEBITO")
+  val visa = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
+  val masterCard = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "MASTER CARD")
+  val visaDebito = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA DEBITO")
 
 
   //--------Addresses---------
@@ -64,10 +67,13 @@ trait ModelData {
 
   val almagroToSaavedra = Route(almagroAddress, saavedraAddress)
 
-  val orderWithoutCarrier = Order(orderId_1, marcelo._id, lucas._id, None, "description",
-      OrderState.PENDING_PARTICIPANT, OperationType.SENDER,
-      almagroToSaavedra, new Date, new Date,
-      Some(new Date), Some(new Date), None)
+  val today = DateTime.now().plusSeconds(30)
+  val yesterday = today.minusDays(1)
+  val tomorrow = today.plusDays(1)
+  val afterTomorow = today.plusDays(2)
+
+  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, almagroToSaavedra, today.toDate,
+    tomorrow.toDate, Some(new Date), Some(new Date), None, None)
 
 }
 
