@@ -50,9 +50,9 @@ object OrderMapper extends IdGenerator {
     val dateTimeFrom: DateTime = new DateTime(availableFrom)
     val dateTimeTo: DateTime = new DateTime(availableTo)
 
-    val minutes = Minutes.minutesBetween(dateTimeFrom.toDateTime, dateTimeTo.toDateTime)
+    val minutes = Minutes.minutesBetween(dateTimeFrom.toDateTime, dateTimeTo.toDateTime).getMinutes * 0.15
 
-    Some(dateTimeFrom.plusMinutes(minutes.getMinutes).toDate)
+    Some(dateTimeFrom.plusMinutes(minutes.toInt).toDate)
 
   }
 
