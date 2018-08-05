@@ -21,13 +21,14 @@ class PriceService @Inject()(sizeMultiplierRepository: SizeMultiplierRepository,
 
     val prices = routesDetail.map { detail =>
 
-      val distance = detail.distance.toDouble
+      val distance = detail.distanceValue
 
       for {
-        priceMult <- sizeMultiplierRepository.multiplier(size)
+        sizeMult <- sizeMultiplierRepository.multiplier(size)
         weightMult <- weightMultiplierRepository.multiplier(weight)
-        distancePriceMult <- distanceMultiplierRepository.multiplierByScenario(scenario)
-        totalPrice = priceMult * weightMult * distancePriceMult * distance
+        scenarioPriceMult <- distanceMultiplierRepository.multiplierByScenario(scenario)
+        distanceToKms = distance * 0.001
+        totalPrice = sizeMult * weightMult * scenarioPriceMult * distanceToKms
         price = PriceInformation(size, weight, totalPrice)
         routePrice = RoutePriceResponse(detail, price)
       } yield routePrice

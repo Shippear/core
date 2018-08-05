@@ -35,7 +35,7 @@ class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) ex
         apiMapsResponse.rows.flatMap {
           row =>
             row.elements.map {
-              elem => RouteDetail(origin, address.geolocation, elem.distance.text, elem.duration.text)
+              elem => RouteDetail(origin, address, elem.distance.text, elem.distance.value, elem.duration.text)
             }
         }
       }

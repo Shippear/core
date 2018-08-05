@@ -3,8 +3,9 @@ package service
 import com.google.inject.Inject
 import external.GoogleMapsClient
 import model.internal.{Address, User}
+import model.mapper.OrderMapper
 import model.request.RouteRequest
-import model.response.price.RoutePriceResponse
+import model.response.price.UserPriceInformation
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,16 +17,23 @@ class RoutePriceService @Inject()(userService: UserService,
     Future.sequence(googleApi.searchDestinationsData(routeRequest.geolocationOrigin, listAddress))
       .map(_.flatten.toList)
 
-  def priceInformation(routeRequest: RouteRequest): Future[List[RoutePriceResponse]] = {
+  def priceInformation(routeRequest: RouteRequest): Future[UserPriceInformation] = {
 
     val user: Future[User] = userService.findBy(Map("userName" -> routeRequest.userName))
     val userAddress: Future[Seq[Address]] = user.map { u => u.addresses }
 
-    userAddress.flatMap { listAddress =>
+    val routesPrices = userAddress.flatMap { listAddress =>
       for {
         routes <- searchRouteDetails(routeRequest, listAddress)
         routesPrices <- priceService.calculatePrice(routes, routeRequest.size, routeRequest.weight)
       } yield routesPrices
+
     }
+
+    for{
+      u <- user
+      user = OrderMapper.extractUserData(u)
+      routePrice <- routesPrices
+    } yield UserPriceInformation(user, routePrice)
   }
 }

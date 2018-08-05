@@ -1,6 +1,6 @@
 package service
 
-import model.internal.Geolocation
+import model.internal.{Address, City, Geolocation}
 import model.internal.price.enum.{Size, Weight}
 import model.response.price.RouteDetail
 import org.mockito.Mockito.when
@@ -16,12 +16,15 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
 
   "Price Service" should {
 
+    val destinationCity = City(2, "Almagro")
     val originGeo = Geolocation(1,1)
     val destinationGeo = Geolocation(1,1)
+    val destination = Address(destinationGeo, Some("alias"), "street", 123, "zipCode", Some("appart"), destinationCity, public = true)
     val duration = "blabla"
     // 5 kms
     val distance = "5"
-    val routeDetail1 = RouteDetail(originGeo, destinationGeo, distance, duration)
+    val distanceMeters = 5000
+    val routeDetail1 = RouteDetail(originGeo, destination, distance, distanceMeters, duration)
     val listRoutes = List(routeDetail1)
 
     val sizePriceSmall = 2.0
