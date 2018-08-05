@@ -21,9 +21,9 @@ trait ModelData {
   val contactInfo = ContactInfo("email@email.com", "phone")
 
   //--------Payment Methods------------
-  val visa = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
-  val masterCard = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "MASTER CARD")
-  val visaDebito = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA DEBITO")
+  val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
+  val masterCard = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("MASTER CARD"))
+  val visaDebito = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA DEBITO"))
 
 
   //--------Addresses---------

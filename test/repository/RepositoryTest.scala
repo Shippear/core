@@ -48,7 +48,7 @@ class RepositoryTest extends MongoTest {
     val applicantData = UserDataOrder(idUser, "name", "last", "photo", "onesignal")
     val participantData = UserDataOrder("11111", "name", "last", "photo", "onesignal")
     val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
-    val order = Order(idOrder, applicantData, participantData, Some(carrierData), "description",
+    val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
     "Save a new order" in {
@@ -121,7 +121,7 @@ class RepositoryTest extends MongoTest {
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
-    val paymentMethod = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
+    val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
     val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
       contactInfo, "photoUrl", Seq(address), None, Seq(paymentMethod), None, None, None)
 
@@ -136,7 +136,7 @@ class RepositoryTest extends MongoTest {
     val applicantData = UserDataOrder(idUser, "name", "last", "photo", "oneSignal")
     val participantData = UserDataOrder("11111", "name", "last", "photo", "oneSignal")
     val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "oneSignal")
-    val order = Order("idOrder", applicantData, participantData, Some(carrierData), "description",
+    val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
 
@@ -183,7 +183,7 @@ class RepositoryTest extends MongoTest {
 
       //Creating another order
       val newOrderId = "11111"
-      val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), "description",
+      val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), 123, "description",
         PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
       await(repo.updateUserOrder(applicantData.id, newOrder))

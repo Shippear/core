@@ -35,15 +35,15 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val participantData = UserDataOrder("123", "name", "last", "photo", "onesignal")
   val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
 
-  val order_1 = Order("1", applicantData, participantData, Some(carrierData), "description",
+  val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
-  val order_2 = Order("2", applicantData, participantData, Some(carrierData), "description",
+  val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
-  val order_3 = Order("3", applicantData, participantData, Some(carrierData), "description",
+  val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", "photo", "onesignal")
-  val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), "description",
+  val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
     ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), Some(new Date), None, None, None)
 
   val orderWithoutCarrier = order_1.copy(carrier = None)
@@ -54,7 +54,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val contactInfo = ContactInfo("email@email.com", "011123119")
   val city = City(2, "Almagro")
   val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
-  val paymentMethod = PaymentMethod("ownerName", "123", "cardCode", "bankCode", "02/20", "securityCode", "VISA")
+  val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
 
   "Order Service" should {
