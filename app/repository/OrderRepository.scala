@@ -1,6 +1,7 @@
 package repository
 
 import com.google.inject.Inject
+import common.DateTimeNow
 import dao.util.ShippearDAO
 import model.internal.OrderState.{CANCELLED, PENDING_PICKUP}
 import model.internal.UserType._
@@ -38,7 +39,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     //TODO analizar si hay que verificar el estado del pedido
     for {
       order <- super.findOneById(id)
-      updateOrder = order.copy(state = CANCELLED)
+      updateOrder = order.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate))
       _ <- update(updateOrder)
       applicant <- userRepository.findOneById(order.applicant.id)
       participant <- userRepository.findOneById(order.participant.id)

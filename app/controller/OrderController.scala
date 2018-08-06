@@ -15,7 +15,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
   def createOrder = AsyncActionWithBody[OrderCreation] { implicit request =>
     service.createOrder(request.content).map { order =>
       info(s"Order ${order._id} created")
-      Ok(Map("_id" -> s"${order._id}"))
+      Ok(order)
     }.recover {
       case ex: Exception =>
         constructErrorResult("Error creating a new order", ex)
@@ -60,7 +60,7 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def confirmParticipant(idOrder: String) = AsyncAction { implicit request =>
     service.confirmParticipant(idOrder).map{
-      order => Ok(Map("result" -> s"Order ${order._id} assigned to participant ${order._id} successfully"))
+      order => Ok(Map("result" -> s"Order ${order._id} assigned to participant ${order.participant.firstName} successfully"))
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error updating order", ex)
