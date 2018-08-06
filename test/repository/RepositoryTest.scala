@@ -51,7 +51,7 @@ class RepositoryTest extends MongoTest {
     val participantData = UserDataOrder("11111", "name", "last", "photo", "onesignal", Some(0))
     val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal", Some(0))
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, Some(List(TransportType.MOTORCYCLE)), route, new Date, new Date, Some(new Date), None, None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -140,7 +140,7 @@ class RepositoryTest extends MongoTest {
     val participantData = UserDataOrder("11111", "name", "last", "photo", "oneSignal", Some(0))
     val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "oneSignal", Some(0))
     val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, Some(List(TransportType.MOTORCYCLE)), route, new Date, new Date, Some(new Date), None, None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
 
     "Create a new order into the user" in {
@@ -187,7 +187,7 @@ class RepositoryTest extends MongoTest {
       //Creating another order
       val newOrderId = "11111"
       val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), 123, "description",
-        PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, Some(List(TransportType.MOTORCYCLE)), route, new Date, new Date, Some(new Date), None, None, None, None)
+        PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
       await(repo.updateUserOrder(applicantData.id, newOrder))
 

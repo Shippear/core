@@ -86,12 +86,34 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
     }
 
     "Filter the supported transports" in {
-      val allTransports = priceService.supportedTransport(1, Size.SMALL, Weight.LIGHT).get
-      allTransports must have size TransportType.values.toList.size
-      allTransports must contain(TransportType.WALKING.toString)
-      allTransports must contain(TransportType.BICYCLE.toString)
-      allTransports must contain(TransportType.MOTORCYCLE.toString)
-      allTransports must contain(TransportType.CAR.toString)
+      var transports = priceService.supportedTransport(1, Size.SMALL, Weight.LIGHT)
+      transports must have size TransportType.values.toList.size
+      transports must contain(TransportType.WALKING.toString)
+      transports must contain(TransportType.BICYCLE.toString)
+      transports must contain(TransportType.MOTORCYCLE.toString)
+      transports must contain(TransportType.CAR.toString)
+
+
+      transports = priceService.supportedTransport(9, Size.SMALL, Weight.LIGHT)
+      transports must have size 3
+      transports must contain(TransportType.BICYCLE.toString)
+      transports must contain(TransportType.MOTORCYCLE.toString)
+      transports must contain(TransportType.CAR.toString)
+
+      transports = priceService.supportedTransport(16, Size.SMALL, Weight.LIGHT)
+      transports must have size 2
+      transports must contain(TransportType.MOTORCYCLE.toString)
+      transports must contain(TransportType.CAR.toString)
+
+      transports = priceService.supportedTransport(1, Size.SMALL, Weight.HEAVY)
+      transports must have size 2
+      transports must contain(TransportType.MOTORCYCLE.toString)
+      transports must contain(TransportType.CAR.toString)
+
+      transports = priceService.supportedTransport(1, Size.BIG, Weight.LIGHT)
+      transports must have size 1
+      transports must contain(TransportType.CAR.toString)
+
     }
 
   }

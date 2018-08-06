@@ -33,7 +33,7 @@ class PriceService @Inject()(sizeMultiplierRepository: SizeMultiplierRepository,
         transports = supportedTransport(distanceToKms, size, weight)
         totalPrice = sizeMult * weightMult * scenarioPriceMult * distanceToKms
         price = PriceInformation(size, weight, totalPrice)
-        routePrice = RoutePriceResponse(detail.copy(supportedTransports = transports), price)
+        routePrice = RoutePriceResponse(detail.copy(supportedTransports = Some(transports)), price)
       } yield routePrice
 
     }
@@ -43,14 +43,14 @@ class PriceService @Inject()(sizeMultiplierRepository: SizeMultiplierRepository,
   }
 
 
-  def supportedTransport(distance: Double, size: Size, weight: Weight): Option[List[String]] = {
+  def supportedTransport(distance: Double, size: Size, weight: Weight): List[String] = {
     var transports = TransportType.values.map(_.toString).toBuffer[String]
 
     // Distance in Kms
     if(distance > 15)
       transports = transports.filter(t => t.equals(TransportType.CAR.toString) || t.equals(TransportType.MOTORCYCLE.toString))
     else if(distance > 8)
-      transports = transports.filterNot(_.equals(TransportType.WALKING))
+      transports = transports.filterNot(_.equals(TransportType.WALKING.toString))
 
 
     // Weight
@@ -60,9 +60,9 @@ class PriceService @Inject()(sizeMultiplierRepository: SizeMultiplierRepository,
 
     // Size
     if(size.equals(Size.BIG))
-      transports = transports.filter(_.equals(TransportType.CAR))
+      transports = transports.filter(_.equals(TransportType.CAR.toString))
 
-    Some(transports.toList)
+    transports.toList
 
   }
 

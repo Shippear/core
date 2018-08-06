@@ -1,13 +1,13 @@
 package model.mapper
 
-import java.util.{Date, TimeZone}
+import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
 import common.DateTimeNow
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
-import org.joda.time.{Chronology, DateTimeZone, Minutes}
+import org.joda.time.Minutes
 
 object OrderMapper extends IdGenerator {
 
@@ -24,7 +24,7 @@ object OrderMapper extends IdGenerator {
     val participantData = extractUserData(participant)
     val carrierData = carrier.map(extractUserData)
 
-    val supportedTransports = Some(orderCreation.supportedTransports.map(_.toString))
+    val supportedTransports = orderCreation.supportedTransports.map(_.toString)
 
     val orderNumber = DateTimeNow.now.getMillis
 
