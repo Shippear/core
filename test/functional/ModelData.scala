@@ -4,7 +4,7 @@ import model.internal.TransportType.TransportType
 import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports.DateTime
 
 trait ModelData {
 
@@ -40,19 +40,21 @@ trait ModelData {
   val id_4 = "4"
   val id_5 = "5"
 
-  val marcelo = User(id_1, "oneSignal", "marcelo.l", "marcelo", "l", "36121311",
+  val birthDate = DateTime.now().toDate
+
+  val marcelo = User(id_1, "oneSignal", "marcelo.l", "marcelo", "l", "36121311", birthDate,
     contactInfo, "photoUrl", Seq(almagroAddress), None, Seq(visa, visaDebito), None, None, None)
 
-  val lucas = User(id_2, "oneSignal", "lucas.c", "lucas", "c", "36121312",
+  val lucas = User(id_2, "oneSignal", "lucas.c", "lucas", "c", "36121312", birthDate,
     contactInfo, "photoUrl", Seq(parquePatriciosAddress), None, Seq(masterCard), None, None, None)
 
-  val german = User(id_3, "oneSignal", "german.l", "german", "l", "36121313",
+  val german = User(id_3, "oneSignal", "german.l", "german", "l", "36121313", birthDate,
     contactInfo, "photoUrl", Seq(balvaneraAddress), None, Seq(visa), None, None, None)
 
-  val roman = User(id_4, "oneSignal", "roman.l", "roman", "g", "36121314",
+  val roman = User(id_4, "oneSignal", "roman.l", "roman", "g", "36121314", birthDate,
     contactInfo, "photoUrl", Seq(boedoAddress), None, Seq(visaDebito), None, None, None)
 
-  val nazareno = User(id_5, "oneSignal", "nazareno.l", "nazareno", "l", "36121315",
+  val nazareno = User(id_5, "oneSignal", "nazareno.l", "nazareno", "l", "36121315", birthDate,
     contactInfo, "photoUrl", Seq(saavedraAddress), None, Seq(visa, masterCard), None, None, None)
 
 

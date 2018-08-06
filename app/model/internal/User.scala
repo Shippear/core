@@ -1,5 +1,7 @@
 package model.internal
 
+import java.util.Date
+
 import com.fasterxml.jackson.annotation.JsonProperty
 import model.internal.OrderState.{CANCELLED, DELIVERED, ON_TRAVEL, PENDING_CARRIER, PENDING_PARTICIPANT, PENDING_PICKUP}
 import model.response.UserResponse
@@ -11,6 +13,7 @@ case class User(@JsonProperty("_id") _id : String,
                 firstName: String,
                 lastName: String,
                 dni: String,
+                birthDate: Date,
                 contactInfo: ContactInfo,
                 photoUrl: String,
                 addresses: Seq[Address],
@@ -36,6 +39,7 @@ object User {
       user.firstName,
       user.lastName,
       user.dni,
+      user.birthDate,
       user.contactInfo,
       user.photoUrl,
       user.addresses,

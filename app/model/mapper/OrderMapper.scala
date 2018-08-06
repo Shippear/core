@@ -3,6 +3,7 @@ package model.mapper
 import java.util.{Date, TimeZone}
 
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
@@ -25,7 +26,7 @@ object OrderMapper extends IdGenerator {
 
     val supportedTransports = Some(orderCreation.supportedTransports.map(_.toString))
 
-    val orderNumber = DateTime.now(DateTimeZone.forID("America/Argentina/Buenos_Aires")).getMillis
+    val orderNumber = DateTimeNow.now.getMillis
 
     val awaitTo = calculateAwait(orderCreation.availableFrom, orderCreation.availableTo)
 

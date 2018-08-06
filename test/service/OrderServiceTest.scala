@@ -9,7 +9,7 @@ import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
 import onesignal.OneSignalClient
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports.DateTime
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import qrcodegenerator.QrCodeGenerator
@@ -90,13 +90,13 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {
       // 2 Orders
       val orders = Some(List(order_1, order_2))
-      val user = User(carrierId, "oneSignalId", "usxerName", "firstName", "lastName", "36121312",
+      val user = User(carrierId, "oneSignalId", "usxerName", "firstName", "lastName", "36121312", DateTime.now().toDate,
         contactInfo, "photoUrl", Seq(address), orders, Seq(paymentMethod), None, None, None)
 
       orderService.validateCarrier(user)
 
       val orders4 = Some(List(order_1, order_2, order_bla))
-      val user_2 = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312",
+      val user_2 = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
         contactInfo, "photoUrl", Seq(address), orders4, Seq(paymentMethod), None, None, None)
 
       orderService.validateCarrier(user_2)
@@ -105,7 +105,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Throw ShippearException when the carrier has 3 orders ON_TRAVEL" in {
       // 3 Orders
       val orders = Some(List(order_1, order_2, order_3))
-      val user = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312",
+      val user = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
         contactInfo, "photoUrl", Seq(address), orders, Seq(paymentMethod), None, None, None)
 
       intercept[ShippearException] {

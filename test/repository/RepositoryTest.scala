@@ -11,6 +11,7 @@ import model.internal.price.enum.{Size, Weight}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.test.Helpers.{await, _}
+import com.github.nscala_time.time.Imports.DateTime
 import qrcodegenerator.QrCodeGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -124,7 +125,7 @@ class RepositoryTest extends MongoTest {
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
     val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
-    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
+    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
       contactInfo, "photoUrl", Seq(address), None, Seq(paymentMethod), None, None, None)
 
     //Order

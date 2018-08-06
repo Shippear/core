@@ -1,18 +1,17 @@
 package service
 
 import com.google.inject.Inject
+import common.DateTimeNow
 import model.internal.OrderState.OrderState
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
 import model.internal._
 import model.mapper.OrderMapper
 import model.request.OrderCreation
 import onesignal.{EmailType, OneSignalClient}
-import org.joda.time.DateTimeZone
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
-import com.github.nscala_time.time.Imports.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,7 +34,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     val beginDate = order.availableFrom
     val endDate = order.availableTo
 
-    if(beginDate.before(DateTime.now(DateTimeZone.forID("America/Argentina/Buenos_Aires")).minusMinutes(5).toDate) || beginDate.after(endDate))
+    if(beginDate.before(DateTimeNow.now.minusMinutes(5).toDate) || beginDate.after(endDate))
       throw ShippearException(s"The order has an invalid date range with from: $beginDate and to: $endDate")
   }
 
@@ -87,7 +86,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     if(verification) {
       val newOrder = userType match {
         case UserType.CARRIER => order.copy(state = OrderState.ON_TRAVEL)
-        case _ => order.copy(state = OrderState.DELIVERED)
+        case _ => order.copy(state = OrderState.DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate))
       }
       repository.update(newOrder)
     } else Future.successful(Unit)
