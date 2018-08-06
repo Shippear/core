@@ -5,4 +5,5 @@ import model.internal.{Address, Geolocation}
 case class RouteDetail(originGeolocation: Geolocation,
                        destinationAddress: Address,
                        distanceText: String, distanceValue: Long,
-                       duration: String)
+                       duration: String,
+                       supportedTransports: Option[List[String]])

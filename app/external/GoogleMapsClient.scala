@@ -6,10 +6,11 @@ import model.internal.{Address, Geolocation}
 import model.response.apigoogleresponse.ApiMapsResponse
 import model.response.price.RouteDetail
 import play.api.libs.ws.{WSClient, WSResponse}
+import service.PriceService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) extends SnakeCaseJsonProtocol {
+class GoogleMapsClient @Inject()(ws: WSClient, priceService: PriceService)(implicit ec: ExecutionContext) extends SnakeCaseJsonProtocol {
 
   val ApiKey = "AIzaSyDVVJd5t5m0aIBMNIo4q6NK6Dnr5-nWVfM"
   val DistanceMatrixUrl = "https://maps.googleapis.com/maps/api/distancematrix/json"
@@ -35,7 +36,7 @@ class GoogleMapsClient @Inject()(ws: WSClient)(implicit ec: ExecutionContext) ex
         apiMapsResponse.rows.flatMap {
           row =>
             row.elements.map {
-              elem => RouteDetail(origin, address, elem.distance.text, elem.distance.value, elem.duration.text)
+              elem => RouteDetail(origin, address, elem.distance.text, elem.distance.value, elem.duration.text, None)
             }
         }
       }

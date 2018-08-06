@@ -1,5 +1,7 @@
 package model.response
 
+import java.util.Date
+
 import com.fasterxml.jackson.annotation.JsonProperty
 import model.internal._
 
@@ -9,6 +11,7 @@ case class UserResponse(@JsonProperty("_id") _id : String,
                          firstName: String,
                          lastName: String,
                          dni: String,
+                         birthDate: Date,
                          contactInfo: ContactInfo,
                          photoUrl: String,
                          addresses: Seq[Address],

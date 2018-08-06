@@ -7,9 +7,12 @@ import dao.util.ShippearDAO
 import model.internal.OrderState.{PENDING_PARTICIPANT, _}
 import model.internal.UserType.{APPLICANT, CARRIER}
 import model.internal._
+import model.internal.price.enum.{Size, Weight}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.test.Helpers.{await, _}
+import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
 import qrcodegenerator.QrCodeGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,12 +47,14 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(1, "Nuñez")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
+    val birthDate = DateTimeNow.now.toDate
+    val contactInfo = ContactInfo("email@email.com", "011123119")
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
-    val applicantData = UserDataOrder(idUser, "name", "last", "photo", "onesignal")
-    val participantData = UserDataOrder("11111", "name", "last", "photo", "onesignal")
-    val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
+    val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+    val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+    val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -91,8 +96,11 @@ class RepositoryTest extends MongoTest {
       when(user._id).thenReturn(carrierData.id)
       when(user.firstName).thenReturn("name")
       when(user.lastName).thenReturn("last")
+      when(user.birthDate).thenReturn(carrierData.birthDay)
+      when(user.contactInfo).thenReturn(carrierData.contactInfo)
       when(user.photoUrl).thenReturn("photo")
       when(user.onesignalId).thenReturn("onesignal")
+      when(user.scoring).thenReturn(Some(0.0))
       await(repo.create(order))
       await(repo.assignCarrier(order, user , qrCode))
 
@@ -122,7 +130,7 @@ class RepositoryTest extends MongoTest {
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
     val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
-    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312",
+    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
       contactInfo, "photoUrl", Seq(address), None, Seq(paymentMethod), None, None, None)
 
     //Order
@@ -133,11 +141,12 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(5, "Balvanera")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
-    val applicantData = UserDataOrder(idUser, "name", "last", "photo", "oneSignal")
-    val participantData = UserDataOrder("11111", "name", "last", "photo", "oneSignal")
-    val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "oneSignal")
+    val birthDate = DateTimeNow.now.toDate
+    val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
+    val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
+    val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
     val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
 
     "Create a new order into the user" in {
@@ -184,7 +193,7 @@ class RepositoryTest extends MongoTest {
       //Creating another order
       val newOrderId = "11111"
       val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), 123, "description",
-        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+        PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
       await(repo.updateUserOrder(applicantData.id, newOrder))
 

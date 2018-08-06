@@ -7,7 +7,7 @@ import net.glxn.qrgen.javase.QRCode
 
 class QrCodeGenerator {
 
-  def generateQrImage(idOrder: String): QRCode = QRCode.from(idOrder).to(ImageType.JPG)
+  def generateQrImage(idOrder: String): QRCode = QRCode.from(idOrder).to(ImageType.PNG).withSize(400, 400)
 
   def generateQrImageFile(idOrder : String): File = this.generateQrImage(idOrder).file()
 

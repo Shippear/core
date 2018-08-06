@@ -1,7 +1,12 @@
 package model.internal
 
+import java.util.Date
+
 case class UserDataOrder(id: String,
                          firstName: String,
                          lastName: String,
+                         birthDay: Date,
+                         contactInfo: ContactInfo,
                          photoUrl: String,
-                         oneSignalId: String)
+                         oneSignalId: String,
+                         scoring: Option[Double])

@@ -25,7 +25,7 @@ class RoutePriceService @Inject()(userService: UserService,
     val routesPrices = userAddress.flatMap { listAddress =>
       for {
         routes <- searchRouteDetails(routeRequest, listAddress)
-        routesPrices <- priceService.calculatePrice(routes, routeRequest.size, routeRequest.weight)
+        routesPrices <- priceService.calculatePriceAndTransports(routes, routeRequest.size, routeRequest.weight)
       } yield routesPrices
 
     }

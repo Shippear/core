@@ -3,6 +3,7 @@ package model.mapper
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
@@ -11,7 +12,7 @@ import org.joda.time.Minutes
 object OrderMapper extends IdGenerator {
 
   def extractUserData(user: User): UserDataOrder = {
-    UserDataOrder(user._id, user.firstName, user.lastName, user.photoUrl, user.onesignalId)
+    UserDataOrder(user._id, user.firstName, user.lastName, user.birthDate, user.contactInfo, user.photoUrl, user.onesignalId, user.scoring)
   }
 
   def orderCreationToOrder(orderCreation: OrderCreation,
@@ -23,7 +24,9 @@ object OrderMapper extends IdGenerator {
     val participantData = extractUserData(participant)
     val carrierData = carrier.map(extractUserData)
 
-    val orderNumber = DateTime.now().getMillis
+    val supportedTransports = orderCreation.supportedTransports.map(_.toString)
+
+    val orderNumber = DateTimeNow.now.getMillis
 
     val awaitTo = calculateAwait(orderCreation.availableFrom, orderCreation.availableTo)
 
@@ -35,12 +38,16 @@ object OrderMapper extends IdGenerator {
       orderCreation.description,
       OrderState.PENDING_PARTICIPANT,
       orderCreation.operationType,
+      orderCreation.size,
+      orderCreation.weight,
+      supportedTransports,
       orderCreation.route,
       orderCreation.availableFrom,
       orderCreation.availableTo,
       awaitTo,
       orderCreation.qrCode,
       orderCreation.ratedCarrier,
+      orderCreation.price,
       None
     )
 

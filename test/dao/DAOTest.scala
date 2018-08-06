@@ -2,10 +2,12 @@ package dao
 
 import java.util.Date
 
+import common.DateTimeNow
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OrderState._
 import model.internal._
+import model.internal.price.enum.{Size, Weight}
 import org.joda.time.DateTime
 import org.mongodb.scala.model.Filters
 import play.api.test.Helpers.{await, _}
@@ -30,18 +32,20 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
-  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal")
+  val birthDate = DateTimeNow.now.toDate
+  val contactInfo = ContactInfo("email@email.com", "011123119")
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
   lazy val participantId = "11111"
-  val participantData = UserDataOrder(participantId, "name", "last", "photo", "onesignal")
+  val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0))
 
 
   val order = Order("123", applicantData, participantData, None, 123, "description",
-    PENDING_PICKUP, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+    PENDING_PICKUP, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
   val qrCodeGenerator = new QrCodeGenerator
   val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
   val orderWithQrCode = Order("123", applicantData, participantData, None, 123, "description",
-    "state", "operationType", route, new Date, new Date, Some(new Date), Some(qrCode), None, None)
+    "state", "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), Some(qrCode), None, None, None)
 
   "OrderDAO" should{
     "Save an object" in {
