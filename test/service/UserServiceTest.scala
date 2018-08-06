@@ -3,6 +3,7 @@ package service
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
 import model.internal._
 import model.internal.OrderState._
 import org.scalatest.mockito.MockitoSugar
@@ -27,10 +28,11 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
   val destinationCity = City(1, "Nuñez")
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
-
-  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal", Some(0))
-  val participantData = UserDataOrder("123", "name", "last", "photo", "onesignal", Some(0))
-  val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal", Some(0))
+  val birthDate = DateTimeNow.now.toDate
+  val contactInfo = ContactInfo("email@email.com", "011123119")
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
 
 
   "OrdersByState" should {
@@ -58,7 +60,6 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
     //User
     val idUser = "123"
     val geolocation = Geolocation(132, -123)
-    val contactInfo = ContactInfo("email@email.com", "011123119")
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
     val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))

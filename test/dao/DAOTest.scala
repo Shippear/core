@@ -2,6 +2,7 @@ package dao
 
 import java.util.Date
 
+import common.DateTimeNow
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OrderState._
@@ -31,9 +32,11 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
-  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal", Some(0))
+  val birthDate = DateTimeNow.now.toDate
+  val contactInfo = ContactInfo("email@email.com", "011123119")
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
   lazy val participantId = "11111"
-  val participantData = UserDataOrder(participantId, "name", "last", "photo", "onesignal", Some(0))
+  val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0))
 
 
   val order = Order("123", applicantData, participantData, None, 123, "description",
