@@ -12,7 +12,7 @@ import org.joda.time.Minutes
 object OrderMapper extends IdGenerator {
 
   def extractUserData(user: User): UserDataOrder = {
-    UserDataOrder(user._id, user.firstName, user.lastName, user.photoUrl, user.onesignalId, user.scoring)
+    UserDataOrder(user._id, user.firstName, user.lastName, user.birthDate, user.contactInfo, user.photoUrl, user.onesignalId, user.scoring)
   }
 
   def orderCreationToOrder(orderCreation: OrderCreation,

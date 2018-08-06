@@ -10,6 +10,7 @@ import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
 import onesignal.OneSignalClient
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import qrcodegenerator.QrCodeGenerator
@@ -30,9 +31,12 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
   val route = Route(origin, destination)
 
-  val applicantData = UserDataOrder("12345", "name", "last", "photo", "onesignal", Some(0))
-  val participantData = UserDataOrder("123", "name", "last", "photo", "onesignal", Some(0))
-  val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal", Some(0))
+  val birthDate = DateTimeNow.now.toDate
+  val contactInfo = ContactInfo("email@email.com", "011123119")
+
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
@@ -41,7 +45,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
-  val otherCarrier = UserDataOrder("other", "name", "last", "photo", "onesignal", Some(0))
+  val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
@@ -50,7 +54,6 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
   //User
   val geolocation = Geolocation(132, -123)
-  val contactInfo = ContactInfo("email@email.com", "011123119")
   val city = City(2, "Almagro")
   val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
   val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))

@@ -86,7 +86,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     if(verification) {
       val newOrder = userType match {
         case UserType.CARRIER => order.copy(state = OrderState.ON_TRAVEL)
-        case _ => order.copy(state = OrderState.DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate))
+        case _ => order.copy(state = OrderState.DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
       }
       repository.update(newOrder)
     } else Future.successful(Unit)

@@ -12,6 +12,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.test.Helpers.{await, _}
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
 import qrcodegenerator.QrCodeGenerator
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,10 +47,12 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(1, "Nuñez")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
+    val birthDate = DateTimeNow.now.toDate
+    val contactInfo = ContactInfo("email@email.com", "011123119")
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
-    val applicantData = UserDataOrder(idUser, "name", "last", "photo", "onesignal", Some(0))
-    val participantData = UserDataOrder("11111", "name", "last", "photo", "onesignal", Some(0))
-    val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal", Some(0))
+    val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+    val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+    val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
@@ -93,6 +96,8 @@ class RepositoryTest extends MongoTest {
       when(user._id).thenReturn(carrierData.id)
       when(user.firstName).thenReturn("name")
       when(user.lastName).thenReturn("last")
+      when(user.birthDate).thenReturn(carrierData.birthDay)
+      when(user.contactInfo).thenReturn(carrierData.contactInfo)
       when(user.photoUrl).thenReturn("photo")
       when(user.onesignalId).thenReturn("onesignal")
       when(user.scoring).thenReturn(Some(0.0))
@@ -136,9 +141,10 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(5, "Balvanera")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
     val route = Route(origin, destination)
-    val applicantData = UserDataOrder(idUser, "name", "last", "photo", "oneSignal", Some(0))
-    val participantData = UserDataOrder("11111", "name", "last", "photo", "oneSignal", Some(0))
-    val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "oneSignal", Some(0))
+    val birthDate = DateTimeNow.now.toDate
+    val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
+    val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
+    val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
     val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
 
