@@ -7,6 +7,7 @@ import dao.util.ShippearDAO
 import model.internal.OrderState.{PENDING_PARTICIPANT, _}
 import model.internal.UserType.{APPLICANT, CARRIER}
 import model.internal._
+import model.internal.price.enum.{Size, Weight}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.test.Helpers.{await, _}
@@ -49,7 +50,7 @@ class RepositoryTest extends MongoTest {
     val participantData = UserDataOrder("11111", "name", "last", "photo", "onesignal")
     val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -137,7 +138,7 @@ class RepositoryTest extends MongoTest {
     val participantData = UserDataOrder("11111", "name", "last", "photo", "oneSignal")
     val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "oneSignal")
     val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
 
 
     "Create a new order into the user" in {
@@ -184,7 +185,7 @@ class RepositoryTest extends MongoTest {
       //Creating another order
       val newOrderId = "11111"
       val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), 123, "description",
-        PENDING_PARTICIPANT, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+        PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
 
       await(repo.updateUserOrder(applicantData.id, newOrder))
 

@@ -2,17 +2,15 @@ package service
 
 import java.util.Date
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
-import model.internal._
 import model.internal.OrderState.ON_TRAVEL
 import model.internal.UserType.{APPLICANT, CARRIER}
+import model.internal._
+import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
 import onesignal.OneSignalClient
 import org.joda.time.DateTime
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.test.Helpers.await
 import qrcodegenerator.QrCodeGenerator
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
@@ -36,15 +34,15 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val carrierData = UserDataOrder("carrierId", "name", "last", "photo", "onesignal")
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", "photo", "onesignal")
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
-    ON_TRAVEL, "operationType", route, new Date, new Date, Some(new Date), None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, Some(TransportType.MOTORIZED), route, new Date, new Date, Some(new Date), None, None, None)
 
   val orderWithoutCarrier = order_1.copy(carrier = None)
 
@@ -73,7 +71,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val afterTomorow = today.plusDays(2)
 
       val orderCreation = OrderCreation(None, "a", "b", "description",
-        OperationType.SENDER, route, today.toDate, tomorrow.toDate, None, None)
+        OperationType.SENDER, Size.MEDIUM, Weight.MEDIUM, route, today.toDate, tomorrow.toDate, None, None)
 
       orderService.validateOrder(orderCreation)
 
