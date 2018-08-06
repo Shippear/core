@@ -1,17 +1,17 @@
 package model.mapper
 
-import java.util.Date
+import java.util.{Date, TimeZone}
 
 import com.github.nscala_time.time.Imports.DateTime
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
-import org.joda.time.Minutes
+import org.joda.time.{Chronology, DateTimeZone, Minutes}
 
 object OrderMapper extends IdGenerator {
 
   def extractUserData(user: User): UserDataOrder = {
-    UserDataOrder(user._id, user.firstName, user.lastName, user.photoUrl, user.onesignalId)
+    UserDataOrder(user._id, user.firstName, user.lastName, user.photoUrl, user.onesignalId, user.scoring)
   }
 
   def orderCreationToOrder(orderCreation: OrderCreation,
@@ -23,7 +23,9 @@ object OrderMapper extends IdGenerator {
     val participantData = extractUserData(participant)
     val carrierData = carrier.map(extractUserData)
 
-    val orderNumber = DateTime.now().getMillis
+    val supportedTransports = Some(orderCreation.supportedTransports.map(_.toString))
+
+    val orderNumber = DateTime.now(DateTimeZone.forID("America/Argentina/Buenos_Aires")).getMillis
 
     val awaitTo = calculateAwait(orderCreation.availableFrom, orderCreation.availableTo)
 
@@ -37,13 +39,14 @@ object OrderMapper extends IdGenerator {
       orderCreation.operationType,
       orderCreation.size,
       orderCreation.weight,
-      None,
+      supportedTransports,
       orderCreation.route,
       orderCreation.availableFrom,
       orderCreation.availableTo,
       awaitTo,
       orderCreation.qrCode,
       orderCreation.ratedCarrier,
+      orderCreation.price,
       None
     )
 

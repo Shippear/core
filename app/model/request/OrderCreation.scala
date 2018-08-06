@@ -14,8 +14,10 @@ case class OrderCreation(@JsonProperty("_id") _id: Option[String],
                          @JsonScalaEnumeration(classOf[OperationTypeType]) operationType: OperationType.OperationType,
                          @JsonScalaEnumeration(classOf[SizeType]) size: Size.Size,
                          @JsonScalaEnumeration(classOf[WeightType]) weight: Weight.Weight,
+                         @JsonScalaEnumeration(classOf[TransportTypeType]) supportedTransports: List[TransportType.TransportType],
                          route: Route,
                          availableFrom: Date,
                          availableTo: Date,
                          qrCode: Option[Array[Byte]],
-                         ratedCarrier: Option[Boolean])
+                         ratedCarrier: Option[Boolean],
+                         price: Option[Double])

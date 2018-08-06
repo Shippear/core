@@ -35,7 +35,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
   private val address = Macros.createCodecProviderIgnoreNone[Address]()
   private val route = Macros.createCodecProviderIgnoreNone[Route]()
   private val order = Macros.createCodecProviderIgnoreNone[Order]()
-  private val userDataOrder = Macros.createCodecProvider[UserDataOrder]()
+  private val userDataOrder = Macros.createCodecProviderIgnoreNone[UserDataOrder]()
   private val user = Macros.createCodecProviderIgnoreNone[User]()
 
   val codecRegistry = fromRegistries(

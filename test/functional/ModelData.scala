@@ -1,5 +1,6 @@
 package functional
 
+import model.internal.TransportType.TransportType
 import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
@@ -70,8 +71,10 @@ trait ModelData {
   val tomorrow = today.plusDays(1)
   val afterTomorow = today.plusDays(2)
 
-  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, Size.SMALL, Weight.MEDIUM, almagroToSaavedra, today.toDate,
-    tomorrow.toDate, None, None)
+  val supportedTransports: List[TransportType] = TransportType.values.toList
+
+  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, Size.SMALL, Weight.MEDIUM, supportedTransports, almagroToSaavedra, today.toDate,
+    tomorrow.toDate, None, None, Some(100.50))
 
 }
 

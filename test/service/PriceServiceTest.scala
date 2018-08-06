@@ -1,6 +1,6 @@
 package service
 
-import model.internal.{Address, City, Geolocation}
+import model.internal.{Address, City, Geolocation, TransportType}
 import model.internal.price.enum.{Size, Weight}
 import model.response.price.RouteDetail
 import org.mockito.Mockito.when
@@ -21,11 +21,12 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
     val destinationGeo = Geolocation(1,1)
     val destination = Address(destinationGeo, Some("alias"), "street", 123, "zipCode", Some("appart"), destinationCity, public = true)
     val duration = "blabla"
+    val supportedTransports = Some(TransportType.values.map(_.toString).toList)
     // 5 kms
     val distance = "5"
     val distanceMeters = 5000
-    val routeDetail1 = RouteDetail(originGeo, destination, distance, distanceMeters, duration)
-    val listRoutes = List(routeDetail1)
+    val routeDetail = RouteDetail(originGeo, destination, distance, distanceMeters, duration, supportedTransports)
+    val listRoutes = List(routeDetail)
 
     val sizePriceSmall = 2.0
     val sizePriceMedium = 2.5
@@ -61,7 +62,7 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
       // Small = 2
       // Heavy = 4
       // 5 * 1 * 2 * 4 = 40
-      var result = await(priceService.calculatePrice(listRoutes, Size.SMALL, Weight.HEAVY)).head
+      var result = await(priceService.calculatePriceAndTransports(listRoutes, Size.SMALL, Weight.HEAVY)).head
       result.priceInformation.price mustBe 40
 
       // Distance = 5
@@ -69,7 +70,7 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
       // Medium = 2.5
       // Medium = 3
       // 5 * 1 * 2.5 * 3 = 37.5
-      result = await(priceService.calculatePrice(listRoutes, Size.MEDIUM, Weight.MEDIUM)).head
+      result = await(priceService.calculatePriceAndTransports(listRoutes, Size.MEDIUM, Weight.MEDIUM)).head
       result.priceInformation.price mustBe 37.5
 
       //Urgent!
@@ -78,10 +79,19 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
       // Medium = 2.5
       // Medium = 3
       // 5 * 1 * 2.5 * 3 = 37.5
-      result = await(priceService.calculatePrice(listRoutes, Size.MEDIUM, Weight.MEDIUM, Scenario.URGENT)).head
+      result = await(priceService.calculatePriceAndTransports(listRoutes, Size.MEDIUM, Weight.MEDIUM, Scenario.URGENT)).head
       result.priceInformation.price mustBe 112.5
 
 
+    }
+
+    "Filter the supported transports" in {
+      val allTransports = priceService.supportedTransport(1, Size.SMALL, Weight.LIGHT).get
+      allTransports must have size TransportType.values.toList.size
+      allTransports must contain(TransportType.WALKING.toString)
+      allTransports must contain(TransportType.BICYCLE.toString)
+      allTransports must contain(TransportType.MOTORCYCLE.toString)
+      allTransports must contain(TransportType.CAR.toString)
     }
 
   }
