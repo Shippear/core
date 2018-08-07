@@ -12,7 +12,7 @@ trait Service[T] {
 
   def findById(id: String) = repository.findOneById(id)
 
-  def update(doc: T) = repository.update(doc)
+  def update(doc: T) = repository.replace(doc)
 
   def all = repository.all
 }

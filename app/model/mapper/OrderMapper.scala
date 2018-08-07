@@ -47,6 +47,7 @@ object OrderMapper extends IdGenerator {
       awaitTo,
       orderCreation.qrCode,
       orderCreation.ratedCarrier,
+      orderCreation.paymentMethod,
       orderCreation.price,
       None
     )

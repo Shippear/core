@@ -20,4 +20,5 @@ case class OrderCreation(@JsonProperty("_id") _id: Option[String],
                          availableTo: Date,
                          qrCode: Option[Array[Byte]],
                          ratedCarrier: Option[Boolean],
-                         price: Option[Double])
+                         paymentMethod: PaymentMethod,
+                         price: Double)

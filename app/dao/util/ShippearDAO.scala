@@ -27,8 +27,9 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
   private lazy val collection = dbContext.database(config.database).getCollection[T](collectionName)
   implicit val codecs = dbContext.codecRegistry
 
+  private def bson(it: T) = bsonmacros.toDBObject(it)
 
-  private def getId(it: T)= bsonmacros.toDBObject(it).get(ID)
+  private def getId(it: T)= bson(it).get(ID)
 
   def byIdSelector(id: CanBeBsonValue): Document = Document(ID -> id.value)
 
@@ -48,15 +49,13 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
     find(Document(filters.toBsonDocument(Filters.getClass, codecs))).toFuture
 
 
-  def updateOneById(id: CanBeBsonValue, update: Document): Future[_] =
-    collection.updateOne(byIdSelector(id), update).toFuture
+  def insertOne(it: T): Future[_] = collection.insertOne(it).toFuture()
+
+  def updateOne(it: T): Future[_] = collection.updateOne(bson(it), byIdSelector(getId(it))).toFuture()
 
   def replaceOne(it: T): Future[_] = collection.replaceOne(byIdSelector(getId(it)), it).toFuture
 
-  def insertOne(it: T): Future[_] = collection.insertOne(it).toFuture()
-
-  def upsertOne(it: T): Future[_] =  collection.replaceOne(byIdSelector(getId(it)), it,
-    UpdateOptions().upsert(true)).toFuture
+  def upsertOne(it: T): Future[_] =  collection.replaceOne(byIdSelector(getId(it)), it, UpdateOptions().upsert(true)).toFuture
 
   def all: Future[Seq[T]] = collection.find().toFuture()
 

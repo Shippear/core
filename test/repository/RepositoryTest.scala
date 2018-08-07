@@ -40,6 +40,7 @@ class RepositoryTest extends MongoTest {
     //Order
     val idUser = "123"
     val idOrder = "idOrder"
+    val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
     val originGeolocation = Geolocation(132, -123)
     val originCity = City(2, "Almagro")
     val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
@@ -54,7 +55,8 @@ class RepositoryTest extends MongoTest {
     val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
     val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+      new Date, Some(new Date), None, None, visa, 0, None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -70,7 +72,7 @@ class RepositoryTest extends MongoTest {
       val savedOrder = await(repo.findOneById(idOrder))
       val newApplicant = applicantData.copy(id = "newId")
       val newOrder = savedOrder.copy(applicant = newApplicant)
-      await(repo.update(newOrder))
+      await(repo.replace(newOrder))
 
       val a = await(repo.all)
       a.size mustBe 1
@@ -136,6 +138,7 @@ class RepositoryTest extends MongoTest {
     //Order
     val originGeolocation = Geolocation(132, -123)
     val originCity = City(1, "Parque Patricios")
+    val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
     val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
     val destinationGeolocation = Geolocation(132, -123)
     val destinationCity = City(5, "Balvanera")
@@ -146,7 +149,8 @@ class RepositoryTest extends MongoTest {
     val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
     val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
     val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
-      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+      PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+      new Date, Some(new Date), None, None, visa, 0, None)
 
 
     "Create a new order into the user" in {
@@ -192,8 +196,10 @@ class RepositoryTest extends MongoTest {
 
       //Creating another order
       val newOrderId = "11111"
+      val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
       val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), 123, "description",
-        PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+        PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+        new Date, Some(new Date), None, None, visa, 0, None)
 
       await(repo.updateUserOrder(applicantData.id, newOrder))
 

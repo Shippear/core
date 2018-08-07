@@ -144,6 +144,11 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       toState(orderLucas.state) mustBe OrderState.DELIVERED
       toState(orderGerman.state) mustBe OrderState.DELIVERED
 
+      order.finalizedDate.isDefined mustBe true
+      orderMarcelo.finalizedDate.isDefined mustBe true
+      orderLucas.finalizedDate.isDefined mustBe true
+      orderGerman.finalizedDate.isDefined mustBe true
+
 
 
 

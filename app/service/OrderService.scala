@@ -34,7 +34,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     val beginDate = order.availableFrom
     val endDate = order.availableTo
 
-    if(beginDate.before(DateTimeNow.now.minusMinutes(5).toDate) || beginDate.after(endDate))
+    if(beginDate.before(DateTimeNow.now.minusMinutes(10).toDate) || beginDate.after(endDate))
       throw ShippearException(s"The order has an invalid date range with from: $beginDate and to: $endDate")
   }
 
@@ -50,7 +50,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     for {
       order <- repository.findOneById(orderId)
       _ = validateOrderState(order.state, OrderState.PENDING_PARTICIPANT)
-      _ <- repository.update(order.copy(state = OrderState.PENDING_CARRIER))
+      _ <- repository.replace(order.copy(state = OrderState.PENDING_CARRIER))
     } yield order
   }
 
@@ -88,7 +88,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
         case UserType.CARRIER => order.copy(state = OrderState.ON_TRAVEL)
         case _ => order.copy(state = OrderState.DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
       }
-      repository.update(newOrder)
+      repository.replace(newOrder)
     } else Future.successful(Unit)
 
   }

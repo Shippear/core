@@ -26,9 +26,9 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
 
   }
 
-  override def update(order: Order) = {
+  override def replace(order: Order) = {
     for {
-      result <- super.update(order)
+      result <- super.replace(order)
       _ <- userRepository.updateUserOrder(order.applicant.id, order)
       _ <- userRepository.updateUserOrder(order.participant.id, order)
       _ <- updateCarrier(order)
@@ -40,7 +40,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     for {
       order <- super.findOneById(id)
       updateOrder = order.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate))
-      _ <- update(updateOrder)
+      _ <- replace(updateOrder)
       applicant <- userRepository.findOneById(order.applicant.id)
       participant <- userRepository.findOneById(order.participant.id)
       someCarrier <- findCarrier(order.carrier)
@@ -52,7 +52,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     val carrierData = OrderMapper.extractUserData(carrier)
     val newOrder = order.copy(carrier = Some(carrierData), qrCode = Some(qrCode), state = PENDING_PICKUP)
     for{
-      _ <- update(newOrder)
+      _ <- replace(newOrder)
     } yield newOrder
   }
 
