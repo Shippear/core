@@ -50,7 +50,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     for {
       order <- repository.findOneById(orderId)
       _ = validateOrderState(order.state, OrderState.PENDING_PARTICIPANT)
-      _ <- repository.replace(order.copy(state = OrderState.PENDING_CARRIER))
+      _ <- repository.update(order.copy(state = OrderState.PENDING_CARRIER))
     } yield order
   }
 
@@ -88,7 +88,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
         case UserType.CARRIER => order.copy(state = OrderState.ON_TRAVEL)
         case _ => order.copy(state = OrderState.DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
       }
-      repository.replace(newOrder)
+      repository.update(newOrder)
     } else Future.successful(Unit)
 
   }

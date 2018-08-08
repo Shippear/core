@@ -72,7 +72,7 @@ class RepositoryTest extends MongoTest {
       val savedOrder = await(repo.findOneById(idOrder))
       val newApplicant = applicantData.copy(id = "newId")
       val newOrder = savedOrder.copy(applicant = newApplicant)
-      await(repo.replace(newOrder))
+      await(repo.update(newOrder))
 
       val a = await(repo.all)
       a.size mustBe 1
