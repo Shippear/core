@@ -55,6 +55,23 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
       await(dao.all).size mustBe 1
     }
 
+    "Update an object" in {
+      order.participant.id mustBe participantId
+      await(dao.all).size mustBe 0
+      await(dao.insertOne(order))
+      await(dao.all).size mustBe 1
+      val originalOrder = await(dao.findOneById(order._id) )
+
+      val modifiedOrder = originalOrder.copy(description = "other")
+      await(dao.updateOne(modifiedOrder))
+
+      await(dao.all).size mustBe 1
+      val foundModified = await(dao.findOneById(order._id))
+      foundModified.description mustEqual "other"
+      foundModified.size mustEqual originalOrder.size
+
+    }
+
     "Replace an object" in {
       order.participant.id mustBe participantId
       await(dao.all).size mustBe 0

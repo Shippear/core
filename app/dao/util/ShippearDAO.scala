@@ -35,8 +35,7 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
 
   def find(bson: Document): FindObservable[T] = collection.find(bson)
 
-  def findOneById(id: CanBeBsonValue): Future[T] =
-    findOne(byIdSelector(id))
+  def findOneById(id: CanBeBsonValue): Future[T] = findOne(byIdSelector(id))
 
   def findOne(document: Document): Future[T] = {
     find(document).limit(1).toFuture.map(_.headOption).map{
@@ -51,7 +50,10 @@ class ShippearDAO[T] @Inject()(collectionName: String, dbContext: ShippearDBCont
 
   def insertOne(it: T): Future[_] = collection.insertOne(it).toFuture()
 
-  def updateOne(it: T): Future[_] = collection.updateOne(bson(it), byIdSelector(getId(it))).toFuture()
+  def updateOne(it: T): Future[_] = {
+    val document = bson(it)
+    collection.updateOne(byIdSelector(getId(it)), Document("$set" -> document)).toFuture()
+  }
 
   def replaceOne(it: T): Future[_] = collection.replaceOne(byIdSelector(getId(it)), it).toFuture
 
