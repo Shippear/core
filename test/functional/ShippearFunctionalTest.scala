@@ -3,6 +3,7 @@ package functional
 import embbebedmongo.MongoTest
 import model.internal.OrderState._
 import model.internal.{AssignCarrier, OrderState, OrderToValidate, UserType}
+import model.request.CarrierRating
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.Helpers.{await, _}
 import service.Exception.ShippearException
@@ -144,7 +145,21 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       toState(orderLucas.state) mustBe OrderState.DELIVERED
       toState(orderGerman.state) mustBe OrderState.DELIVERED
 
+      order.finalizedDate.isDefined mustBe true
+      orderMarcelo.finalizedDate.isDefined mustBe true
+      orderLucas.finalizedDate.isDefined mustBe true
+      orderGerman.finalizedDate.isDefined mustBe true
 
+      //6. Rating the carrier
+      val rating = CarrierRating(order._id, 4)
+      await(orderService.rateCarrier(rating))
+
+      userGerman = await(userService.findById(german._id))
+      userGerman.scoring.get mustBe 4
+
+      intercept[ShippearException]{
+        await(orderService.rateCarrier(rating))
+      }
 
 
     }

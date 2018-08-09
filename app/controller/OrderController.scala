@@ -3,7 +3,7 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.{AssignCarrier, Order, OrderToValidate}
-import model.request.OrderCreation
+import model.request.{CarrierRating, OrderCreation}
 import service.OrderService
 
 import scala.concurrent.ExecutionContext
@@ -83,6 +83,15 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }.recover{
       case ex: Exception =>
         constructErrorResult(s"Error to validate QR Code", ex)
+    }
+  }
+
+  def rateCarrier = AsyncActionWithBody[CarrierRating] { implicit request =>
+    service.rateCarrier(request.content).map{
+      Ok(_)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error updating order", ex)
     }
   }
 

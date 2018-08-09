@@ -5,6 +5,6 @@ import org.joda.time.DateTimeZone
 
 object DateTimeNow {
 
-  val now = DateTime.now(DateTimeZone.forID("America/Argentina/Buenos_Aires"))
+  val now = DateTime.now(DateTimeZone.forID("America/Argentina/Buenos_Aires")).minusHours(3)
 
 }

@@ -3,6 +3,7 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.User
+import model.request.CarrierRating
 import service.UserService
 
 import scala.concurrent.ExecutionContext
@@ -55,6 +56,4 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
         constructErrorResult(s"Error getting all users", ex)
     }
   }
-
-
 }
