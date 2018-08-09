@@ -6,28 +6,52 @@ import common.Logging
 import model.internal.{Address, User}
 import model.response.UserResponse
 import repository.UserRepository
-import service.Exception.ShippearException
+import service.Exception.{NotFoundException, ShippearException}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class UserService @Inject()(val repository: UserRepository)(implicit ec: ExecutionContext) extends Logging
   with Service[User]{
 
-  override def create(user: User): Future[_] = {
-    if(validateAddresses(user.addresses))
-      super.create(user)
-    else
-      throw ShippearException(s"User ${user.userName} doesn't have a public address")
-  }
+  val UserName = "userName"
 
-  override def update(user: User): Future[_] = {
-    if(validateAddresses(user.addresses))
-      super.update(user)
-    else
-     throw ShippearException(s"User ${user.userName} doesn't have a public address")
-  }
+  override def create(user: User): Future[_] = validateAndExecute(super.create, user, {
+    val causes = ArrayBuffer.empty[String]
 
-  private def validateAddresses(addresses: Seq[Address]) = addresses.exists(_.public)
+    repository.findBy(Map(UserName -> user.userName)).map { _ =>
+      causes.+=(s"username ${user.userName} already exists")
+    }
+      .recover { case _: NotFoundException => "" }
+
+    if(!user.addresses.exists(_.public)) {
+      causes.+=("doesn't have a public address")
+    }
+    causes
+  })
+
+  override def update(user: User): Future[_] = validateAndExecute(super.update, user, {
+    val causes = ArrayBuffer.empty[String]
+
+    repository.findBy(Map(UserName -> user._id)).map{
+      userFound =>
+        if(!userFound._id.equals(user._id) && userFound.userName.equals(user.userName))
+          causes.+=(s"username ${user.userName} already exists")
+    }
+
+    if(!user.addresses.exists(_.public)) {
+      causes.+=("doesn't have a public address")
+    }
+    causes
+  })
+
+  private def validateAndExecute(execute: User => Future[_], user: User, validationResult: ArrayBuffer[String]) = {
+    if(validationResult.isEmpty)
+      execute(user)
+    else
+      throw ShippearException(s"Error for user ${user.userName} because: ${validationResult.mkString(", ")}.")
+  }
 
   def ordersByState(idUser: String): Future[UserResponse] =
     super.findById(idUser).map(User.user2Response)
