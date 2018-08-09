@@ -6,7 +6,7 @@ import model.internal.OrderState.OrderState
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
 import model.internal._
 import model.mapper.OrderMapper
-import model.request.OrderCreation
+import model.request.{CarrierRating, OrderCreation}
 import onesignal.{EmailType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
@@ -34,7 +34,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     val beginDate = order.availableFrom
     val endDate = order.availableTo
 
-    if(beginDate.before(DateTimeNow.now.minusMinutes(5).toDate) || beginDate.after(endDate))
+    if(beginDate.before(DateTimeNow.now.minusMinutes(10).toDate) || beginDate.after(endDate))
       throw ShippearException(s"The order has an invalid date range with from: $beginDate and to: $endDate")
   }
 
@@ -76,9 +76,13 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
 
   def verifyQR(orderToValidate: OrderToValidate, order: Order) = {
     orderToValidate.userType match{
-      case APPLICANT => order.applicant.id.equals(orderToValidate.userId)
-      case PARTICIPANT => order.participant.id.equals(orderToValidate.userId)
-      case CARRIER =>  order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(orderToValidate.userId)
+      case APPLICANT =>
+        order.state.equals(OrderState.ON_TRAVEL.toString) && order.applicant.id.equals(orderToValidate.userId)
+      case PARTICIPANT =>
+        order.state.equals(OrderState.ON_TRAVEL.toString) && order.participant.id.equals(orderToValidate.userId)
+      case CARRIER =>
+       order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(orderToValidate.userId) &&
+         order.state.equals(OrderState.PENDING_PICKUP.toString)
     }
   }
 
@@ -116,5 +120,39 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
 
   def validateOrderState(orderState: OrderState, expectingState: OrderState) = {
     if(!orderState.equals(expectingState)) throw ShippearException(s"Order must be in state $expectingState, not in $orderState")
+  }
+
+  def rateCarrier(carrierRating: CarrierRating): Future[User] = {
+    for{
+      order <- repository.findOneById(carrierRating.idOrder)
+      _ = validateRating(order)
+      carrier <- userRepository.findOneById(order.carrier.getOrElse(throw ShippearException(s"Order ${carrierRating.idOrder} doesn't have a carrier!")).id)
+      updatedCarrier = updateCarrierRating(carrier, carrierRating.score)
+      _ <- userRepository.update(updatedCarrier)
+      _ <- repository.update(order.copy(ratedCarrier = Some(true)))
+    } yield updatedCarrier
+  }
+
+  def validateRating(order: Order) ={
+    validateOrderState(OrderState.DELIVERED, order.state)
+
+    order.ratedCarrier.foreach{ rated =>
+      if(rated) throw ShippearException(s"Carrier of order ${order._id} was already rated!")
+    }
+
+  }
+
+  def updateCarrierRating(carrier: User, score: Int): User = {
+    val carrierScore = carrier.scoring.getOrElse(0.0)
+
+    val result = carrier.orders
+      .map{ carrierOrders =>
+        val delivered = carrierOrders.filter(order => order.state.equals(OrderState.DELIVERED.toString))
+
+        (carrierScore.toDouble + score) / delivered.length
+      }
+
+    carrier.copy(scoring = result)
+
   }
 }

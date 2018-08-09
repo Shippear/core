@@ -37,15 +37,17 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
   lazy val participantId = "11111"
   val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0))
-
+  val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
   val order = Order("123", applicantData, participantData, None, 123, "description",
-    PENDING_PICKUP, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+    PENDING_PICKUP, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    new Date, Some(new Date), None, None, visa, 0, None)
 
   val qrCodeGenerator = new QrCodeGenerator
   val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
   val orderWithQrCode = Order("123", applicantData, participantData, None, 123, "description",
-    "state", "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), Some(qrCode), None, None, None)
+    "state", "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    new Date, Some(new Date), Some(qrCode), None, visa, 0, None)
 
   "OrderDAO" should{
     "Save an object" in {
@@ -54,6 +56,23 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
     }
 
     "Update an object" in {
+      order.participant.id mustBe participantId
+      await(dao.all).size mustBe 0
+      await(dao.insertOne(order))
+      await(dao.all).size mustBe 1
+      val originalOrder = await(dao.findOneById(order._id) )
+
+      val modifiedOrder = originalOrder.copy(description = "other")
+      await(dao.updateOne(modifiedOrder))
+
+      await(dao.all).size mustBe 1
+      val foundModified = await(dao.findOneById(order._id))
+      foundModified.description mustEqual "other"
+      foundModified.size mustEqual originalOrder.size
+
+    }
+
+    "Replace an object" in {
       order.participant.id mustBe participantId
       await(dao.all).size mustBe 0
       await(dao.insertOne(order))

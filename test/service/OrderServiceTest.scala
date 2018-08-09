@@ -2,15 +2,14 @@ package service
 
 import java.util.Date
 
-import model.internal.OrderState.ON_TRAVEL
-import model.internal.TransportType.TransportType
-import model.internal.UserType.{APPLICANT, CARRIER}
+import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
+import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP}
+import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
 import onesignal.OneSignalClient
-import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import qrcodegenerator.QrCodeGenerator
@@ -22,7 +21,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class OrderServiceTest extends PlaySpec with MockitoSugar {
 
   val carrierId = "carrierId"
-
+  val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
   val originGeolocation = Geolocation(132, -123)
   val originCity = City(2, "Almagro")
   val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
@@ -39,15 +38,19 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    new Date, Some(new Date), None, None, visa, 0, None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    new Date, Some(new Date), None, None, visa, 0, None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    new Date, Some(new Date), None, None, visa, 0, None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date, new Date, Some(new Date), None, None, None, None)
+    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    new Date, Some(new Date), None, None, visa, 0, None)
 
   val orderWithoutCarrier = order_1.copy(carrier = None)
 
@@ -75,7 +78,8 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val afterTomorow = today.plusDays(2)
 
       val orderCreation = OrderCreation(None, "a", "b", "description",
-        OperationType.SENDER, Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, today.toDate, tomorrow.toDate, None, None, None)
+        OperationType.SENDER, Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE),
+        route, today.toDate, tomorrow.toDate, None, None, visa, 0)
 
       orderService.validateOrder(orderCreation)
 
@@ -117,13 +121,24 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     }
 
     "Validate QR Code successfully" in {
-      val orderToValidate = OrderToValidate(order_1._id, applicantData.id, APPLICANT)
-      orderService.verifyQR(orderToValidate, order_1) mustBe true
+      val orderToValidateApplicant = OrderToValidate(order_1._id, applicantData.id, APPLICANT)
+      orderService.verifyQR(orderToValidateApplicant, order_1) mustBe true
+
+      val orderToValidateParticipant = OrderToValidate(order_1._id, participantData.id, PARTICIPANT)
+      orderService.verifyQR(orderToValidateParticipant, order_1) mustBe true
+
+      val orderPendingPickup = order_1.copy(state = PENDING_PICKUP)
+      val orderToValidateCarrier = OrderToValidate(order_1._id, carrierId, CARRIER)
+      orderService.verifyQR(orderToValidateCarrier, orderPendingPickup) mustBe true
     }
 
     "Wrong QR Code" in {
       val orderToValidate = OrderToValidate(order_1._id, applicantData.id, CARRIER)
       orderService.verifyQR(orderToValidate, order_1) mustBe false
+
+      val orderInOtherStatus = OrderToValidate(order_1._id, carrierId, CARRIER)
+      orderService.verifyQR(orderInOtherStatus, order_1) mustBe false
+
     }
 
     "Throw NotFoundException when the carrier doesn't exists in the order" in {
