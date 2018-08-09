@@ -6,7 +6,7 @@ import model.internal.OrderState.OrderState
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
 import model.internal._
 import model.mapper.OrderMapper
-import model.request.OrderCreation
+import model.request.{CarrierRating, OrderCreation}
 import onesignal.{EmailType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
@@ -116,5 +116,39 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
 
   def validateOrderState(orderState: OrderState, expectingState: OrderState) = {
     if(!orderState.equals(expectingState)) throw ShippearException(s"Order must be in state $expectingState, not in $orderState")
+  }
+
+  def rateCarrier(carrierRating: CarrierRating): Future[User] = {
+    for{
+      order <- repository.findOneById(carrierRating.idOrder)
+      _ = validateRating(order)
+      carrier <- userRepository.findOneById(order.carrier.getOrElse(throw ShippearException(s"Order ${carrierRating.idOrder} doesn't have a carrier!")).id)
+      updatedCarrier = updateCarrierRating(carrier, carrierRating.score)
+      _ <- userRepository.update(updatedCarrier)
+      _ <- repository.update(order.copy(ratedCarrier = Some(true)))
+    } yield updatedCarrier
+  }
+
+  def validateRating(order: Order) ={
+    validateOrderState(OrderState.DELIVERED, order.state)
+
+    order.ratedCarrier.foreach{ rated =>
+      if(rated) throw ShippearException(s"Carrier of order ${order._id} was already rated!")
+    }
+
+  }
+
+  def updateCarrierRating(carrier: User, score: Int): User = {
+    val carrierScore = carrier.scoring.getOrElse(0.0)
+
+    val result = carrier.orders
+      .map{ carrierOrders =>
+        val delivered = carrierOrders.filter(order => order.state.equals(OrderState.DELIVERED.toString))
+
+        (carrierScore.toDouble + score) / delivered.length
+      }
+
+    carrier.copy(scoring = result)
+
   }
 }

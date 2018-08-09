@@ -3,14 +3,13 @@ package service
 
 import com.google.inject.Inject
 import common.Logging
-import model.internal.{Address, User}
+import model.internal.User
 import model.response.UserResponse
 import repository.UserRepository
 import service.Exception.{NotFoundException, ShippearException}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class UserService @Inject()(val repository: UserRepository)(implicit ec: ExecutionContext) extends Logging
   with Service[User]{
@@ -19,7 +18,6 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
 
   override def create(user: User): Future[_] = validateAndExecute(super.create, user, {
     val causes = ArrayBuffer.empty[String]
-
     repository.findBy(Map(UserName -> user.userName)).map { _ =>
       causes.+=(s"username ${user.userName} already exists")
     }
@@ -33,7 +31,6 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
 
   override def update(user: User): Future[_] = validateAndExecute(super.update, user, {
     val causes = ArrayBuffer.empty[String]
-
     repository.findBy(Map(UserName -> user._id)).map{
       userFound =>
         if(!userFound._id.equals(user._id) && userFound.userName.equals(user.userName))

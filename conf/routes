@@ -26,6 +26,7 @@ POST     /shippear/orders/cancel/:idOrder               controller.OrderControll
 POST     /shippear/orders/assign-carrier                controller.OrderController.assignCarrier
 POST     /shippear/orders/confirm-participant/:idOrder  controller.OrderController.confirmParticipant(idOrder: String)
 POST     /shippear/orders/validate-qr-code              controller.OrderController.validateQrCode
+POST     /shippear/orders/rate-carrier                  controller.OrderController.rateCarrier
 
 #Mails Test
 GET      /shippear/mail/devices                         controller.MailController.devices(id: Option[String])
