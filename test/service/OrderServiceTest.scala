@@ -2,15 +2,14 @@ package service
 
 import java.util.Date
 
-import model.internal.OrderState.ON_TRAVEL
-import model.internal.TransportType.TransportType
-import model.internal.UserType.{APPLICANT, CARRIER}
+import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow
+import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP}
+import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
 import onesignal.OneSignalClient
-import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import qrcodegenerator.QrCodeGenerator
@@ -122,13 +121,24 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     }
 
     "Validate QR Code successfully" in {
-      val orderToValidate = OrderToValidate(order_1._id, applicantData.id, APPLICANT)
-      orderService.verifyQR(orderToValidate, order_1) mustBe true
+      val orderToValidateApplicant = OrderToValidate(order_1._id, applicantData.id, APPLICANT)
+      orderService.verifyQR(orderToValidateApplicant, order_1) mustBe true
+
+      val orderToValidateParticipant = OrderToValidate(order_1._id, participantData.id, PARTICIPANT)
+      orderService.verifyQR(orderToValidateParticipant, order_1) mustBe true
+
+      val orderPendingPickup = order_1.copy(state = PENDING_PICKUP)
+      val orderToValidateCarrier = OrderToValidate(order_1._id, carrierId, CARRIER)
+      orderService.verifyQR(orderToValidateCarrier, orderPendingPickup) mustBe true
     }
 
     "Wrong QR Code" in {
       val orderToValidate = OrderToValidate(order_1._id, applicantData.id, CARRIER)
       orderService.verifyQR(orderToValidate, order_1) mustBe false
+
+      val orderInOtherStatus = OrderToValidate(order_1._id, carrierId, CARRIER)
+      orderService.verifyQR(orderInOtherStatus, order_1) mustBe false
+
     }
 
     "Throw NotFoundException when the carrier doesn't exists in the order" in {

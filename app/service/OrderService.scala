@@ -76,9 +76,13 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
 
   def verifyQR(orderToValidate: OrderToValidate, order: Order) = {
     orderToValidate.userType match{
-      case APPLICANT => order.applicant.id.equals(orderToValidate.userId)
-      case PARTICIPANT => order.participant.id.equals(orderToValidate.userId)
-      case CARRIER =>  order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(orderToValidate.userId)
+      case APPLICANT =>
+        order.state.equals(OrderState.ON_TRAVEL.toString) && order.applicant.id.equals(orderToValidate.userId)
+      case PARTICIPANT =>
+        order.state.equals(OrderState.ON_TRAVEL.toString) && order.participant.id.equals(orderToValidate.userId)
+      case CARRIER =>
+       order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(orderToValidate.userId) &&
+         order.state.equals(OrderState.PENDING_PICKUP.toString)
     }
   }
 
