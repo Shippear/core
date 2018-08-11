@@ -11,7 +11,7 @@ import qrcodegenerator.QrCodeGenerator
 import repository.price.{DistanceMultiplierRepository, SizeMultiplierRepository, WeightMultiplierRepository}
 import repository.{CacheRepository, OrderRepository, UserRepository}
 import service.{PriceService, _}
-import task.{TaskManager, TrackingCacheTask}
+import task.{CancelOrdersTask, TaskManager, TrackingCacheTask}
 
 class ShippearModule extends ScalaModule {
   override def configure(): Unit = {
@@ -44,6 +44,7 @@ class ShippearModule extends ScalaModule {
     //Tasks
     bind[TaskManager].asEagerSingleton()
     bind[TrackingCacheTask].asEagerSingleton()
+    bind[CancelOrdersTask].asEagerSingleton()
 
     //Email
     bind[MailController].asEagerSingleton()
