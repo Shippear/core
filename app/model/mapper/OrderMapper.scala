@@ -3,13 +3,16 @@ package model.mapper
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
+import com.typesafe.config.Config
+import common.{ConfigReader, DateTimeNow}
 import model.common.IdGenerator
 import model.internal.{Order, OrderState, User, UserDataOrder}
 import model.request.OrderCreation
 import org.joda.time.Minutes
 
-object OrderMapper extends IdGenerator {
+object OrderMapper extends IdGenerator with ConfigReader {
+
+  def commissionCarrier: Double = envConfiguration.getDouble("commission") / 100
 
   def extractUserData(user: User): UserDataOrder = {
     UserDataOrder(user._id, user.firstName, user.lastName, user.birthDate, user.contactInfo, user.photoUrl, user.onesignalId, user.scoring)
@@ -49,6 +52,7 @@ object OrderMapper extends IdGenerator {
       orderCreation.ratedCarrier,
       orderCreation.paymentMethod,
       orderCreation.price,
+      Some(orderCreation.price * commissionCarrier),
       None
     )
 

@@ -39,18 +39,18 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, None)
+    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, None)
+    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, None)
+    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
     ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, None)
+    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
   val orderWithoutCarrier = order_1.copy(carrier = None)
 

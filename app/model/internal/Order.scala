@@ -23,4 +23,5 @@ case class Order(@JsonProperty("_id")_id: String,
                  ratedCarrier: Option[Boolean],
                  paymentMethod: PaymentMethod,
                  price: Double,
+                 carrierEarning: Option[Double],
                  finalizedDate: Option[Date])
