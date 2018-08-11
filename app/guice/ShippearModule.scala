@@ -4,7 +4,6 @@ import controller._
 import dao.ShippearDBContext
 import dao.util.ShippearDAOFactory
 import external.GoogleMapsClient
-import model.mapper.OrderMapper
 import net.codingwell.scalaguice.ScalaModule
 import onesignal.OneSignalClient
 import qrcodegenerator.QrCodeGenerator
@@ -36,14 +35,15 @@ class ShippearModule extends ScalaModule {
     bind[OrderRepository].asEagerSingleton()
     bind[QrCodeGenerator].asEagerSingleton()
 
-    //Tracking cache
-    bind[CacheController].asEagerSingleton()
+    //Tracking cache and cancel orders tasks
+    bind[TaskController].asEagerSingleton()
     bind[CacheService].asEagerSingleton()
     bind[CacheRepository].asEagerSingleton()
 
     //Tasks
     bind[TaskManager].asEagerSingleton()
     bind[TrackingCacheTask].asEagerSingleton()
+    bind[CancelOrderService].asEagerSingleton()
     bind[CancelOrdersTask].asEagerSingleton()
 
     //Email

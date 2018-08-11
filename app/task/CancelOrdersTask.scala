@@ -4,21 +4,19 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.google.inject.Inject
 import com.typesafe.config.Config
-import common.{ConfigReader, Logging}
-import model.internal.OrderState
+import common.{ConfigReader, DateTimeNow, Logging}
+import model.internal.Order
+import model.internal.OrderState._
 import repository.OrderRepository
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import common.DateTimeNow
 import service.OrderService
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.FiniteDuration
 
 class CancelOrdersTask @Inject()(val taskManager: TaskManager, orderRepository : OrderRepository, orderService : OrderService)
   extends RepetitveAsyncTask with ConfigReader with Logging{
 
-  lazy val config: Config = envConfiguration.getConfig("timeOut")
+  lazy val config: Config = envConfiguration.getConfig("await-to")
 
   lazy val initialDelay: FiniteDuration = config.getFiniteDuration("initial-delay")
 
@@ -34,22 +32,28 @@ class CancelOrdersTask @Inject()(val taskManager: TaskManager, orderRepository :
 
   def updateOrderState(): Unit = {
     if(isActivated) {
-      info("Find orders to update respect time out...")
-      val orders = orderService.all
-      orders.map { ordersToSave =>
-        for {order <- ordersToSave
-             awaitTo = order.awaitTo
-             _ = awaitTo match {
-               case Some(awaiTo) => if (order.state.equals(OrderState.PENDING_CARRIER.toString) && DateTimeNow.now.toDate.after(awaiTo)) {
-                 orderRepository.cancelOrder(order._id)
-               }
-               case None => Future.successful(Unit)
-             }
-
-        } yield order
-
+      info("Find orders to cancel due respect time out...")
+      for {
+        orders <- orderService.all
+        ordersToCancel = orderToCancel(orders)
+      } yield ordersToCancel.foreach {
+        orderToSave => {
+          info(s"Cancelling order ${orderToSave._id} due time out")
+          orderRepository.update(orderToSave.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate)))
+        }
       }
-
     }
+
   }
+
+  private def orderToCancel(orders: Seq[Order]): Seq[Order] =
+    orders.filter {
+      order => order.awaitTo match {
+          case Some(date) =>
+            date.before(DateTimeNow.now.toDate) &&
+              (order.state.equals(PENDING_PARTICIPANT.toString) ||
+                order.state.equals(PENDING_CARRIER.toString))
+          case _ => false
+        }
+    }
 }

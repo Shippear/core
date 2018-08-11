@@ -5,7 +5,7 @@ import java.util.Date
 case class UserDataOrder(id: String,
                          firstName: String,
                          lastName: String,
-                         birthDay: Date,
+                         birthDate: Date,
                          contactInfo: ContactInfo,
                          photoUrl: String,
                          oneSignalId: String,

@@ -98,7 +98,7 @@ class RepositoryTest extends MongoTest {
       when(user._id).thenReturn(carrierData.id)
       when(user.firstName).thenReturn("name")
       when(user.lastName).thenReturn("last")
-      when(user.birthDate).thenReturn(carrierData.birthDay)
+      when(user.birthDate).thenReturn(carrierData.birthDate)
       when(user.contactInfo).thenReturn(carrierData.contactInfo)
       when(user.photoUrl).thenReturn("photo")
       when(user.onesignalId).thenReturn("onesignal")
