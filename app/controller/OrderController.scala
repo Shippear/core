@@ -51,10 +51,10 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   def cancelOrder= AsyncActionWithBody[CancelOrder] { implicit request =>
     service.cancelOrder(request.content).map {
-      _ => Ok(Map("result" -> s"Order ${request.content.idOrder} canceled successfully by ${request.content.userType}"))
+      _ => Ok(Map("result" -> s"Order ${request.content.orderId} canceled successfully by ${request.content.userType}"))
     }.recover {
       case ex: Exception =>
-        constructErrorResult(s"Error cancelling order ${request.content.idOrder}", ex)
+        constructErrorResult(s"Error cancelling order ${request.content.orderId}", ex)
     }
   }
 

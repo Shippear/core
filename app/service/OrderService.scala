@@ -42,7 +42,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
 
   def cancelOrder(cancelOrder: CancelOrder): Future[_] =
     for {
-      order <- repository.findOneById(cancelOrder.idOrder)
+      order <- repository.findOneById(cancelOrder.orderId)
       _ = validateCancelOrder(order, cancelOrder.userType)
       _ <- repository.cancelOrder(order)
     } yield order
