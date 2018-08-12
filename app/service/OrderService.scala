@@ -12,7 +12,6 @@ import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
-import sun.management.snmp.jvmmib.EnumJvmMemoryGCVerboseLevel
 
 import scala.concurrent.{ExecutionContext, Future}
 
