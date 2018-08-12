@@ -7,16 +7,16 @@ import model.internal.OrderState._
 import model.internal.UserType._
 import model.mapper.OrderMapper
 import model.request.{CancelOrder, CarrierRating, OrderCreation}
-import onesignal.OneSignalClient
-import onesignal.EmailType._
+import onesignal.{EventType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
+import sun.management.snmp.jvmmib.EnumJvmMemoryGCVerboseLevel
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSignalClient,
+class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: OneSignalClient,
                              qrCodeGenerator: QrCodeGenerator, userRepository: UserRepository)
                             (implicit ec: ExecutionContext) extends Service[Order]{
 
@@ -27,7 +27,7 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
         participant <- userRepository.findOneById(newOrder.participantId)
         orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
         _ <- repository.create(orderToSave)
-        _ = mailClient.sendEmail(List(applicant.onesignalId, participant.onesignalId), ORDER_CREATED)
+        _ = oneSignalClient.sendNotification(orderToSave, EventType.ORDER_CREATED)
       } yield orderToSave
   }
 
@@ -44,8 +44,10 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
     for {
       order <- repository.findOneById(cancelOrder.orderId)
       _ = validateCancelOrder(order, cancelOrder.userType)
+      _ = oneSignalClient.sendNotification(order, EventType.ORDER_CANCELED, Some(cancelOrder.userType))
       _ <- repository.cancelOrder(order)
     } yield order
+
 
   private def validateCancelOrder(order: Order, userType: UserType) = {
     val message = s"Order is in state ${order.state}"
@@ -62,8 +64,9 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
   def confirmParticipant(orderId: String): Future[Order] = {
     for {
       order <- repository.findOneById(orderId)
-      _ = validateOrderState(order.state, PENDING_PARTICIPANT)
-      _ <- repository.update(order.copy(state = PENDING_CARRIER))
+      _ = validateOrderState(order.state, OrderState.PENDING_PARTICIPANT)
+      _ = oneSignalClient.sendNotification(order, EventType.CONFIRM_PARTICIPANT)
+      _ <- repository.update(order.copy(state = OrderState.PENDING_CARRIER))
     } yield order
   }
 
@@ -74,14 +77,19 @@ class OrderService @Inject()(val repository: OrderRepository, mailClient: OneSig
       order <- repository.findOneById(content.orderId)
       _ = validateOrderState(order.state, PENDING_CARRIER)
       newOrder <- repository.assignCarrier(order, carrier, qrCodeGenerator.generateQrImage(content.orderId))
-      _ = mailClient.sendEmail(List(newOrder.applicant.oneSignalId, newOrder.participant.oneSignalId, carrier.onesignalId), ORDER_WITH_CARRIER)
+      _ = oneSignalClient.sendNotification(newOrder, EventType.ORDER_WITH_CARRIER)
     } yield newOrder
 
 
   def validateQrCode(orderToValidate: OrderToValidate): Future[Boolean] = {
+    val eventType = orderToValidate.userType match {
+      case CARRIER => EventType.ORDER_ON_WAY
+      case _ => EventType.ORDER_FINALIZED
+    }
     for {
       order <- repository.findOneById(orderToValidate.orderId)
       verification = verifyQR(orderToValidate, order)
+      _ = oneSignalClient.sendNotification(order, eventType)
       _ <- updateOrderStatus(order, orderToValidate.userType, verification)
     } yield verification
   }

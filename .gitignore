@@ -9,3 +9,5 @@ project/target/*
 /.settings
 /RUNNING_PID
 out/
+core.iml
+package-lock.json
