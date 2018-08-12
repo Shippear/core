@@ -21,7 +21,6 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
 
     repository.findBy(Map(UserName -> user.userName)).map { userFound =>
        causes.+=(s"username ${userFound.userName} already exists")
-
       causes
     }.recover{
       case ex: NotFoundException =>

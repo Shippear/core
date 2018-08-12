@@ -57,7 +57,7 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       val marceloNewAddressFail = marcelo.copy(addresses = Seq(boedoAddressPrivate))
 
       intercept[ShippearException]{
-        userService.update(marceloNewAddressFail)
+        await(userService.update(marceloNewAddressFail))
       }
 
       //---------
