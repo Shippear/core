@@ -27,6 +27,9 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       var userMarcelo = await(userService.findById(marcelo._id))
       var userLucas = await(userService.findById(lucas._id))
 
+      order.price mustBe 100.5
+      order.carrierEarning.get mustBe 90.45
+
 
       // Checking consistency between them
       val marceloOrders = userMarcelo.orders.get
@@ -54,7 +57,7 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       val marceloNewAddressFail = marcelo.copy(addresses = Seq(boedoAddressPrivate))
 
       intercept[ShippearException]{
-        userService.update(marceloNewAddressFail)
+        await(userService.update(marceloNewAddressFail))
       }
 
       //---------

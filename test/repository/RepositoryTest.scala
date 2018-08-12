@@ -56,7 +56,7 @@ class RepositoryTest extends MongoTest {
     val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, visa, 0, None)
+      new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
     "Save a new order" in {
       await(repo.create(order))
@@ -150,7 +150,7 @@ class RepositoryTest extends MongoTest {
     val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0))
     val order = Order("idOrder", applicantData, participantData, Some(carrierData), 123, "description",
       PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, visa, 0, None)
+      new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
 
     "Create a new order into the user" in {
@@ -199,7 +199,7 @@ class RepositoryTest extends MongoTest {
       val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
       val newOrder = Order(newOrderId, applicantData, participantData, Some(carrierData), 123, "description",
         PENDING_PARTICIPANT, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
-        new Date, Some(new Date), None, None, visa, 0, None)
+        new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
       await(repo.updateUserOrder(applicantData.id, newOrder))
 
