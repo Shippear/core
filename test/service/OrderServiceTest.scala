@@ -11,15 +11,19 @@ import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight._
 import model.internal.OperationType._
 import model.internal.TransportType._
-import model.request.OrderCreation
+import model.request.{CancelOrder, OrderCreation}
 import onesignal.OneSignalClient
+import play.api.test.Helpers.{await, _}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import qrcodegenerator.QrCodeGenerator
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
+import org.mockito.Matchers.any
+import org.mockito.Mockito.when
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class OrderServiceTest extends PlaySpec with MockitoSugar {
 
@@ -52,10 +56,10 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
   val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
-    ON_TRAVEL, "operationType", SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
+    ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
-  val orderWithoutCarrier = order_1.copy(carrier = None)
+  val orderWithoutCarrier: Order = order_1.copy(carrier = None)
 
 
   //User
@@ -78,7 +82,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val today = DateTime.now().plusSeconds(30)
       val yesterday = today.minusDays(1)
       val tomorrow = today.plusDays(1)
-      val afterTomorow = today.plusDays(2)
+      val afterTomorrow = today.plusDays(2)
 
       val orderCreation = OrderCreation(None, "a", "b", "description",
         SENDER, SMALL, HEAVY, List(MOTORCYCLE),
@@ -91,7 +95,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
         orderService.validateOrder(orderCreationInvalidBegin)
       }
 
-      val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorow.toDate, availableTo = tomorrow.toDate)
+      val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorrow.toDate, availableTo = tomorrow.toDate)
       intercept[ShippearException]{
         orderService.validateOrder(orderCreationInvalidRange)
       }
@@ -150,6 +154,15 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
       intercept[NotFoundException] {
         orderService.verifyQR(orderToValidate, orderWithoutCarrier) mustBe true
+      }
+    }
+
+    "Validate when trying to cancel an order" in {
+      when(repo.findOneById(order_1._id)).thenReturn(Future(order_1))
+
+      //Order is in ON_TRAVEL
+      intercept[ShippearException]{
+        await(orderService.cancelOrder(CancelOrder(order_1._id, APPLICANT)))
       }
     }
   }

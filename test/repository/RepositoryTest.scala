@@ -8,8 +8,8 @@ import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OperationType._
 import model.internal.OrderState.{PENDING_PARTICIPANT, _}
-import model.internal._
 import model.internal.TransportType._
+import model.internal._
 import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight._
 import org.mockito.Matchers.any
