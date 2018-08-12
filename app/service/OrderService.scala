@@ -2,11 +2,11 @@ package service
 
 import com.google.inject.Inject
 import common.DateTimeNow
-import model.internal.OrderState.OrderState
-import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, UserType}
 import model.internal._
+import model.internal.OrderState._
+import model.internal.UserType._
 import model.mapper.OrderMapper
-import model.request.{CarrierRating, OrderCreation}
+import model.request.{CancelOrder, CarrierRating, OrderCreation}
 import onesignal.{EventType, OneSignalClient}
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
@@ -40,12 +40,26 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   }
 
 
-  def cancelOrder(id: String): Future[(String, String, Option[String])] =
+  def cancelOrder(cancelOrder: CancelOrder): Future[_] =
     for {
-      (applicantOSId, participantOSId, carrierOSId) <- repository.cancelOrder(id)
-      _ = oneSignalClient.sendEmail(List(applicantOSId, participantOSId) ++ carrierOSId, EventType.ORDER_CANCELED)
-    } yield (applicantOSId, participantOSId, carrierOSId)
+      order <- repository.findOneById(cancelOrder.orderId)
+      _ = validateCancelOrder(order, cancelOrder.userType)
+      _ = oneSignalClient.sendNotification(order, EventType.ORDER_CANCELED, Some(cancelOrder.userType))
+      _ <- repository.cancelOrder(order)
+    } yield order
 
+
+  private def validateCancelOrder(order: Order, userType: UserType) = {
+    val message = s"Order is in state ${order.state}"
+    val possibleStates = List(PENDING_CARRIER, PENDING_PARTICIPANT, PENDING_PICKUP)
+      userType match {
+        case APPLICANT | PARTICIPANT =>
+          if(!possibleStates.contains(OrderState.toState(order.state)))
+            throw ShippearException(message)
+        case _ => if(!order.state.equals(PENDING_PICKUP.toString))
+            throw ShippearException(message)
+      }
+  }
 
   def confirmParticipant(orderId: String): Future[Order] = {
     for {
@@ -61,7 +75,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       carrier <- userRepository.findOneById(content.carrierId)
       _ = validateCarrier(carrier)
       order <- repository.findOneById(content.orderId)
-      _ = validateOrderState(order.state, OrderState.PENDING_CARRIER)
+      _ = validateOrderState(order.state, PENDING_CARRIER)
       newOrder <- repository.assignCarrier(order, carrier, qrCodeGenerator.generateQrImage(content.orderId))
       _ = oneSignalClient.sendNotification(newOrder, EventType.ORDER_WITH_CARRIER)
     } yield newOrder
@@ -84,20 +98,20 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   def verifyQR(orderToValidate: OrderToValidate, order: Order) = {
     orderToValidate.userType match{
       case APPLICANT =>
-        order.state.equals(OrderState.ON_TRAVEL.toString) && order.applicant.id.equals(orderToValidate.userId)
+        order.state.equals(ON_TRAVEL.toString) && order.applicant.id.equals(orderToValidate.userId)
       case PARTICIPANT =>
-        order.state.equals(OrderState.ON_TRAVEL.toString) && order.participant.id.equals(orderToValidate.userId)
+        order.state.equals(ON_TRAVEL.toString) && order.participant.id.equals(orderToValidate.userId)
       case CARRIER =>
        order.carrier.getOrElse(throw NotFoundException("Carrier not found")).id.equals(orderToValidate.userId) &&
-         order.state.equals(OrderState.PENDING_PICKUP.toString)
+         order.state.equals(PENDING_PICKUP.toString)
     }
   }
 
   def updateOrderStatus(order: Order, userType: UserType, verification: Boolean): Future[_] = {
     if(verification) {
       val newOrder = userType match {
-        case UserType.CARRIER => order.copy(state = OrderState.ON_TRAVEL)
-        case _ => order.copy(state = OrderState.DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
+        case CARRIER => order.copy(state = ON_TRAVEL)
+        case _ => order.copy(state = DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
       }
       repository.update(newOrder)
     } else Future.successful(Unit)
@@ -112,13 +126,11 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
             if(order.carrier.isDefined) {
               val carrierId = order.carrier.get.id
               val orderState: OrderState = order.state
-
               carrierId.equals(carrier._id) &&
-                (orderState.equals(OrderState.ON_TRAVEL) || orderState.equals(OrderState.PENDING_PICKUP))
+                (orderState.equals(ON_TRAVEL) || orderState.equals(PENDING_PICKUP))
             }
             else
               false
-
         }
 
         if(assigned.size == 3) throw ShippearException(s"Carrier with id ${carrier._id} already has 3 orders assigned")
@@ -141,8 +153,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   }
 
   def validateRating(order: Order) ={
-    validateOrderState(OrderState.DELIVERED, order.state)
-
+    validateOrderState(DELIVERED, order.state)
     order.ratedCarrier.foreach{ rated =>
       if(rated) throw ShippearException(s"Carrier of order ${order._id} was already rated!")
     }
@@ -154,7 +165,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
 
     val result = carrier.orders
       .map{ carrierOrders =>
-        val delivered = carrierOrders.filter(order => order.state.equals(OrderState.DELIVERED.toString))
+        val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString))
 
         (carrierScore.toDouble + score) / delivered.length
       }
