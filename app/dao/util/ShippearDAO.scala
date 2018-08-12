@@ -8,12 +8,9 @@ import dao.ShippearDBContext
 import database.MongoConfiguration
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import org.bson.{BsonDocument, BsonDocumentReader, BsonDocumentWriter}
-import org.bson.codecs.{Decoder, DecoderContext, Encoder, EncoderContext}
-import org.bson.codecs.configuration.CodecRegistry
 import org.mongodb.scala.FindObservable
+import org.mongodb.scala.bson.Document
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.bson.{BsonDocument, Document}
 import org.mongodb.scala.model.{Filters, UpdateOptions}
 import service.Exception.NotFoundException
 

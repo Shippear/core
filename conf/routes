@@ -22,7 +22,7 @@ GET      /shippear/orders/all                           controller.OrderControll
 POST     /shippear/orders/find                          controller.OrderController.findOrder
 POST     /shippear/orders/create                        controller.OrderController.createOrder
 POST     /shippear/orders/update                        controller.OrderController.updateOrder
-POST     /shippear/orders/cancel/:idOrder               controller.OrderController.cancelOrder(idOrder: String)
+POST     /shippear/orders/cancel                        controller.OrderController.cancelOrder
 POST     /shippear/orders/assign-carrier                controller.OrderController.assignCarrier
 POST     /shippear/orders/confirm-participant/:idOrder  controller.OrderController.confirmParticipant(idOrder: String)
 POST     /shippear/orders/validate-qr-code              controller.OrderController.validateQrCode
@@ -33,10 +33,12 @@ GET      /shippear/mail/devices                         controller.MailControlle
 GET      /shippear/mail/send/:id/:typeMail              controller.MailController.sendEmail(id: String, typeMail: String)
 GET      /shippear/mail/activate/:status                controller.MailController.activate(status: Boolean)
 
-# Tracking
-GET     /shippear/cache/:idUser                         controller.CacheController.geolocation(idUser: String)
-POST    /shippear/cache                                 controller.CacheController.updateLocation
-POST    /shippear/cache/active/:status                  controller.CacheController.active(status: Boolean)
+# Tasks for Tracking and Cancelling orders
+GET     /shippear/cache/:idUser                         controller.TaskController.geolocation(idUser: String)
+POST    /shippear/cache                                 controller.TaskController.updateLocation
+
+POST    /shippear/cache/active/:status                  controller.TaskController.activeCache(status: Boolean)
+POST    /shippear/cancel-task/active/:status            controller.TaskController.activeCancel(status: Boolean)
 
 # Route Distances and Prices
 POST    /shippear/routes/information                    controller.RouteMapController.priceInformation

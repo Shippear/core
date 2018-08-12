@@ -9,7 +9,7 @@ object OperationType extends Enumeration {
 
   implicit def toString(state: OperationType) = state.toString
 
-  implicit def toState(state: String): OperationType = withName(state.toUpperCase)
+  implicit def toOperationType(state: String): OperationType = withName(state.toUpperCase)
 
 }
 
