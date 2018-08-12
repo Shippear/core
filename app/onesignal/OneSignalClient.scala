@@ -8,6 +8,7 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import onesignal.EmailType.{EmailType, _}
 import play.api.libs.ws.WSClient
 import HTML._
+import service.Exception.ShippearException
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,9 +50,23 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       client.url(NotificationPath)
         .withHttpHeaders(ContentType, Authorization)
         .post(email.toJson)
-        .map(_.body.parseJsonTo[EmailResponse])
+        .map{response =>
+
+          response.status match {
+            case 200 =>
+              val body = response.body.parseJsonTo[EmailResponse]
+              body.errors match {
+                case Some(errors) => throw ShippearException(errors.mkString(", "))
+                case _ => body
+              }
+            case _ => val errors = response.body.parseJsonTo[OneSignalError].errors
+              EmailResponse(s"Error status: ${response.status}", 0, errors)
+          }
+
+
+        }
     } else
-      Future(EmailResponse("Emails Deactivated!", 0))
+      Future(EmailResponse("Emails Deactivated!", 0, None))
 
 
   }
@@ -74,7 +89,5 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       }
     } else
       Future(List())
-
-
   }
 }

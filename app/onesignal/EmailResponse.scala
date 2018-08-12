@@ -1,4 +1,6 @@
 package onesignal
 
-case class EmailResponse(id: String, recipients: Int)
+case class EmailResponse(id: String, recipients: Int, errors: Option[List[String]])
+
+case class OneSignalError(errors: Option[List[String]])
 

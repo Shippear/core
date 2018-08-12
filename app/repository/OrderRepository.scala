@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import common.DateTimeNow
 import dao.util.ShippearDAO
 import model.internal.OrderState.{CANCELLED, PENDING_PICKUP}
-import model.internal.UserType._
 import model.internal.{Order, User, UserDataOrder}
 import model.mapper.OrderMapper
 import service.Exception.NotFoundException

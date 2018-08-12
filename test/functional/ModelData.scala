@@ -75,8 +75,10 @@ trait ModelData {
 
   val supportedTransports: List[TransportType] = TransportType.values.toList
 
-  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description", OperationType.SENDER, Size.SMALL, Weight.MEDIUM, supportedTransports, almagroToSaavedra, today.toDate,
-    tomorrow.toDate, None, None, Some(100.50))
+  val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description",
+    OperationType.SENDER, Size.SMALL, Weight.MEDIUM, supportedTransports,
+    almagroToSaavedra, today.toDate,
+    tomorrow.toDate, None, None, visa, 100.5)
 
 }
 
