@@ -3,7 +3,7 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.{AssignCarrier, Order, OrderToValidate}
-import model.request.{CarrierRating, OrderCreation}
+import model.request.{CancelOrder, CarrierRating, OrderCreation}
 import service.OrderService
 
 import scala.concurrent.ExecutionContext
@@ -49,12 +49,12 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
-  def cancelOrder(idOrder: String) = AsyncAction { implicit request =>
-    service.cancelOrder(idOrder).map {
-      _ => Ok(Map("result" -> s"Order $idOrder canceled successfully"))
+  def cancelOrder= AsyncActionWithBody[CancelOrder] { implicit request =>
+    service.cancelOrder(request.content).map {
+      _ => Ok(Map("result" -> s"Order ${request.content.idOrder} canceled successfully by ${request.content.userType}"))
     }.recover {
       case ex: Exception =>
-        constructErrorResult(s"Error cancelling order $idOrder", ex)
+        constructErrorResult(s"Error cancelling order ${request.content.idOrder}", ex)
     }
   }
 

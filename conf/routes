@@ -22,7 +22,7 @@ GET      /shippear/orders/all                           controller.OrderControll
 POST     /shippear/orders/find                          controller.OrderController.findOrder
 POST     /shippear/orders/create                        controller.OrderController.createOrder
 POST     /shippear/orders/update                        controller.OrderController.updateOrder
-POST     /shippear/orders/cancel/:idOrder               controller.OrderController.cancelOrder(idOrder: String)
+POST     /shippear/orders/cancel                        controller.OrderController.cancelOrder
 POST     /shippear/orders/assign-carrier                controller.OrderController.assignCarrier
 POST     /shippear/orders/confirm-participant/:idOrder  controller.OrderController.confirmParticipant(idOrder: String)
 POST     /shippear/orders/validate-qr-code              controller.OrderController.validateQrCode

@@ -7,7 +7,10 @@ import common.DateTimeNow
 import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP}
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
-import model.internal.price.enum.{Size, Weight}
+import model.internal.price.enum.Size._
+import model.internal.price.enum.Weight._
+import model.internal.OperationType._
+import model.internal.TransportType._
 import model.request.OrderCreation
 import onesignal.OneSignalClient
 import org.scalatest.mockito.MockitoSugar
@@ -33,23 +36,23 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val birthDate = DateTimeNow.now.toDate
   val contactInfo = ContactInfo("email@email.com", "011123119")
 
-  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
-  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
-  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
+  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(RECEIVER))
+  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, visa, 0, Some(0), None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, visa, 0, Some(0), None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
-  val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
-    ON_TRAVEL, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
+    ON_TRAVEL, "operationType", SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, visa, 0, Some(0), None)
 
   val orderWithoutCarrier = order_1.copy(carrier = None)
@@ -78,7 +81,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val afterTomorow = today.plusDays(2)
 
       val orderCreation = OrderCreation(None, "a", "b", "description",
-        OperationType.SENDER, Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE),
+        SENDER, SMALL, HEAVY, List(MOTORCYCLE),
         route, today.toDate, tomorrow.toDate, None, None, visa, 0)
 
       orderService.validateOrder(orderCreation)

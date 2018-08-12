@@ -34,16 +34,11 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
     } yield result
   }
 
-  def cancelOrder(id: String): Future[(String, String, Option[String])] = {
-    //TODO analizar si hay que verificar el estado del pedido
+  def cancelOrder(order: Order): Future[Order] = {
+    val updateOrder = order.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate))
     for {
-      order <- super.findOneById(id)
-      updateOrder = order.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate))
       _ <- update(updateOrder)
-      applicant <- userRepository.findOneById(order.applicant.id)
-      participant <- userRepository.findOneById(order.participant.id)
-      someCarrier <- findCarrier(order.carrier)
-    } yield (applicant.onesignalId, participant.onesignalId, someCarrier.map(_.onesignalId))
+    } yield updateOrder
 
   }
 
