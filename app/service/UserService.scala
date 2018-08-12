@@ -5,6 +5,7 @@ import com.google.inject.Inject
 import common.Logging
 import model.internal.User
 import model.response.UserResponse
+import org.mongodb.scala.model.Filters
 import repository.UserRepository
 import service.Exception.{NotFoundException, ShippearException}
 
@@ -31,7 +32,7 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
 
   override def update(user: User): Future[_] = validateAndExecute(super.update, user, {
     val causes = ArrayBuffer.empty[String]
-    repository.findBy(Map(UserName -> user._id)).map{
+    repository.findBy(Map(UserName -> user.userName)).map{
       userFound =>
         if(!userFound._id.equals(user._id) && userFound.userName.equals(user.userName))
           causes.+=(s"username ${user.userName} already exists")
