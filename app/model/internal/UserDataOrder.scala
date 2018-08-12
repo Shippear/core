@@ -9,4 +9,5 @@ case class UserDataOrder(id: String,
                          contactInfo: ContactInfo,
                          photoUrl: String,
                          oneSignalId: String,
-                         scoring: Option[Double])
+                         scoring: Option[Double],
+                         role: Option[String])

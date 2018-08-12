@@ -6,6 +6,7 @@ import common.DateTimeNow
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OrderState._
+import model.internal.OperationType._
 import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import org.joda.time.DateTime
@@ -34,9 +35,9 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
   val birthDate = DateTimeNow.now.toDate
   val contactInfo = ContactInfo("email@email.com", "011123119")
-  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0))
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
   lazy val participantId = "11111"
-  val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0))
+  val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0), Some(RECEIVER))
   val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
   val order = Order("123", applicantData, participantData, None, 123, "description",

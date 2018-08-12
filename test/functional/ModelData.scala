@@ -1,8 +1,10 @@
 package functional
 
 import model.internal.TransportType.TransportType
+import model.internal.OperationType._
+import model.internal.price.enum.Size._
+import model.internal.price.enum.Weight.MEDIUM
 import model.internal._
-import model.internal.price.enum.{Size, Weight}
 import model.request.OrderCreation
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -76,7 +78,7 @@ trait ModelData {
   val supportedTransports: List[TransportType] = TransportType.values.toList
 
   val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description",
-    OperationType.SENDER, Size.SMALL, Weight.MEDIUM, supportedTransports,
+    SENDER, SMALL, MEDIUM, supportedTransports,
     almagroToSaavedra, today.toDate,
     tomorrow.toDate, None, None, visa, 100.5)
 
