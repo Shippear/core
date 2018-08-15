@@ -55,11 +55,11 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
     val carrierFullName = order.carrier.map{carrier => s"${carrier.firstName} ${carrier.lastName}"}.getOrElse("")
     val orderDescription = order.description
 
-    val cancelledFullName = userCancelledType match {
+    lazy val cancelledFullName = userCancelledType match {
       case Some(APPLICANT) => applicantFullName
       case Some(PARTICIPANT) => participantFullName
       case Some(CARRIER) => carrierFullName
-      case _ => throw ShippearException("User cancelled type not found!")
+      case _ => ""
     }
 
     eventType match {
@@ -74,9 +74,11 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       //Confirmed Carrier
       case ORDER_WITH_CARRIER =>
         Map(PARTICIPANT ->
-        s"$carrierFullName sera el transportista de: $orderDescription" ,
+        s"$carrierFullName sera el transportista de: $orderDescription",
             APPLICANT ->
-        s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription")
+        s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription",
+          CARRIER ->
+        s"Has sido asignado al pedido #${order.orderNumber} correctamente")
 
       //Carrier validated by QR
       case ORDER_ON_WAY =>
@@ -86,15 +88,17 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
       //Canceled by some user
       case ORDER_CANCELED =>
-        val usersToSend = UserType.values.filterNot(_.equals(userCancelledType))
-
-        usersToSend.map { u =>
-          u -> s"fue cancelado por $cancelledFullName"
-        }.toMap
+        userCancelledType
+          .map{ userType => UserType.values.filterNot(u => u.toString.equals(userType.toString))}
+          .getOrElse(UserType.values)
+          .map { u => u -> s"El pedido de: $orderDescription fue cancelado por $cancelledFullName"}
+          .toMap
 
       case ORDER_FINALIZED =>
         val messageFromCarrier  = s"La solicitud de $orderDescription se ha completado con exito!"
-        Map(APPLICANT -> messageFromCarrier, PARTICIPANT -> messageFromCarrier, CARRIER -> messageFromCarrier)
+        Map(APPLICANT -> messageFromCarrier,
+          PARTICIPANT -> messageFromCarrier,
+          CARRIER -> s"La solicitud #${order.orderNumber} se ha completado con exito!")
     }
   }
 
@@ -128,37 +132,40 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       val messagesValue = messageFactory(order, eventType, userCancelledType)
 
       val applicantNotification = messagesValue.get(APPLICANT).map{message =>
-          Notification(appId, List(order.applicant.id),
+          Notification(appId, List(order.applicant.oneSignalId),
           Map("en" -> message),
-          DataNotification(order._id, order.state, order.applicant.photoUrl, RELOADED))}
+          DataNotification(order._id, order.state, order.applicant.photoUrl, RELOAD))}
 
 
       val participantNotification = messagesValue.get(PARTICIPANT).map{
         message =>
-          Notification(appId, List(order.applicant.id),
+          Notification(appId, List(order.participant.oneSignalId),
             Map("en" -> message),
-            DataNotification(order._id, order.state, order.participant.photoUrl, RELOADED))
+            DataNotification(order._id, order.state, order.participant.photoUrl, RELOAD))
       }
 
       val carrierNotifications = order.carrier.flatMap{
         carrier => messagesValue.get(CARRIER).map { message =>
-          Notification(appId, List(order.applicant.id),
+          Notification(appId, List(carrier.oneSignalId),
             Map("en" -> message),
-            DataNotification(order._id, order.state, carrier.photoUrl, RELOADED))}
+            DataNotification(order._id, order.state, carrier.photoUrl, RELOAD))}
       }
 
-      val notifications: List[Option[Notification]] = List(participantNotification, carrierNotifications, applicantNotification)
+      val notifications: List[Notification] = List(participantNotification, carrierNotifications, applicantNotification).flatten
 
       notifications.map{ notification =>
+        val jsonBody = notification.toJson
+        info(s"Sending through push notification the following json: $jsonBody")
         client.url(NotificationPath)
           .withHttpHeaders(ContentType, Authorization)
-          .post(notification.toJson)
+          .post(jsonBody)
           .map{response =>
             response.status match {
               case 200 =>
                 val body = response.body.parseJsonTo[OneSignalResponse]
                 body.errors match {
-                  case Some(errors) => throw ShippearException(errors.mkString(", "))
+                  case Some(errors) =>
+                    throw ShippearException(errors.mkString(", "))
                   case _ => body
                 }
               case _ => val errors = response.body.parseJsonTo[OneSignalError].errors

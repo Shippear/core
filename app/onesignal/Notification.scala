@@ -1,18 +1,14 @@
 package onesignal
 
-import model.internal.OrderState.{OrderState, Value, withName}
-import onesignal.ActionState.ActionState
+case class Notification(appId: String,includePlayerIds: List[String], contents: Map[String,String], data: DataNotification)
 
-case class Notification(appId: String,includePlayerIds: List[String], contents: Map[String,String], data:DataNotification)
-
-
-case class DataNotification(orderId:  String, newState: OrderState , photoUrl: String, action: ActionState)
+case class DataNotification(orderId: String, newState: String , photoUrl: String, action: String)
 
 
 object ActionState extends Enumeration {
   type ActionState = Value
 
-  val RELOADED = Value
+  val RELOAD = Value
 
   implicit def toString(state: ActionState) = state.toString
 
