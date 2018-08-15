@@ -3,8 +3,10 @@ package onesignal
 import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
-import model.internal.UserType.UserType
 import model.internal.{Order, UserType}
+import model.internal.UserType._
+import onesignal.ActionState._
+import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import onesignal.EventType.{EventType, _}
@@ -18,16 +20,18 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
   private val config = envConfiguration.getConfig("email-notification").as[OneSignalConfig]
   private var active = config.activated
+  private val appId = config.id.getOrElse("")
+  private val auth = config.auth.getOrElse("")
 
   private val ContentType = ("Content-Type", "application/json;charset=utf-8")
-  private val Authorization = ("Authorization", s"Basic ${config.auth.getOrElse("")}")
+  private val Authorization = ("Authorization", s"Basic $auth")
 
   //Paths Rest API One Signal
   val BasePath = "https://onesignal.com/api/v1"
   val NotificationPath = s"$BasePath/notifications"
   val AddDevice = s"$BasePath/players"
-  val viewDevices = s"$AddDevice?app_id=${config.id.getOrElse("")}"
-  def viewDevice(id: String) = s"$AddDevice/$id?app_id=${config.id.getOrElse("")}"
+  val viewDevices = s"$AddDevice?app_id=$appId"
+  def viewDevice(id: String) = s"$AddDevice/$id?app_id=$appId"
 
   def activated(state: Boolean): Boolean = {
     active = state
@@ -43,42 +47,65 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       case ORDER_FINALIZED => FINALIZED
     }
   }
-  private def messageFactory(order : Order, eventType : EventType, userCancelledType : Option[UserType]): Map[String,String] = {
+
+  def messageFactory(order: Order, eventType: EventType, userCancelledType: Option[UserType]): Map[UserType,String] = {
+
+    val applicantFullName = s"${order.applicant.firstName} ${order.applicant.lastName}"
+    val participantFullName = s"${order.participant.firstName} ${order.participant.lastName}"
+    val carrierFullName = order.carrier.map{carrier => s"${carrier.firstName} ${carrier.lastName}"}.getOrElse("")
+    val orderDescription = order.description
+
+    lazy val cancelledFullName = userCancelledType match {
+      case Some(APPLICANT) => applicantFullName
+      case Some(PARTICIPANT) => participantFullName
+      case Some(CARRIER) => carrierFullName
+      case _ => ""
+    }
 
     eventType match {
-      case ORDER_CREATED => Map(UserType.PARTICIPANT.toString ->
-        s"${order.applicant.firstName} ${order.applicant.lastName} quiere que seas participante de: ${order.description}" )
+      //Order created
+      case ORDER_CREATED => Map(PARTICIPANT ->
+       s"$participantFullName quiere que seas participante de: $orderDescription")
 
-      case ORDER_WITH_CARRIER =>Map(UserType.PARTICIPANT.toString ->
-        s"${order.carrier.get.firstName} ${order.carrier.get.lastName} sera el transportista de : ${order.description}" ,
-        UserType.APPLICANT.toString ->
-        s"${order.carrier.get.firstName} ${order.carrier.get.lastName} sera el transportista de la solicitud que participas con ${order.participant.firstName} ${order.participant.lastName}")
+      //Confirmed Participant
+      case CONFIRM_PARTICIPANT => Map(APPLICANT ->
+        s"$applicantFullName ha aceptado tu solicitud")
 
-      case CONFIRM_PARTICIPANT => Map(UserType.APPLICANT.toString ->
-        s"${order.participant.firstName} ${order.participant.lastName} ha aceptado tu solicitud" )
+      //Confirmed Carrier
+      case ORDER_WITH_CARRIER =>
+        Map(PARTICIPANT ->
+        s"$carrierFullName sera el transportista de: $orderDescription",
+            APPLICANT ->
+        s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription",
+          CARRIER ->
+        s"Has sido asignado al pedido #${order.orderNumber} correctamente")
 
+      //Carrier validated by QR
       case ORDER_ON_WAY =>
-        val messageFromCarrier  =  s"${order.carrier.get.firstName} ${order.carrier.get.lastName} ha retirado el objeto ${order.description} y se encuentra en camino"
-        Map(UserType.APPLICANT.toString -> messageFromCarrier,
-          UserType.PARTICIPANT.toString ->messageFromCarrier )
+        val messageFromCarrier =  s"$carrierFullName ha retirado el objeto $orderDescription y se encuentra en camino!"
+        Map(APPLICANT -> messageFromCarrier,
+          PARTICIPANT -> messageFromCarrier)
 
-      case ORDER_CANCELED => val usersToSend  = UserType.values.filterNot(x=>x.toString == userCancelledType.toString)
-
-        usersToSend.map { u =>
-          u.toString -> s"fue cancelado por ${order.applicant.firstName} ${order.applicant.lastName}"
-        }.toMap
+      //Canceled by some user
+      case ORDER_CANCELED =>
+        userCancelledType
+          .map{ userType => UserType.values.filterNot(u => u.toString.equals(userType.toString))}
+          .getOrElse(UserType.values)
+          .map { u => u -> s"El pedido de: $orderDescription fue cancelado por $cancelledFullName"}
+          .toMap
 
       case ORDER_FINALIZED =>
-        val messageFromCarrier  = s"La solicitud de ${order.description} se ha completado con exito."
-        Map(UserType.APPLICANT.toString -> messageFromCarrier,
-          UserType.PARTICIPANT.toString ->messageFromCarrier )
+        val messageFromCarrier  = s"La solicitud de $orderDescription se ha completado con exito!"
+        Map(APPLICANT -> messageFromCarrier,
+          PARTICIPANT -> messageFromCarrier,
+          CARRIER -> s"La solicitud #${order.orderNumber} se ha completado con exito!")
     }
   }
 
 
   def sendEmail(playersId: List[String], emailType: EventType): Future[OneSignalResponse] = {
     if(active) {
-      val email = Email(config.id.getOrElse(""), "Shippear", emailBody(emailType), playersId)
+      val email = Email(appId, "Shippear", emailBody(emailType), playersId)
 
       client.url(NotificationPath)
         .withHttpHeaders(ContentType, Authorization)
@@ -102,33 +129,43 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
   def sendNotification(order: Order, eventType: EventType, userCancelledType : Option[UserType] = None): Future[OneSignalResponse] = {
     if(active) {
-      val messagesValue =   messageFactory(order, eventType, userCancelledType)
+      val messagesValue = messageFactory(order, eventType, userCancelledType)
 
-      val participantNotifications =
-        Notification(config.id.getOrElse(""), List(order.applicant.id),
-        Map( "en" -> messagesValue(UserType.PARTICIPANT.toString)),
-        DataNotification(order._id, order.state, order.participant.photoUrl, ActionState.RELOADED))
+      val applicantNotification = messagesValue.get(APPLICANT).map{message =>
+          Notification(appId, List(order.applicant.oneSignalId),
+          Map("en" -> message),
+          DataNotification(order._id, order.state, order.applicant.photoUrl, RELOAD))}
 
-      val carrierNotifications = Notification(config.id.getOrElse(""), List(order.applicant.id),
-        Map("en" -> messagesValue(UserType.CARRIER.toString)),
-        DataNotification(order._id, order.state, order.carrier.get.photoUrl,ActionState.RELOADED))
 
-      val applicantNotifications = Notification(config.id.getOrElse(""), List(order.applicant.id),
-        Map("en"->messagesValue(UserType.APPLICANT.toString)),
-        DataNotification(order._id, order.state, order.applicant.photoUrl, ActionState.RELOADED))
+      val participantNotification = messagesValue.get(PARTICIPANT).map{
+        message =>
+          Notification(appId, List(order.participant.oneSignalId),
+            Map("en" -> message),
+            DataNotification(order._id, order.state, order.participant.photoUrl, RELOAD))
+      }
 
-      val notifications = List(participantNotifications, carrierNotifications, applicantNotifications)
+      val carrierNotifications = order.carrier.flatMap{
+        carrier => messagesValue.get(CARRIER).map { message =>
+          Notification(appId, List(carrier.oneSignalId),
+            Map("en" -> message),
+            DataNotification(order._id, order.state, carrier.photoUrl, RELOAD))}
+      }
+
+      val notifications: List[Notification] = List(participantNotification, carrierNotifications, applicantNotification).flatten
 
       notifications.map{ notification =>
+        val jsonBody = notification.toJson
+        info(s"Sending through push notification the following json: $jsonBody")
         client.url(NotificationPath)
           .withHttpHeaders(ContentType, Authorization)
-          .post(notification.toJson)
+          .post(jsonBody)
           .map{response =>
             response.status match {
               case 200 =>
                 val body = response.body.parseJsonTo[OneSignalResponse]
                 body.errors match {
-                  case Some(errors) => throw ShippearException(errors.mkString(", "))
+                  case Some(errors) =>
+                    throw ShippearException(errors.mkString(", "))
                   case _ => body
                 }
               case _ => val errors = response.body.parseJsonTo[OneSignalError].errors
