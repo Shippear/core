@@ -12,14 +12,16 @@ GET     /shippear/summary                               controller.HomeControlle
 # Users
 GET      /shippear/users/all                            controller.UserController.allUsers
 GET      /shippear/users/orders/:idUser                 controller.UserController.ordersByState(idUser: String)
-POST     /shippear/users/find                           controller.UserController.findUser
+POST     /shippear/users/find                           controller.UserController.findUsers
+POST     /shippear/users/find-one                       controller.UserController.findUser
 POST     /shippear/users/create                         controller.UserController.createUser
 POST     /shippear/users/update                         controller.UserController.updateUser
 
 
 # Orders
 GET      /shippear/orders/all                           controller.OrderController.allOrders
-POST     /shippear/orders/find                          controller.OrderController.findOrder
+POST     /shippear/orders/find                          controller.OrderController.findOrders
+POST     /shippear/orders/find-one                      controller.OrderController.findOrder
 POST     /shippear/orders/create                        controller.OrderController.createOrder
 POST     /shippear/orders/update                        controller.OrderController.updateOrder
 POST     /shippear/orders/cancel                        controller.OrderController.cancelOrder

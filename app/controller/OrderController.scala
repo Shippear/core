@@ -23,11 +23,20 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
   }
 
   def findOrder = AsyncActionWithBody[Map[String, String]] { implicit request =>
-    service.findBy(request.content).map {
+    service.findOneBy(request.content).map {
       order => Ok(order)
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error getting order with criteria ${request.content}", ex)
+    }
+  }
+
+  def findOrders = AsyncActionWithBody[Map[String, String]] { implicit request =>
+    service.findBy(request.content).map {
+      orders => Ok(orders.toList)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error getting orders with criteria ${request.content}", ex)
     }
   }
 

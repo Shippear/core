@@ -37,7 +37,9 @@ trait ShippearRepository[T] extends Logging with CamelCaseJsonProtocol{
 
   def create(doc: T) = dao.insertOne(doc)
 
-  def findBy(params: Map[String, String]) = dao.findOne(params)
+  def findBy(params: Map[String, String]) = dao.find(params).toFuture()
+
+  def findOneBy(params: Map[String, String]) = dao.findOne(params)
 
   def findOneById(id: String): Future[T] = dao.findOneById(id)
 
