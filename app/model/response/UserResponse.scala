@@ -18,7 +18,7 @@ case class UserResponse(@JsonProperty("_id") _id : String,
                          ordersInProgress: Option[Seq[Order]],
                          ordersFinalized: Option[Seq[Order]],
                          ordersToBeConfirmed: Option[Seq[Order]],
-                         paymentMethods: Seq[PaymentMethod],
+                         paymentMethods: Option[Seq[PaymentMethod]],
                          cbu: Option[String],
                          scoring: Option[Double],
                          transport: Option[Seq[Transport]])
