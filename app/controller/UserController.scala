@@ -21,12 +21,21 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
   }
 
   def findUser = AsyncActionWithBody[Map[String, String]] { implicit request =>
-    service.findBy(request.content).map {
+    service.findOneBy(request.content).map {
         user => Ok(user)
       }.recover {
         case ex: Exception =>
           constructErrorResult(s"Error getting user with criteria ${request.content.mkString(", ")}", ex)
       }
+  }
+
+  def findUsers = AsyncActionWithBody[Map[String, String]] { implicit request =>
+    service.findBy(request.content).map {
+      users => Ok(users.toList)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error getting user with criteria ${request.content.mkString(", ")}", ex)
+    }
   }
 
   def ordersByState(idUser: String) = AsyncAction { implicit request =>

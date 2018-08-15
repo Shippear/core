@@ -19,7 +19,7 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
   override def create(user: User): Future[_] = validateAndExecute(super.create, user, {
     val causes = ArrayBuffer.empty[String]
 
-    repository.findBy(Map(UserName -> user.userName)).map { userFound =>
+    repository.findOneBy(Map(UserName -> user.userName)).map { userFound =>
        causes.+=(s"username ${userFound.userName} already exists")
       causes
     }.recover{
@@ -33,7 +33,7 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
   override def update(user: User): Future[_] = validateAndExecute(super.update, user, {
     val causes = ArrayBuffer.empty[String]
 
-   repository.findBy(Map(UserName -> user.userName)).map { userFound =>
+   repository.findOneBy(Map(UserName -> user.userName)).map { userFound =>
      if (!userFound._id.equals(user._id) && userFound.userName.equals(user.userName))
        causes.+=(s"username ${user.userName} already exists")
 
