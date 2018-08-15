@@ -8,6 +8,7 @@ import model.internal.UserType._
 import model.mapper.OrderMapper
 import model.request.{CancelOrder, CarrierRating, OrderCreation}
 import onesignal.{EventType, OneSignalClient}
+import onesignal.EventType._
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
@@ -26,7 +27,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
         participant <- userRepository.findOneById(newOrder.participantId)
         orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
         _ <- repository.create(orderToSave)
-        _ = oneSignalClient.sendNotification(orderToSave, EventType.ORDER_CREATED)
+        _ = oneSignalClient.sendNotification(orderToSave, ORDER_CREATED)
       } yield orderToSave
   }
 
@@ -43,8 +44,8 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     for {
       order <- repository.findOneById(cancelOrder.orderId)
       _ = validateCancelOrder(order, cancelOrder.userType)
-      _ = oneSignalClient.sendNotification(order, EventType.ORDER_CANCELED, Some(cancelOrder.userType))
-      _ <- repository.cancelOrder(order)
+      canceledOrder <- repository.cancelOrder(order)
+      _ = oneSignalClient.sendNotification(canceledOrder, ORDER_CANCELED, Some(cancelOrder.userType))
     } yield order
 
 
@@ -63,9 +64,10 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   def confirmParticipant(orderId: String): Future[Order] = {
     for {
       order <- repository.findOneById(orderId)
-      _ = validateOrderState(order.state, OrderState.PENDING_PARTICIPANT)
-      _ = oneSignalClient.sendNotification(order, EventType.CONFIRM_PARTICIPANT)
-      _ <- repository.update(order.copy(state = OrderState.PENDING_CARRIER))
+      _ = validateOrderState(order.state, PENDING_PARTICIPANT)
+      updatedOrder = order.copy(state = PENDING_CARRIER)
+      _ <- repository.update(updatedOrder)
+      _ = oneSignalClient.sendNotification(updatedOrder, CONFIRM_PARTICIPANT)
     } yield order
   }
 
@@ -76,20 +78,21 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       order <- repository.findOneById(content.orderId)
       _ = validateOrderState(order.state, PENDING_CARRIER)
       newOrder <- repository.assignCarrier(order, carrier, qrCodeGenerator.generateQrImage(content.orderId))
-      _ = oneSignalClient.sendNotification(newOrder, EventType.ORDER_WITH_CARRIER)
+      _ = oneSignalClient.sendNotification(newOrder, ORDER_WITH_CARRIER)
     } yield newOrder
 
 
   def validateQrCode(orderToValidate: OrderToValidate): Future[Boolean] = {
     val eventType = orderToValidate.userType match {
-      case CARRIER => EventType.ORDER_ON_WAY
-      case _ => EventType.ORDER_FINALIZED
+      case CARRIER => ORDER_ON_WAY
+      case _ => ORDER_FINALIZED
     }
+
     for {
       order <- repository.findOneById(orderToValidate.orderId)
       verification = verifyQR(orderToValidate, order)
-      _ = oneSignalClient.sendNotification(order, eventType)
-      _ <- updateOrderStatus(order, orderToValidate.userType, verification)
+      updatedOrder <- updateOrderStatus(order, orderToValidate.userType, verification)
+      _ = oneSignalClient.sendNotification(updatedOrder, eventType)
     } yield verification
   }
 
@@ -106,14 +109,18 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     }
   }
 
-  def updateOrderStatus(order: Order, userType: UserType, verification: Boolean): Future[_] = {
+  def updateOrderStatus(order: Order, userType: UserType, verification: Boolean): Future[Order] = {
     if(verification) {
       val newOrder = userType match {
         case CARRIER => order.copy(state = ON_TRAVEL)
         case _ => order.copy(state = DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
       }
-      repository.update(newOrder)
-    } else Future.successful(Unit)
+
+      for {
+        _ <- repository.update(newOrder)
+      } yield newOrder
+    }
+    else Future.successful(order)
 
   }
 

@@ -45,19 +45,19 @@ trait ModelData {
   val birthDate = DateTime.now().toDate
 
   val marcelo = User(id_1, "oneSignal", "marcelo.l", "marcelo", "l", "36121311", birthDate,
-    contactInfo, "photoUrl", Seq(almagroAddress), None, Seq(visa, visaDebito), None, None, None)
+    contactInfo, "photoUrl", Seq(almagroAddress), None, Some(Seq(visa, visaDebito)), None, None, None)
 
   val lucas = User(id_2, "oneSignal", "lucas.c", "lucas", "c", "36121312", birthDate,
-    contactInfo, "photoUrl", Seq(parquePatriciosAddress), None, Seq(masterCard), None, None, None)
+    contactInfo, "photoUrl", Seq(parquePatriciosAddress), None, Some(Seq(masterCard)), None, None, None)
 
   val german = User(id_3, "oneSignal", "german.l", "german", "l", "36121313", birthDate,
-    contactInfo, "photoUrl", Seq(balvaneraAddress), None, Seq(visa), None, None, None)
+    contactInfo, "photoUrl", Seq(balvaneraAddress), None, Some(Seq(visa)), None, None, None)
 
   val roman = User(id_4, "oneSignal", "roman.l", "roman", "g", "36121314", birthDate,
-    contactInfo, "photoUrl", Seq(boedoAddress), None, Seq(visaDebito), None, None, None)
+    contactInfo, "photoUrl", Seq(boedoAddress), None, Some(Seq(visaDebito)), None, None, None)
 
   val nazareno = User(id_5, "oneSignal", "nazareno.l", "nazareno", "l", "36121315", birthDate,
-    contactInfo, "photoUrl", Seq(saavedraAddress), None, Seq(visa, masterCard), None, None, None)
+    contactInfo, "photoUrl", Seq(saavedraAddress), None, Some(Seq(visa, masterCard)), None, None, None)
 
 
   //--------------Orders---------------

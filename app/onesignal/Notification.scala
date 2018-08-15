@@ -3,11 +3,10 @@ package onesignal
 import model.internal.OrderState.{OrderState, Value, withName}
 import onesignal.ActionState.ActionState
 
-case class Notification (appId: String,includePlayerIds: List[String], contents: Map[String,String],
-                         data: DataNotification )
+case class Notification(appId: String,includePlayerIds: List[String], contents: Map[String,String], data:DataNotification)
 
 
-case class DataNotification (orderId :  String, newState: OrderState , photoUrl: String, action: ActionState)
+case class DataNotification(orderId:  String, newState: OrderState , photoUrl: String, action: ActionState)
 
 
 object ActionState extends Enumeration {
