@@ -20,7 +20,7 @@ case class User(@JsonProperty("_id") _id : String,
                 orders: Option[Seq[Order]],
                 paymentMethods: Option[Seq[PaymentMethod]],
                 cbu: Option[String],
-                scoring: Option[Double],
+                scoring: Option[Float],
                 transport: Option[Seq[Transport]])
 
 object User {
