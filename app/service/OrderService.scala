@@ -183,13 +183,12 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   }
 
   def updateCarrierRating(carrier: User, score: Int): User = {
-    val carrierScore = carrier.scoring.getOrElse(0.0)
+    val carrierScore: Float = carrier.scoring.getOrElse(0)
 
-    val result = carrier.orders
+    val result: Option[Float] = carrier.orders
       .map{ carrierOrders =>
         val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString))
-
-        (carrierScore.toDouble + score) / delivered.length
+        (carrierScore + score) / delivered.length
       }
 
     carrier.copy(scoring = result)
