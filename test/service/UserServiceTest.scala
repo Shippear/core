@@ -3,7 +3,7 @@ package service
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
+import common.DateTimeNow._
 import model.internal.OperationType._
 import model.internal.OrderState._
 import model.internal.TransportType._
@@ -31,7 +31,7 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
   val destinationCity = City(1, "Nuñez")
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
   val route = Route(origin, destination)
-  val birthDate = DateTimeNow.now.toDate
+  val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
   val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
   val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(RECEIVER))
@@ -73,7 +73,7 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true, None, None)
     val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
-    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
+    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
       contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
 
     val repo = mock[UserRepository]

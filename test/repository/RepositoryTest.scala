@@ -3,7 +3,7 @@ package repository
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
+import common.DateTimeNow._
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OperationType._
@@ -50,7 +50,7 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(1, "Nuñez")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
     val route = Route(origin, destination)
-    val birthDate = DateTimeNow.now.toDate
+    val birthDate = rightNowTime
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
     val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
@@ -134,7 +134,7 @@ class RepositoryTest extends MongoTest {
     val city = City(2, "Almagro")
     val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true, None, None)
     val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
-    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
+    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
       contactInfo, "photoUrl", Seq(address), None, Some(Seq(paymentMethod)), None, None, None)
 
     //Order
@@ -146,7 +146,7 @@ class RepositoryTest extends MongoTest {
     val destinationCity = City(5, "Balvanera")
     val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
     val route = Route(origin, destination)
-    val birthDate = DateTimeNow.now.toDate
+    val birthDate = rightNowTime
     val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0), Some(SENDER))
     val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0), Some(RECEIVER))
     val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0), None)
