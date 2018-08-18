@@ -69,7 +69,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
       //Confirmed Participant
       case CONFIRM_PARTICIPANT => Map(APPLICANT ->
-        s"$applicantFullName ha aceptado tu solicitud")
+        s"$participantFullName ha aceptado tu solicitud")
 
       //Confirmed Carrier
       case ORDER_WITH_CARRIER =>
