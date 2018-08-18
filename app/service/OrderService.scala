@@ -1,16 +1,17 @@
 package service
 
+import java.util.Date
+
 import com.google.inject.Inject
-import common.DateTimeNow
-import model.internal._
+import common.DateTimeNow._
+import model.internal.OperationType._
 import model.internal.OrderState._
 import model.internal.UserType._
-import model.internal.OperationType._
+import model.internal._
 import model.mapper.OrderMapper
 import model.request.{CancelOrder, CarrierRating, OrderCreation}
-import onesignal.{EventType, OneSignalClient}
 import onesignal.EventType._
-import org.joda.time.DateTime
+import onesignal.OneSignalClient
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
@@ -36,7 +37,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   def validateAvailableTimes(order: OrderCreation) = {
     val beginDate = order.availableFrom
     val endDate = order.availableTo
-    val rightNow = DateTimeNow.now.minusMinutes(5)
+    val rightNow: Date = rightNowTime.minusMinutes(5)
     val genericMessage = "The order has an invalid date range."
 
     if(beginDate.after(endDate))
@@ -44,12 +45,12 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
 
     order.operationType match {
       case SENDER =>
-        if(beginDate.before(rightNow.toDate))
-          throw ShippearException(s"$genericMessage Begin date: $beginDate can't be set before than right now: ${rightNow.toDate}")
+        if(beginDate.before(rightNow))
+          throw ShippearException(s"$genericMessage Begin date: $beginDate can't be set before than right now: $rightNow")
       case _ =>
-        val participantBeginDate = new DateTime(beginDate).minusSeconds(order.duration.toInt).toDate
-        if(participantBeginDate.before(rightNow.toDate))
-          throw ShippearException(s"$genericMessage Begin date of participant: $participantBeginDate. Can't be before than right now: ${rightNow.toDate}")
+        val participantBeginDate: Date = fromDate(beginDate).minusSeconds(order.duration.toInt)
+        if(participantBeginDate.before(rightNow))
+          throw ShippearException(s"$genericMessage Begin date of participant: $participantBeginDate. Can't be before than right now: $rightNow")
     }
 
   }
@@ -128,7 +129,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     if(verification) {
       val newOrder = userType match {
         case CARRIER => order.copy(state = ON_TRAVEL)
-        case _ => order.copy(state = DELIVERED, finalizedDate = Some(DateTimeNow.now.toDate), ratedCarrier = Some(false))
+        case _ => order.copy(state = DELIVERED, finalizedDate = Some(rightNowTime), ratedCarrier = Some(false))
       }
 
       for {

@@ -3,13 +3,14 @@ package model.mapper
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
-import common.{ConfigReader, DateTimeNow}
+import common.ConfigReader
 import model.common.IdGenerator
 import model.internal.OperationType._
 import model.internal.OrderState._
 import model.internal.{Order, Route, User, UserDataOrder}
 import model.request.OrderCreation
 import org.joda.time.Minutes
+import common.DateTimeNow._
 
 object OrderMapper extends IdGenerator with ConfigReader {
 
@@ -43,7 +44,7 @@ object OrderMapper extends IdGenerator with ConfigReader {
 
     val supportedTransports = orderCreation.supportedTransports.map(_.toString)
 
-    val orderNumber = DateTimeNow.now.getMillis
+    val orderNumber = rightNowTime.getMillis
 
     val orderTimeout = calculateOrderTimeout(orderCreation.availableFrom, orderCreation.availableTo)
 
@@ -81,7 +82,7 @@ object OrderMapper extends IdGenerator with ConfigReader {
     // 0.15 is the predefined percentage of the total awaiting time
     val minutes = Minutes.minutesBetween(dateTimeFrom.toDateTime, dateTimeTo.toDateTime).getMinutes * 0.15
 
-    Some(dateTimeFrom.plusMinutes(minutes.toInt).toDate)
+    Some(dateTimeFrom.plusMinutes(minutes.toInt))
 
   }
 
@@ -90,8 +91,8 @@ object OrderMapper extends IdGenerator with ConfigReader {
       case SENDER =>
         val originAddress = order.route.origin.copy(awaitFrom = Some(order.availableFrom), awaitTo = Some(order.availableTo))
 
-        val awaitFromParticipant = new DateTime(order.availableFrom).plusSeconds(order.duration.toInt).toDate
-        val awaitToParticipant = new DateTime(order.availableTo).plusSeconds(order.duration.toInt).toDate
+        val awaitFromParticipant = new DateTime(order.availableFrom).plusSeconds(order.duration.toInt)
+        val awaitToParticipant = new DateTime(order.availableTo).plusSeconds(order.duration.toInt)
         val modifiedDestination = order.route.destination.copy(awaitFrom = Some(awaitFromParticipant), awaitTo = Some(awaitToParticipant))
 
         order.route.copy(origin = originAddress, destination = modifiedDestination)
@@ -99,8 +100,8 @@ object OrderMapper extends IdGenerator with ConfigReader {
       case _ =>
         val destinationAddress = order.route.origin.copy(awaitFrom = Some(order.availableFrom), awaitTo = Some(order.availableTo))
 
-        val awaitFromApplicant = new DateTime(order.availableFrom).minusSeconds(order.duration.toInt).toDate
-        val awaitToApplicant = new DateTime(order.availableTo).minusSeconds(order.duration.toInt).toDate
+        val awaitFromApplicant: Date = new DateTime(order.availableFrom).minusSeconds(order.duration.toInt)
+        val awaitToApplicant = new DateTime(order.availableTo).minusSeconds(order.duration.toInt)
         val modifiedOrigin = order.route.origin.copy(awaitFrom = Some(awaitFromApplicant), awaitTo = Some(awaitToApplicant))
 
         order.route.copy(origin = modifiedOrigin, destination = destinationAddress)

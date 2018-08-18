@@ -7,6 +7,7 @@ import model.internal.price.enum.Weight.MEDIUM
 import model.internal._
 import model.request.OrderCreation
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow._
 
 trait ModelData {
 
@@ -42,7 +43,7 @@ trait ModelData {
   val id_4 = "4"
   val id_5 = "5"
 
-  val birthDate = DateTime.now().toDate
+  val birthDate = rightNowTime
 
   val marcelo = User(id_1, "oneSignal", "marcelo.l", "marcelo", "l", "36121311", birthDate,
     contactInfo, "photoUrl", Seq(almagroAddress), None, Some(Seq(visa, visaDebito)), None, None, None)
@@ -82,8 +83,8 @@ trait ModelData {
 
   val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description",
     SENDER, SMALL, MEDIUM, supportedTransports,
-    almagroToSaavedra, today.toDate,
-    tomorrow.toDate, None, None, visa, 100.5, durationTrip)
+    almagroToSaavedra, today,
+    tomorrow, None, None, visa, 100.5, durationTrip)
 
 }
 

@@ -1,7 +1,7 @@
 package repository
 
 import com.google.inject.Inject
-import common.DateTimeNow
+import common.DateTimeNow._
 import dao.util.ShippearDAO
 import model.internal.OrderState.{CANCELLED, PENDING_PICKUP}
 import model.internal.{Order, User, UserDataOrder}
@@ -35,7 +35,7 @@ class OrderRepository @Inject()(userRepository: UserRepository)(implicit ec: Exe
   }
 
   def cancelOrder(order: Order): Future[Order] = {
-    val updateOrder = order.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate))
+    val updateOrder = order.copy(state = CANCELLED, finalizedDate = Some(rightNowTime))
     for {
       _ <- update(updateOrder)
     } yield updateOrder
