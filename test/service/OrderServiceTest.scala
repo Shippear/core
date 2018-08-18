@@ -31,10 +31,10 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
   val originGeolocation = Geolocation(132, -123)
   val originCity = City(2, "Almagro")
-  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
+  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true, None, None)
   val destinationGeolocation = Geolocation(132, -123)
   val destinationCity = City(1, "Nuñez")
-  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
   val route = Route(origin, destination)
 
   val birthDate = DateTimeNow.now.toDate
@@ -65,7 +65,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   //User
   val geolocation = Geolocation(132, -123)
   val city = City(2, "Almagro")
-  val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
+  val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true, None, None)
   val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
 
@@ -84,21 +84,38 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val tomorrow = today.plusDays(1)
       val afterTomorrow = today.plusDays(2)
 
+      //Duration in seconds so...
+      //2 hours = 2 * 60 * 60 = 7200
+      val duration = 7200
+
       val orderCreation = OrderCreation(None, "a", "b", "description",
         SENDER, SMALL, HEAVY, List(MOTORCYCLE),
-        route, today.toDate, tomorrow.toDate, None, None, visa, 0)
+        route, today.toDate, tomorrow.toDate, None, None, visa, 0, duration)
 
-      orderService.validateOrder(orderCreation)
+      orderService.validateAvailableTimes(orderCreation)
 
-      val orderCreationInvalidBegin = orderCreation.copy(availableFrom = yesterday.toDate)
       intercept[ShippearException]{
-        orderService.validateOrder(orderCreationInvalidBegin)
+        val orderCreationInvalidBegin = orderCreation.copy(availableFrom = yesterday.toDate)
+        orderService.validateAvailableTimes(orderCreationInvalidBegin)
       }
 
-      val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorrow.toDate, availableTo = tomorrow.toDate)
       intercept[ShippearException]{
-        orderService.validateOrder(orderCreationInvalidRange)
+        val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorrow.toDate, availableTo = tomorrow.toDate)
+        orderService.validateAvailableTimes(orderCreationInvalidRange)
       }
+
+      //When the operation is RECEIVE
+      val orderTypeReceive = OrderCreation(None, "a", "b", "desc", RECEIVER, SMALL,
+        HEAVY, List(WALKING), route, today.plusSeconds(duration).toDate, afterTomorrow.toDate, None, None, visa, 0, duration)
+      orderService.validateAvailableTimes(orderTypeReceive)
+
+      intercept[ShippearException]{
+        val orderReceive = OrderCreation(None, "a", "b", "desc", RECEIVER, SMALL,
+          HEAVY, List(WALKING), route, today.toDate, tomorrow.toDate, None, None, visa, 0, duration)
+        orderService.validateAvailableTimes(orderReceive)
+      }
+
+
     }
 
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {

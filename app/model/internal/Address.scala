@@ -1,5 +1,7 @@
 package model.internal
 
+import java.util.Date
+
 case class Address(geolocation: Geolocation,
                    alias: Option[String],
                    street: String,
@@ -7,4 +9,6 @@ case class Address(geolocation: Geolocation,
                    zipCode: String,
                    apartment: Option[String],
                    city: City,
-                   public: Boolean)
+                   public: Boolean,
+                   awaitFrom: Option[Date],
+                   awaitTo: Option[Date])

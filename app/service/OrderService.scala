@@ -5,10 +5,12 @@ import common.DateTimeNow
 import model.internal._
 import model.internal.OrderState._
 import model.internal.UserType._
+import model.internal.OperationType._
 import model.mapper.OrderMapper
 import model.request.{CancelOrder, CarrierRating, OrderCreation}
 import onesignal.{EventType, OneSignalClient}
 import onesignal.EventType._
+import org.joda.time.DateTime
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
@@ -21,7 +23,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
                             (implicit ec: ExecutionContext) extends Service[Order]{
 
   def createOrder(newOrder: OrderCreation) = {
-    validateOrder(newOrder)
+    validateAvailableTimes(newOrder)
       for {
         applicant <- userRepository.findOneById(newOrder.applicantId)
         participant <- userRepository.findOneById(newOrder.participantId)
@@ -31,12 +33,25 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       } yield orderToSave
   }
 
-  def validateOrder(order: OrderCreation) = {
+  def validateAvailableTimes(order: OrderCreation) = {
     val beginDate = order.availableFrom
     val endDate = order.availableTo
+    val rightNow = DateTimeNow.now.minusMinutes(5)
+    val genericMessage = "The order has an invalid date range."
 
-    if(beginDate.before(DateTimeNow.now.minusMinutes(10).toDate) || beginDate.after(endDate))
-      throw ShippearException(s"The order has an invalid date range with from: $beginDate and to: $endDate")
+    if(beginDate.after(endDate))
+      throw ShippearException(s"$genericMessage Begin date: $beginDate can't be more than the end date: $endDate")
+
+    order.operationType match {
+      case SENDER =>
+        if(beginDate.before(rightNow.toDate))
+          throw ShippearException(s"$genericMessage Begin date: $beginDate can't be set before than right now: ${rightNow.toDate}")
+      case _ =>
+        val participantBeginDate = new DateTime(beginDate).minusSeconds(order.duration.toInt).toDate
+        if(participantBeginDate.before(rightNow.toDate))
+          throw ShippearException(s"$genericMessage Begin date of participant: $participantBeginDate. Can't be before than right now: ${rightNow.toDate}")
+    }
+
   }
 
 
