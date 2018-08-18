@@ -7,6 +7,7 @@ import model.internal.price.enum.Weight.MEDIUM
 import model.internal._
 import model.request.OrderCreation
 import com.github.nscala_time.time.Imports.DateTime
+import common.DateTimeNow._
 
 trait ModelData {
 
@@ -28,11 +29,11 @@ trait ModelData {
 
 
   //--------Addresses---------
-  val almagroAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), almagro, public = true)
-  val balvaneraAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), balvanera, public = true)
-  val saavedraAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), saavedra, public = true)
-  val boedoAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), boedo, public = true)
-  val parquePatriciosAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), parquePatricios, public = true)
+  val almagroAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), almagro, public = true, None, None)
+  val balvaneraAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), balvanera, public = true, None, None)
+  val saavedraAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), saavedra, public = true, None, None)
+  val boedoAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), boedo, public = true, None, None)
+  val parquePatriciosAddress = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), parquePatricios, public = true, None, None)
 
 
   //------------Users------------------
@@ -42,7 +43,7 @@ trait ModelData {
   val id_4 = "4"
   val id_5 = "5"
 
-  val birthDate = DateTime.now().toDate
+  val birthDate = rightNowTime
 
   val marcelo = User(id_1, "oneSignal", "marcelo.l", "marcelo", "l", "36121311", birthDate,
     contactInfo, "photoUrl", Seq(almagroAddress), None, Some(Seq(visa, visaDebito)), None, None, None)
@@ -75,12 +76,15 @@ trait ModelData {
   val tomorrow = today.plusDays(1)
   val afterTomorow = today.plusDays(2)
 
+  //2 Hours = 7200 seconds
+  val durationTrip = 7200
+
   val supportedTransports: List[TransportType] = TransportType.values.toList
 
   val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description",
     SENDER, SMALL, MEDIUM, supportedTransports,
-    almagroToSaavedra, today.toDate,
-    tomorrow.toDate, None, None, visa, 100.5)
+    almagroToSaavedra, today,
+    tomorrow, None, None, visa, 100.5, durationTrip)
 
 }
 

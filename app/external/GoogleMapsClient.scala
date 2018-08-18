@@ -35,8 +35,16 @@ class GoogleMapsClient @Inject()(ws: WSClient, priceService: PriceService)(impli
 
         apiMapsResponse.rows.flatMap {
           row =>
+            // distance in meters
+            // duration in seconds
             row.elements.map {
-              elem => RouteDetail(origin, address, elem.distance.text, elem.distance.value, elem.duration.text, None)
+              elem => RouteDetail(origin,
+                address,
+                elem.distance.text,
+                elem.distance.value,
+                elem.duration.text,
+                elem.duration.value,
+                None)
             }
         }
       }

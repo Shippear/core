@@ -2,7 +2,7 @@ package dao
 
 import java.util.Date
 
-import common.DateTimeNow
+import common.DateTimeNow._
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OrderState._
@@ -27,13 +27,13 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
   val originGeolocation = Geolocation(132, -123)
   val originCity = City(2, "Almagro")
-  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity , public = true)
+  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity , public = true, None, None)
   val destinationGeolocation = Geolocation(132, -123)
   val destinationCity = City(1, "Nuñez")
-  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
   val route = Route(origin, destination)
 
-  val birthDate = DateTimeNow.now.toDate
+  val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
   val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
   lazy val participantId = "11111"
@@ -102,7 +102,7 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
       await(dao.findByFilters(Filters.eq("participant.id", "AAAA"))).size mustBe 0
 
       //greater than & lower than
-      val availableFrom = new DateTime().minusDays(1).toDate
+      val availableFrom: Date = new DateTime().minusDays(1)
       await(dao.findByFilters(Filters.gt("availableFrom", availableFrom))).size mustBe 1
       await(dao.findByFilters(Filters.lt("availableFrom", availableFrom))).size mustBe 0
 

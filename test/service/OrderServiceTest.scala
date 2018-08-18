@@ -3,24 +3,23 @@ package service
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
+import common.DateTimeNow._
+import model.internal.OperationType._
 import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP}
+import model.internal.TransportType._
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
 import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight._
-import model.internal.OperationType._
-import model.internal.TransportType._
 import model.request.{CancelOrder, OrderCreation}
 import onesignal.OneSignalClient
-import play.api.test.Helpers.{await, _}
+import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.test.Helpers.{await, _}
 import qrcodegenerator.QrCodeGenerator
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -31,13 +30,13 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
   val originGeolocation = Geolocation(132, -123)
   val originCity = City(2, "Almagro")
-  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
+  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true, None, None)
   val destinationGeolocation = Geolocation(132, -123)
   val destinationCity = City(1, "Nuñez")
-  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
   val route = Route(origin, destination)
 
-  val birthDate = DateTimeNow.now.toDate
+  val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
 
   val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
@@ -65,7 +64,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   //User
   val geolocation = Geolocation(132, -123)
   val city = City(2, "Almagro")
-  val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
+  val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true, None, None)
   val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
 
@@ -84,33 +83,50 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val tomorrow = today.plusDays(1)
       val afterTomorrow = today.plusDays(2)
 
+      //Duration in seconds so...
+      //2 hours = 2 * 60 * 60 = 7200
+      val duration = 7200
+
       val orderCreation = OrderCreation(None, "a", "b", "description",
         SENDER, SMALL, HEAVY, List(MOTORCYCLE),
-        route, today.toDate, tomorrow.toDate, None, None, visa, 0)
+        route, today, tomorrow, None, None, visa, 0, duration)
 
-      orderService.validateOrder(orderCreation)
+      orderService.validateAvailableTimes(orderCreation)
 
-      val orderCreationInvalidBegin = orderCreation.copy(availableFrom = yesterday.toDate)
       intercept[ShippearException]{
-        orderService.validateOrder(orderCreationInvalidBegin)
+        val orderCreationInvalidBegin = orderCreation.copy(availableFrom = yesterday)
+        orderService.validateAvailableTimes(orderCreationInvalidBegin)
       }
 
-      val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorrow.toDate, availableTo = tomorrow.toDate)
       intercept[ShippearException]{
-        orderService.validateOrder(orderCreationInvalidRange)
+        val orderCreationInvalidRange = orderCreation.copy(availableFrom = afterTomorrow, availableTo = tomorrow)
+        orderService.validateAvailableTimes(orderCreationInvalidRange)
       }
+
+      //When the operation is RECEIVE
+      val orderTypeReceive = OrderCreation(None, "a", "b", "desc", RECEIVER, SMALL,
+        HEAVY, List(WALKING), route, today.plusSeconds(duration), afterTomorrow, None, None, visa, 0, duration)
+      orderService.validateAvailableTimes(orderTypeReceive)
+
+      intercept[ShippearException]{
+        val orderReceive = OrderCreation(None, "a", "b", "desc", RECEIVER, SMALL,
+          HEAVY, List(WALKING), route, today, tomorrow, None, None, visa, 0, duration)
+        orderService.validateAvailableTimes(orderReceive)
+      }
+
+
     }
 
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {
       // 2 Orders
       val orders = Some(List(order_1, order_2))
-      val user = User(carrierId, "oneSignalId", "usxerName", "firstName", "lastName", "36121312", DateTime.now().toDate,
+      val user = User(carrierId, "oneSignalId", "usxerName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
 
       orderService.validateCarrier(user)
 
       val orders4 = Some(List(order_1, order_2, order_bla))
-      val user_2 = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
+      val user_2 = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders4, Some(Seq(paymentMethod)), None, None, None)
 
       orderService.validateCarrier(user_2)
@@ -119,7 +135,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Throw ShippearException when the carrier has 3 orders ON_TRAVEL" in {
       // 3 Orders
       val orders = Some(List(order_1, order_2, order_3))
-      val user = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
+      val user = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
 
       intercept[ShippearException] {

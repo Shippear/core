@@ -3,7 +3,7 @@ package repository
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
-import common.DateTimeNow
+import common.DateTimeNow._
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
 import model.internal.OperationType._
@@ -45,12 +45,12 @@ class RepositoryTest extends MongoTest {
     val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
     val originGeolocation = Geolocation(132, -123)
     val originCity = City(2, "Almagro")
-    val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
+    val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true, None, None)
     val destinationGeolocation = Geolocation(132, -123)
     val destinationCity = City(1, "Nuñez")
-    val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+    val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
     val route = Route(origin, destination)
-    val birthDate = DateTimeNow.now.toDate
+    val birthDate = rightNowTime
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val qrCode = qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray
     val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
@@ -104,7 +104,7 @@ class RepositoryTest extends MongoTest {
       when(user.contactInfo).thenReturn(carrierData.contactInfo)
       when(user.photoUrl).thenReturn("photo")
       when(user.onesignalId).thenReturn("onesignal")
-      when(user.scoring).thenReturn(Some(0.0))
+      when(user.scoring).thenReturn(Some(0f))
       await(repo.create(order))
       await(repo.assignCarrier(order, user , qrCode))
 
@@ -132,21 +132,21 @@ class RepositoryTest extends MongoTest {
     val geolocation = Geolocation(132, -123)
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val city = City(2, "Almagro")
-    val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true)
+    val address = Address(geolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), city, public = true, None, None)
     val paymentMethod = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
-    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", DateTime.now().toDate,
+    val user = User(idUser, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
       contactInfo, "photoUrl", Seq(address), None, Some(Seq(paymentMethod)), None, None, None)
 
     //Order
     val originGeolocation = Geolocation(132, -123)
     val originCity = City(1, "Parque Patricios")
     val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
-    val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true)
+    val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity, public = true, None, None)
     val destinationGeolocation = Geolocation(132, -123)
     val destinationCity = City(5, "Balvanera")
-    val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+    val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
     val route = Route(origin, destination)
-    val birthDate = DateTimeNow.now.toDate
+    val birthDate = rightNowTime
     val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0), Some(SENDER))
     val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0), Some(RECEIVER))
     val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "oneSignal", Some(0), None)
