@@ -4,8 +4,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.google.inject.Inject
 import com.typesafe.config.Config
-import common.{ConfigReader, DateTimeNow, Logging}
+import common.{ConfigReader, Logging}
 import model.internal.Order
+import common.DateTimeNow._
 import model.internal.OrderState._
 import repository.OrderRepository
 import service.OrderService
@@ -39,7 +40,7 @@ class CancelOrdersTask @Inject()(val taskManager: TaskManager, orderRepository :
       } yield ordersToCancel.foreach {
         orderToSave => {
           info(s"Cancelling order ${orderToSave._id} due time out")
-          orderRepository.update(orderToSave.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.now.toDate)))
+          orderRepository.update(orderToSave.copy(state = CANCELLED, finalizedDate = Some(rightNowTime)))
         }
       }
     }
@@ -50,7 +51,7 @@ class CancelOrdersTask @Inject()(val taskManager: TaskManager, orderRepository :
     orders.filter {
       order => order.timeoutTime match {
           case Some(date) =>
-            date.before(DateTimeNow.now.toDate) &&
+            date.before(rightNowTime) &&
               (order.state.equals(PENDING_PARTICIPANT.toString) ||
                 order.state.equals(PENDING_CARRIER.toString))
           case _ => false
