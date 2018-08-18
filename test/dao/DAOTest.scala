@@ -27,10 +27,10 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
   val originGeolocation = Geolocation(132, -123)
   val originCity = City(2, "Almagro")
-  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity , public = true)
+  val origin = Address(originGeolocation, Some("alias"), "street", 123, "zipCode", Some("appart"), originCity , public = true, None, None)
   val destinationGeolocation = Geolocation(132, -123)
   val destinationCity = City(1, "Nuñez")
-  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true)
+  val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
   val route = Route(origin, destination)
 
   val birthDate = DateTimeNow.now.toDate

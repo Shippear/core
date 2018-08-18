@@ -19,13 +19,15 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
     val destinationCity = City(2, "Almagro")
     val originGeo = Geolocation(1,1)
     val destinationGeo = Geolocation(1,1)
-    val destination = Address(destinationGeo, Some("alias"), "street", 123, "zipCode", Some("appart"), destinationCity, public = true)
-    val duration = "blabla"
+    val destination = Address(destinationGeo, Some("alias"), "street", 123, "zipCode", Some("appart"), destinationCity, public = true, None, None)
     val supportedTransports = Some(TransportType.values.map(_.toString).toList)
     // 5 kms
     val distance = "5"
     val distanceMeters = 5000
-    val routeDetail = RouteDetail(originGeo, destination, distance, distanceMeters, duration, supportedTransports)
+    // 7200 seconds = 2hours
+    val duration = "2 hours"
+    val durationSeconds = 7200
+    val routeDetail = RouteDetail(originGeo, destination, distance, distanceMeters, duration, durationSeconds, supportedTransports)
     val listRoutes = List(routeDetail)
 
     val sizePriceSmall = 2.0

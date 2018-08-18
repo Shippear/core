@@ -16,7 +16,7 @@ import scala.concurrent.duration.FiniteDuration
 class CancelOrdersTask @Inject()(val taskManager: TaskManager, orderRepository : OrderRepository, orderService : OrderService)
   extends RepetitveAsyncTask with ConfigReader with Logging{
 
-  lazy val config: Config = envConfiguration.getConfig("await-to")
+  lazy val config: Config = envConfiguration.getConfig("timeout")
 
   lazy val initialDelay: FiniteDuration = config.getFiniteDuration("initial-delay")
 
@@ -48,7 +48,7 @@ class CancelOrdersTask @Inject()(val taskManager: TaskManager, orderRepository :
 
   private def orderToCancel(orders: Seq[Order]): Seq[Order] =
     orders.filter {
-      order => order.awaitTo match {
+      order => order.timeoutTime match {
           case Some(date) =>
             date.before(DateTimeNow.now.toDate) &&
               (order.state.equals(PENDING_PARTICIPANT.toString) ||
