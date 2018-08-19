@@ -46,9 +46,14 @@ object OrderMapper extends IdGenerator with ConfigReader {
 
     val orderNumber = rightNowTime.getMillis
 
-    val orderTimeout = calculateOrderTimeout(orderCreation.availableFrom, orderCreation.availableTo)
-
     val routeWithAwaitTimes = calculateAwaitTimes(orderCreation, orderCreation.operationType)
+
+
+    val orderTimeout = orderCreation.operationType match {
+      case SENDER => calculateOrderTimeout(orderCreation.availableFrom, orderCreation.availableTo)
+      case _ => calculateOrderTimeout(routeWithAwaitTimes.origin.awaitFrom.get, routeWithAwaitTimes.origin.awaitTo.get)
+    }
+      calculateOrderTimeout(orderCreation.availableFrom, orderCreation.availableTo)
 
     Order(orderCreation._id.getOrElse(generateId),
       applicantData,
