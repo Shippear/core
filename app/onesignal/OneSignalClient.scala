@@ -65,7 +65,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
     eventType match {
       //Order created
       case ORDER_CREATED => Map(PARTICIPANT ->
-       s"$participantFullName quiere que seas participante de: $orderDescription")
+       s"$applicantFullName quiere que seas participante de: $orderDescription")
 
       //Confirmed Participant
       case CONFIRM_PARTICIPANT => Map(APPLICANT ->
@@ -91,7 +91,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
         userCancelledType
           .map{ userType => UserType.values.filterNot(u => u.toString.equals(userType.toString))}
           .getOrElse(UserType.values)
-          .map { u => u -> s"El pedido de: $orderDescription fue cancelado por $cancelledFullName"}
+          .map { u => u -> s"El pedido de $orderDescription fue cancelado por $cancelledFullName"}
           .toMap
 
       case ORDER_FINALIZED =>

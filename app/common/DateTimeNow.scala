@@ -11,7 +11,7 @@ object DateTimeNow {
 
   implicit def convert2Date(dateTime: DateTime): Date = dateTime.toLocalDateTime.toDate
 
-  val rightNowTime: DateTime = DateTime.now.withZone(zone)
+  def rightNowTime: DateTime = DateTime.now.withZone(zone)
 
   def fromDate(date: Date): DateTime = new DateTime(date).withZone(zone)
 
