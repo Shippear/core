@@ -16,6 +16,9 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     service.createOrder(request.content).map { order =>
       info(s"Order ${order._id} created")
       Ok(order)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error getting order with criteria ${request.content}", ex)
     }
   }
 
