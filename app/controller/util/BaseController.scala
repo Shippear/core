@@ -51,7 +51,11 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
                                        parserBody: Request[AnyContent] => ShippearRequest[B],
                                        block: ShippearRequest[B] => Future[Result]): Future[Result] = {
     if (verifyApiKey(request.headers.toSimpleMap))
-        block(parserBody(request))
+        Try(block(parserBody(request))) match {
+          case Success(eventualResult) => eventualResult
+          case Failure(exception) => Future(constructErrorResult(exception.getMessage, exception))
+        }
+
     else
       Future(Unauthorized("Invalid API_KEY"))
   }
