@@ -171,7 +171,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       carrier <- userRepository.findOneById(order.carrier.getOrElse(throw ShippearException(OrderWithoutCarrier, s"Order ${carrierRating.idOrder} doesn't have a carrier!")).id)
       updatedCarrier = updateCarrierRating(carrier, carrierRating.score)
       _ <- userRepository.update(updatedCarrier)
-      _ <- repository.update(order.copy(ratedCarrier = Some(true)))
+      _ <- repository.update(order.copy(ratedCarrier = Some(true), ratedValue = Some(carrierRating.score)))
     } yield updatedCarrier
   }
 
@@ -184,12 +184,13 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   }
 
   def updateCarrierRating(carrier: User, score: Int): User = {
-    val carrierScore: Float = carrier.scoring.getOrElse(0)
 
-    val result: Option[Float] = carrier.orders
-      .map{ carrierOrders =>
-        val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString))
-        (carrierScore + score) / delivered.length
+    val result: Option[Double] = carrier.orders.map{ carrierOrders =>
+      val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString) && order.ratedCarrier.getOrElse(false))
+      val previousAmount = delivered.foldLeft(0)(_ + _.ratedValue.getOrElse(0))
+
+      (previousAmount + score).toDouble / (delivered.length + 1)
+
       }
 
     carrier.copy(scoring = result)
