@@ -1,6 +1,7 @@
 package common.serialization
 
 import java.text.SimpleDateFormat
+import java.util.TimeZone
 
 import akka.util.ByteString
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTimeZone
 import play.api.http.Writeable
 import play.api.mvc.Codec
 
@@ -26,7 +28,9 @@ object JsonSerializer {
       val mapper = new ObjectMapper() with ScalaObjectMapper
       mapper.registerModule(DefaultScalaModule)
       mapper.registerModule(new JodaModule)
-      mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"))
+      val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+      dateFormat.setTimeZone(TimeZone.getTimeZone("America/Argentina/Buenos_Aires"))
+      mapper.setDateFormat(dateFormat)
       mapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
       mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
       mapper.configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
