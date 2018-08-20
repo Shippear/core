@@ -7,7 +7,7 @@ import model.internal.User
 import model.response.UserResponse
 import repository.UserRepository
 import service.Exception.{NotFoundException, ShippearException}
-
+import service.Exception.BadRequestCodes._
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,7 +49,7 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
       if(validationResult.isEmpty)
         execute(user)
       else
-        throw ShippearException(s"Because: ${validationResult.mkString(", ")}.")
+        throw ShippearException(ValidationError ,s"${validationResult.mkString(", ")}.")
     }
   }
 

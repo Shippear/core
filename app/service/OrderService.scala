@@ -16,6 +16,7 @@ import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
 import service.Exception.{NotFoundException, ShippearException}
+import service.Exception.BadRequestCodes._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,16 +42,16 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     val genericMessage = "The order has an invalid date range."
 
     if(beginDate.after(endDate))
-      throw ShippearException(s"$genericMessage Begin date: $beginDate can't be more than the end date: $endDate")
+      throw ShippearException(ValidationError, s"$genericMessage Begin date: $beginDate can't be more than the end date: $endDate")
 
     order.operationType match {
       case SENDER =>
         if(beginDate.before(rightNow))
-          throw ShippearException(s"$genericMessage Begin date: $beginDate can't be set before than right now: $rightNow")
+          throw ShippearException(ValidationError, s"$genericMessage Begin date: $beginDate can't be set before than right now: $rightNow")
       case _ =>
         val participantBeginDate: Date = fromDate(beginDate).minusSeconds(order.duration.toInt)
         if(participantBeginDate.before(rightNow))
-          throw ShippearException(s"$genericMessage Begin date of participant: $participantBeginDate. Can't be before than right now: $rightNow")
+          throw ShippearException(InvalidParticipantDateRange, s"$genericMessage Begin date of participant: $participantBeginDate. Can't be set before than right now: $rightNow")
     }
 
   }
@@ -71,9 +72,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       userType match {
         case APPLICANT | PARTICIPANT =>
           if(!possibleStates.contains(OrderState.toState(order.state)))
-            throw ShippearException(message)
+            throw ShippearException(InvalidOrderState, message)
         case _ => if(!order.state.equals(PENDING_PICKUP.toString))
-            throw ShippearException(message)
+            throw ShippearException(InvalidOrderState, message)
       }
   }
 
@@ -155,40 +156,41 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
               false
         }
 
-        if(assigned.size == 3) throw ShippearException(s"Carrier with id ${carrier._id} already has 3 orders assigned")
+        if(assigned.size == 3) throw ShippearException(CarrierWithMoreOrders, s"Carrier with id ${carrier._id} already has 3 orders assigned")
       case _ => ()
     }
 
   def validateOrderState(orderState: OrderState, expectingState: OrderState) = {
-    if(!orderState.equals(expectingState)) throw ShippearException(s"Order must be in state $expectingState, not in $orderState")
+    if(!orderState.equals(expectingState)) throw ShippearException(InvalidOrderState, s"Order must be in state $expectingState, not in $orderState")
   }
 
   def rateCarrier(carrierRating: CarrierRating): Future[User] = {
     for{
       order <- repository.findOneById(carrierRating.idOrder)
       _ = validateRating(order)
-      carrier <- userRepository.findOneById(order.carrier.getOrElse(throw ShippearException(s"Order ${carrierRating.idOrder} doesn't have a carrier!")).id)
+      carrier <- userRepository.findOneById(order.carrier.getOrElse(throw ShippearException(OrderWithoutCarrier, s"Order ${carrierRating.idOrder} doesn't have a carrier!")).id)
       updatedCarrier = updateCarrierRating(carrier, carrierRating.score)
       _ <- userRepository.update(updatedCarrier)
-      _ <- repository.update(order.copy(ratedCarrier = Some(true)))
+      _ <- repository.update(order.copy(ratedCarrier = Some(true), ratedValue = Some(carrierRating.score)))
     } yield updatedCarrier
   }
 
   def validateRating(order: Order) ={
     validateOrderState(DELIVERED, order.state)
     order.ratedCarrier.foreach{ rated =>
-      if(rated) throw ShippearException(s"Carrier of order ${order._id} was already rated!")
+      if(rated) throw ShippearException(CarrierAlreadyRated, s"Carrier of order ${order._id} was already rated!")
     }
 
   }
 
   def updateCarrierRating(carrier: User, score: Int): User = {
-    val carrierScore: Float = carrier.scoring.getOrElse(0)
 
-    val result: Option[Float] = carrier.orders
-      .map{ carrierOrders =>
-        val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString))
-        (carrierScore + score) / delivered.length
+    val result: Option[Double] = carrier.orders.map{ carrierOrders =>
+      val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString) && order.ratedCarrier.getOrElse(false))
+      val previousAmount = delivered.foldLeft(0)(_ + _.ratedValue.getOrElse(0))
+
+      (previousAmount + score).toDouble / (delivered.length + 1)
+
       }
 
     carrier.copy(scoring = result)

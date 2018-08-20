@@ -32,13 +32,12 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
 
 
   def AsyncActionWithBody[B : Manifest](block: ShippearRequest[B] => Future[Result]) = Action.async { request =>
-    val parserBody = (req: Request[AnyContent]) => {
+    lazy val parserBody = (req: Request[AnyContent]) => {
       Try {
         req.parseBodyTo[B]
       } match {
         case Failure(ex) =>
           val msg = s"Error parsing from json to ${manifest.toString()}"
-          error(msg, ex)
           throw ParseBodyException(s"$msg. ${ex.getMessage}", ex)
         case Success(some) => ShippearRequest(some, req.headers.toSimpleMap)
       }
@@ -49,15 +48,13 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
   }
 
   protected def doRequest[B: Manifest](request: Request[AnyContent], parserBody: Request[AnyContent] => ShippearRequest[B], block: ShippearRequest[B] => Future[Result]) = {
-    Try {
-      if (verifyApiKey(request.headers.toSimpleMap))
-        block(parserBody(request))
-      else
-        Future(Unauthorized("Invalid API_KEY"))
-    } match {
-      case Success(result) => result
-      case Failure(ex) => Future(BadRequest(Map("result" -> ex.getMessage)))
-    }
+    if (verifyApiKey(request.headers.toSimpleMap))
+      Try{parserBody(request)} match {
+        case Success(body) => block(body)
+        case Failure(ex) => Future(constructErrorResult(ex.getMessage, ex))
+      }
+    else
+      Future(Unauthorized("Invalid API_KEY"))
   }
 
   protected def verifyApiKey(headers: Map[String, String]): Boolean = {
@@ -67,11 +64,13 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
   }
 
 
-  protected def constructErrorResult(message: String, ex: Exception) = {
+  protected def constructErrorResult(message: String, ex: Throwable) = {
     error(message, ex)
     ex match {
       case NotFoundException(msg) => NotFound(Map("result" -> s"$msg. ${ex.getMessage}"))
-      case _: IllegalArgumentException | _: ShippearException => BadRequest(Map("result" -> s"$message. ${ex.getMessage}"))
+      case illegalArgument : IllegalArgumentException=> BadRequest(Map("code" -> 400, "message" -> illegalArgument.getMessage))
+      case ParseBodyException(msg, _) => BadRequest(Map("code" -> 400, "message" -> msg))
+      case ShippearException(code, msg) => BadRequest(Map("code" -> code, "message" -> msg))
       case _ => InternalServerError(Map("result" -> s"$message. ${ex.getMessage}"))
     }
 

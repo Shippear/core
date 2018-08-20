@@ -71,7 +71,8 @@ object OrderMapper extends IdGenerator with ConfigReader {
       orderCreation.availableTo,
       orderTimeout,
       orderCreation.qrCode,
-      orderCreation.ratedCarrier,
+      None,
+      None,
       orderCreation.paymentMethod,
       orderCreation.price,
       Some(orderCreation.price * commissionCarrier),
@@ -103,7 +104,7 @@ object OrderMapper extends IdGenerator with ConfigReader {
         order.route.copy(origin = originAddress, destination = modifiedDestination)
 
       case _ =>
-        val destinationAddress = order.route.origin.copy(awaitFrom = Some(order.availableFrom), awaitTo = Some(order.availableTo))
+        val destinationAddress = order.route.destination.copy(awaitFrom = Some(order.availableFrom), awaitTo = Some(order.availableTo))
 
         val awaitFromApplicant: Date = new DateTime(order.availableFrom).minusSeconds(order.duration.toInt)
         val awaitToApplicant = new DateTime(order.availableTo).minusSeconds(order.duration.toInt)

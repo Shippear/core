@@ -84,7 +84,7 @@ trait ModelData {
   val newOrder = OrderCreation(None, marcelo._id, lucas._id, "description",
     SENDER, SMALL, MEDIUM, supportedTransports,
     almagroToSaavedra, today,
-    tomorrow, None, None, visa, 100.5, durationTrip)
+    tomorrow, None, visa, 100.5, durationTrip)
 
 }
 
