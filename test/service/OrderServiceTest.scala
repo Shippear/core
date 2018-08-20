@@ -45,18 +45,18 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
 
   val orderWithoutCarrier: Order = order_1.copy(carrier = None)
 
@@ -89,7 +89,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
       val orderCreation = OrderCreation(None, "a", "b", "description",
         SENDER, SMALL, HEAVY, List(MOTORCYCLE),
-        route, today, tomorrow, None, None, visa, 0, duration)
+        route, today, tomorrow, None, visa, 0, duration)
 
       orderService.validateAvailableTimes(orderCreation)
 
@@ -105,12 +105,12 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
       //When the operation is RECEIVE
       val orderTypeReceive = OrderCreation(None, "a", "b", "desc", RECEIVER, SMALL,
-        HEAVY, List(WALKING), route, today.plusSeconds(duration), afterTomorrow, None, None, visa, 0, duration)
+        HEAVY, List(WALKING), route, today.plusSeconds(duration), afterTomorrow, None, visa, 0, duration)
       orderService.validateAvailableTimes(orderTypeReceive)
 
       intercept[ShippearException]{
         val orderReceive = OrderCreation(None, "a", "b", "desc", RECEIVER, SMALL,
-          HEAVY, List(WALKING), route, today, tomorrow, None, None, visa, 0, duration)
+          HEAVY, List(WALKING), route, today, tomorrow, None, visa, 0, duration)
         orderService.validateAvailableTimes(orderReceive)
       }
 
