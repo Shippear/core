@@ -47,12 +47,11 @@ class BaseController @Inject()(implicit ec: ExecutionContext) extends InjectedCo
 
   }
 
-  protected def doRequest[B: Manifest](request: Request[AnyContent], parserBody: Request[AnyContent] => ShippearRequest[B], block: ShippearRequest[B] => Future[Result]) = {
+  protected def doRequest[B: Manifest](request: Request[AnyContent],
+                                       parserBody: Request[AnyContent] => ShippearRequest[B],
+                                       block: ShippearRequest[B] => Future[Result]): Future[Result] = {
     if (verifyApiKey(request.headers.toSimpleMap))
-      Try{parserBody(request)} match {
-        case Success(body) => block(body)
-        case Failure(ex) => Future(constructErrorResult(ex.getMessage, ex))
-      }
+        block(parserBody(request))
     else
       Future(Unauthorized("Invalid API_KEY"))
   }

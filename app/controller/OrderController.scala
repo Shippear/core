@@ -16,9 +16,6 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     service.createOrder(request.content).map { order =>
       info(s"Order ${order._id} created")
       Ok(order)
-    }.recover {
-      case ex: Exception =>
-        constructErrorResult("Error creating a new order", ex)
     }
   }
 

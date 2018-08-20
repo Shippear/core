@@ -104,7 +104,7 @@ class RepositoryTest extends MongoTest {
       when(user.contactInfo).thenReturn(carrierData.contactInfo)
       when(user.photoUrl).thenReturn("photo")
       when(user.onesignalId).thenReturn("onesignal")
-      when(user.scoring).thenReturn(Some(0.0))
+      when(user.scoring).thenReturn(Some(0f))
       await(repo.create(order))
       await(repo.assignCarrier(order, user , qrCode))
 
