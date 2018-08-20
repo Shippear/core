@@ -3,6 +3,7 @@ package common
 import akka.stream.Materializer
 import com.google.inject.Inject
 import play.api.mvc._
+import controller.util.ShippearHeaders._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -12,15 +13,17 @@ class LoggingFilter @Inject()(implicit val mat: Materializer, exec: ExecutionCon
 
   def apply(next: (RequestHeader) => Future[Result])(request: RequestHeader): Future[Result] = {
 
-    implicit val context = FilterContext(request.headers.toSimpleMap)
+    val UNKNOWN = "UNKNOWN"
+    val headers = request.headers.toSimpleMap
+    implicit val context = FilterContext(headers)
 
     val startTime = System.currentTimeMillis
-    log(s"START - ${request.method} ${request.uri}")
+    log(s"START X-UOW: [${headers.getOrElse(X_UOW, UNKNOWN)}] - ${request.method} ${request.uri}")
 
     next(request).map { result =>
 
       val requestTime = System.currentTimeMillis() - startTime
-      log(s"END - ${request.method} ${request.uri} took $requestTime ms and returned ${result.header.status}")
+      log(s"END X-UOW: [${headers.getOrElse(X_UOW, UNKNOWN)}] - ${request.method} ${request.uri} took $requestTime ms and returned ${result.header.status}")
       result.withHeaders("Request-Time" -> requestTime.toString)
     }
 
