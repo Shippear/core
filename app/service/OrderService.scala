@@ -189,7 +189,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       val delivered = carrierOrders.filter(order => order.state.equals(DELIVERED.toString) && order.ratedCarrier.getOrElse(false))
       val previousAmount = delivered.foldLeft(0)(_ + _.ratedValue.getOrElse(0))
 
-      (previousAmount + score) / (delivered.length + 1)
+      (previousAmount + score).toDouble / (delivered.length + 1)
 
       }
 

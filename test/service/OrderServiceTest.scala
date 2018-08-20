@@ -5,7 +5,7 @@ import java.util.Date
 import com.github.nscala_time.time.Imports.DateTime
 import common.DateTimeNow._
 import model.internal.OperationType._
-import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP}
+import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP, DELIVERED}
 import model.internal.TransportType._
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
@@ -180,6 +180,27 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       intercept[ShippearException]{
         await(orderService.cancelOrder(CancelOrder(order_1._id, APPLICANT)))
       }
+    }
+
+    "Rating the Carrier correctly" in {
+      val ratedOrder_1 = order_1.copy(state = DELIVERED, ratedCarrier = Some(true), ratedValue = Some(5))
+      val ratedOrder_2 = order_2.copy(state = DELIVERED, ratedCarrier = Some(true), ratedValue = Some(4))
+      val ratedOrder_3 = order_3.copy(state = DELIVERED, ratedCarrier = Some(true), ratedValue = Some(2))
+
+      val unRatedOrder_1 = order_1.copy(state = DELIVERED, ratedCarrier = Some(false))
+
+      val orders: Option[Seq[Order]] = Some(Seq(ratedOrder_1, ratedOrder_2, ratedOrder_3, order_1, unRatedOrder_1))
+
+
+      val carrier = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
+        contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
+
+
+      val result = orderService.updateCarrierRating(carrier, 4)
+      result.scoring.get mustBe 3.75
+
+
+
     }
   }
 }
