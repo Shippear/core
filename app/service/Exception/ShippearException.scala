@@ -1,3 +1,3 @@
 package service.Exception
 
-case class ShippearException(message: String) extends RuntimeException(message)
+case class ShippearException(code: Int, message: String) extends RuntimeException(message)
