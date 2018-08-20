@@ -13,6 +13,6 @@ object DateTimeNow {
 
   def rightNowTime: DateTime = DateTime.now.withZone(zone)
 
-  def fromDate(date: Date): DateTime = new DateTime(date).withZone(zone)
+  def fromDate(date: Date): DateTime = new DateTime(date)
 
 }

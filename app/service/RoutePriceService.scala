@@ -20,7 +20,7 @@ class RoutePriceService @Inject()(userService: UserService,
   def priceInformation(routeRequest: RouteRequest): Future[UserPriceInformation] = {
 
     val user: Future[User] = userService.findOneBy(Map("userName" -> routeRequest.userName))
-    val userAddress: Future[Seq[Address]] = user.map { u => u.addresses }
+    val userAddress: Future[Seq[Address]] = user.map { u => u.addresses.filter(_.public) }
 
     val routesPrices = userAddress.flatMap { listAddress =>
       for {
