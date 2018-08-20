@@ -9,7 +9,7 @@ object DateTimeNow {
 
   val zone = DateTimeZone.forID("America/Argentina/Buenos_Aires")
 
-  implicit def convert2Date(dateTime: DateTime): Date = dateTime.toLocalDateTime.toDate
+  implicit def convert2Date(dateTime: DateTime): Date = dateTime.toDate
 
   def rightNowTime: DateTime = DateTime.now.withZone(zone)
 
