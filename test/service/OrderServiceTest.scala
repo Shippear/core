@@ -16,6 +16,7 @@ import onesignal.OneSignalClient
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import model.internal.AppType._
 import play.api.test.Helpers.{await, _}
 import qrcodegenerator.QrCodeGenerator
 import repository.{OrderRepository, UserRepository}
@@ -34,7 +35,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val destinationGeolocation = Geolocation(132, -123)
   val destinationCity = City(1, "Nuñez")
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
-  val route = Route(origin, destination)
+  val route = Route(origin, destination, None)
 
   val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
@@ -43,18 +44,18 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(RECEIVER))
   val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
 
-  val order_1 = Order("1", applicantData, participantData, Some(carrierData), 123, "description",
+  val order_1 = Order("1", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
-  val order_2 = Order("2", applicantData, participantData, Some(carrierData), 123, "description",
+  val order_2 = Order("2", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
-  val order_3 = Order("3", applicantData, participantData, Some(carrierData), 123, "description",
+  val order_3 = Order("3", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
-  val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), 123, "description",
+  val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
 
@@ -120,13 +121,13 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {
       // 2 Orders
       val orders = Some(List(order_1, order_2))
-      val user = User(carrierId, "oneSignalId", "usxerName", "firstName", "lastName", "36121312", rightNowTime,
+      val user = User(carrierId, AppType.CARRIER, "oneSignalId", "usxerName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
 
       orderService.validateCarrier(user)
 
       val orders4 = Some(List(order_1, order_2, order_bla))
-      val user_2 = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
+      val user_2 = User(carrierId, AppType.CARRIER, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders4, Some(Seq(paymentMethod)), None, None, None)
 
       orderService.validateCarrier(user_2)
@@ -135,7 +136,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Throw ShippearException when the carrier has 3 orders ON_TRAVEL" in {
       // 3 Orders
       val orders = Some(List(order_1, order_2, order_3))
-      val user = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
+      val user = User(carrierId, AppType.CARRIER, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
 
       intercept[ShippearException] {
@@ -192,7 +193,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
       val orders: Option[Seq[Order]] = Some(Seq(ratedOrder_1, ratedOrder_2, ratedOrder_3, order_1, unRatedOrder_1))
 
 
-      val carrier = User(carrierId, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
+      val carrier = User(carrierId, AppType.CARRIER, "oneSignalId", "userName", "firstName", "lastName", "36121312", rightNowTime,
         contactInfo, "photoUrl", Seq(address), orders, Some(Seq(paymentMethod)), None, None, None)
 
 

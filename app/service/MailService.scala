@@ -13,7 +13,7 @@ class MailService @Inject()(mailClient: OneSignalClient) {
     mailClient.sendEmail(List(oneSignal), typeMail)
 
   def sendNotification(order: Order, eventType: String, userCancelledType : Option[UserType])=
-    mailClient.sendNotification(order, eventType, userCancelledType)
+    mailClient.sendMulticastNotification(order, eventType, userCancelledType)
 
   def device(userOneSignalId: Option[String]) = mailClient.device(userOneSignalId)
 

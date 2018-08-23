@@ -3,11 +3,12 @@ package model.internal
 import java.util.Date
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import model.internal.OrderState.{CANCELLED, DELIVERED, ON_TRAVEL, PENDING_CARRIER, PENDING_PARTICIPANT, PENDING_PICKUP}
+import model.internal.OrderState._
 import model.response.UserResponse
 
 
 case class User(@JsonProperty("_id") _id : String,
+                appType: String,
                 onesignalId: String,
                 userName: String,
                 firstName: String,
@@ -25,7 +26,7 @@ case class User(@JsonProperty("_id") _id : String,
 
 object User {
   val toBeConfirmedStates: List[String] = List(PENDING_PARTICIPANT, PENDING_CARRIER)
-  val inProgressStates: List[String] = List(PENDING_PICKUP, ON_TRAVEL)
+  val inProgressStates: List[String] = List(PENDING_PICKUP, ON_TRAVEL, PENDING_AUX)
   val finalizedStates: List[String] = List(CANCELLED, DELIVERED)
 
   implicit def user2Response(user: User): UserResponse = {
@@ -34,6 +35,7 @@ object User {
     val toBeConfirmed = user.orders.map(o => o.filter { order => toBeConfirmedStates.contains(order.state) })
 
     UserResponse(user._id,
+      user.appType,
       user.onesignalId,
       user.userName,
       user.firstName,

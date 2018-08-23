@@ -40,7 +40,7 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       lucasOrders.size mustBe 1
       lucasOrders must contain(order)
 
-      toState(order.state) mustEqual OrderState.PENDING_PARTICIPANT
+      toState(order.state) mustEqual PENDING_PARTICIPANT
 
       //---------
 
@@ -98,9 +98,9 @@ class ShippearFunctionalTest extends MongoTest with GuiceOneServerPerSuite with 
       orderLucas = userLucas.orders.get.head
       var orderGerman = userGerman.orders.get.head
 
-      toState(orderMarcelo.state) mustBe OrderState.PENDING_PICKUP
-      toState(orderLucas.state) mustBe OrderState.PENDING_PICKUP
-      toState(orderGerman.state) mustBe OrderState.PENDING_PICKUP
+      toState(orderMarcelo.state) mustBe PENDING_PICKUP
+      toState(orderLucas.state) mustBe PENDING_PICKUP
+      toState(orderGerman.state) mustBe PENDING_PICKUP
 
       // 4. Verification code of CARRIER -> STATE = ON_TRAVEL
       val validateCarrier = OrderToValidate(order._id, german._id, UserType.CARRIER)
