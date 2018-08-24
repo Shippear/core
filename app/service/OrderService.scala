@@ -241,7 +241,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       _ = validateAuxRequest(order, auxRequest)
       newOrder = makeAuxiliaryRequest(order, auxRequest)
       _ <- repository.update(newOrder)
-      _ = oneSignalClient.sendMulticastNotification(order, AUX_REQUEST)
+      _ = oneSignalClient.sendMulticastNotification(newOrder, AUX_REQUEST)
       //TODO send broadcast notification to other carriers
     } yield newOrder
 
