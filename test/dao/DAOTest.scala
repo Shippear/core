@@ -5,8 +5,8 @@ import java.util.Date
 import common.DateTimeNow._
 import dao.util.ShippearDAO
 import embbebedmongo.MongoTest
-import model.internal.OrderState._
 import model.internal.OperationType._
+import model.internal.OrderState._
 import model.internal._
 import model.internal.price.enum.{Size, Weight}
 import org.joda.time.DateTime
@@ -31,7 +31,7 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val destinationGeolocation = Geolocation(132, -123)
   val destinationCity = City(1, "Nuñez")
   val destination = Address(destinationGeolocation, Some("alias"), "aaaaaaa", 1231231, "zipCode", Some("appart"), destinationCity, public = true, None, None)
-  val route = Route(origin, destination)
+  val route = Route(origin, destination, None)
 
   val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
@@ -40,13 +40,13 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
   val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0), Some(RECEIVER))
   val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
-  val order = Order("123", applicantData, participantData, None, 123, "description",
+  val order = Order("123", applicantData, participantData, None, None, 123, "description",
     PENDING_PICKUP, "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
 
   val qrCodeGenerator = new QrCodeGenerator
   val qrCode = qrCodeGenerator.generateQrImage("123").stream().toByteArray
-  val orderWithQrCode = Order("123", applicantData, participantData, None, 123, "description",
+  val orderWithQrCode = Order("123", applicantData, participantData, None, None, 123, "description",
     "state", "operationType", Size.SMALL, Weight.HEAVY, List(TransportType.MOTORCYCLE), route, new Date,
     new Date, Some(new Date), Some(qrCode), None, None, visa, 0, Some(0), None)
 

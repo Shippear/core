@@ -9,7 +9,7 @@ object UserType extends Enumeration {
 
     implicit def toString(state: UserType): String = state.toString
 
-    implicit def toState(state: String): UserType = withName(state.toUpperCase)
+    implicit def toType(state: String): UserType = withName(state.toUpperCase)
 }
 
 class UserTypeType extends TypeReference[UserType.type]

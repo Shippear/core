@@ -12,3 +12,6 @@ case class Address(geolocation: Geolocation,
                    public: Boolean,
                    awaitFrom: Option[Date],
                    awaitTo: Option[Date])
+
+
+case class MinimalAddress(geolocation: Geolocation, street: String)

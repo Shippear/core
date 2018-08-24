@@ -59,6 +59,7 @@ object OrderMapper extends IdGenerator with ConfigReader {
       applicantData,
       participantData,
       carrierData,
+      None,
       orderNumber,
       orderCreation.description,
       PENDING_PARTICIPANT,

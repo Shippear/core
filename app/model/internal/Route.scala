@@ -1,4 +1,6 @@
 package model.internal
 
-case class Route(origin: Address, destination: Address)
+case class Route(origin: Address,
+                 destination: Address,
+                 auxOrigin: Option[MinimalAddress])
 
