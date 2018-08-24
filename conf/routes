@@ -30,6 +30,7 @@ POST     /shippear/orders/confirm-participant/:idOrder  controller.OrderControll
 POST     /shippear/orders/validate-qr-code              controller.OrderController.validateQrCode
 POST     /shippear/orders/rate-carrier                  controller.OrderController.rateCarrier
 POST     /shippear/orders/aux-request                   controller.OrderController.auxRequest
+GET      /shippear/orders/requests                      controller.OrderController.allOrderRequests
 
 #Mails Test
 GET      /shippear/mail/devices                         controller.MailController.devices(id: Option[String])

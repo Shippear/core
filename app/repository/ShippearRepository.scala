@@ -5,6 +5,7 @@ import common.Logging
 import common.serialization.{CamelCaseJsonProtocol, _}
 import dao.util.{ShippearDAO, ShippearDAOFactory}
 import org.mongodb.scala.bson.collection.immutable.Document
+import org.mongodb.scala.bson.conversions.Bson
 
 import scala.concurrent.Future
 
@@ -42,6 +43,8 @@ trait ShippearRepository[T] extends Logging with CamelCaseJsonProtocol{
   def findOneBy(params: Map[String, String]) = dao.findOne(params)
 
   def findOneById(id: String): Future[T] = dao.findOneById(id)
+
+  def findByFilters(filters: Bson): Future[Seq[T]] = dao.findByFilters(filters)
 
   def update(doc: T) = dao.updateOne(doc)
 

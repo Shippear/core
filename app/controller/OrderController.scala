@@ -114,4 +114,13 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
 
   }
 
+  def allOrderRequests = AsyncAction { implicit request =>
+    service.ordersInPending.map {
+      Ok(_)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult("Error getting orders in PENDING_CARRIER and PENDING_AUX", ex)
+    }
+  }
+
 }
