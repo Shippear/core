@@ -5,13 +5,13 @@ import java.util.Date
 import com.github.nscala_time.time.Imports.DateTime
 import common.DateTimeNow._
 import model.internal.OperationType._
-import model.internal.OrderState.{ON_TRAVEL, PENDING_PICKUP, DELIVERED}
+import model.internal.OrderState._
 import model.internal.TransportType._
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
 import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight._
-import model.request.{CancelOrder, OrderCreation}
+import model.request.{AuxRequest, CancelOrder, OrderCreation}
 import onesignal.OneSignalClient
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
@@ -118,6 +118,20 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
     }
 
+    "Validate order's state" in {
+      orderService.validateOrderState(order_1.state, order_1.state)
+
+      orderService.validateOrderStates(order_1.state, List(order_2.state, order_1.state))
+
+      intercept[ShippearException]{
+        orderService.validateOrderState(order_1.state, DELIVERED)
+      }
+
+      intercept[ShippearException]{
+        orderService.validateOrderStates(order_1.state, List(PENDING_PICKUP, DELIVERED))
+      }
+    }
+
     "Validate correctly a carrier with 3 orders ON_TRAVEL" in {
       // 2 Orders
       val orders = Some(List(order_1, order_2))
@@ -177,7 +191,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     "Validate when trying to cancel an order" in {
       when(repo.findOneById(order_1._id)).thenReturn(Future(order_1))
 
-      //Order is in ON_TRAVEL
+      //Order is in ON_TRAVEL state
       intercept[ShippearException]{
         await(orderService.cancelOrder(CancelOrder(order_1._id, APPLICANT)))
       }
@@ -199,7 +213,44 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
       val result = orderService.updateCarrierRating(carrier, 4)
       result.scoring.get mustBe 3.75
+    }
 
+    "Validate Auxiliary Request" in {
+      val validAuxRequest = AuxRequest(order_1._id, order_1.carrier.get.id, MinimalAddress(geolocation, "street 1234"))
+
+      orderService.validateAuxRequest(order_1, validAuxRequest)
+
+      //Invalid carrier
+      intercept[ShippearException]{
+        val invalidAuxRequest = validAuxRequest.copy(carrierId = "blabla")
+        orderService.validateAuxRequest(order_1, invalidAuxRequest)
+      }
+
+      //Invalid Order state (must be ON_TRAVEL)
+      intercept[ShippearException]{
+        orderService.validateAuxRequest(order_1.copy(state = PENDING_PICKUP), validAuxRequest)
+      }
+
+    }
+
+    "Make Auxiliary Request correctly" in {
+      val minimalAddress = MinimalAddress(geolocation, "street 1234")
+      val validAuxRequest = AuxRequest(order_1._id, order_1.carrier.get.id, minimalAddress)
+
+      val newOrder = orderService.makeAuxiliaryRequest(order_1, validAuxRequest)
+
+      toState(newOrder.state) mustBe PENDING_AUX
+      newOrder.route.auxOrigin.get mustBe minimalAddress
+      newOrder.historicCarriers.get.head.id mustBe order_1.carrier.get.id
+
+
+      val orderAlreadyCancelledOnce = order_1.copy(historicCarriers = Some(List(order_2.carrier.get)))
+      val newOrder_2 = orderService.makeAuxiliaryRequest(orderAlreadyCancelledOnce, validAuxRequest)
+
+      toState(newOrder.state) mustBe PENDING_AUX
+      newOrder_2.route.auxOrigin.get mustBe minimalAddress
+      newOrder_2.historicCarriers.get.length mustBe 2
+      newOrder_2.historicCarriers.get mustBe List(carrierData, carrierData)
 
 
     }

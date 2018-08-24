@@ -12,7 +12,7 @@ import model.internal._
 import model.mapper.OrderMapper
 import model.request.{AuxRequest, CancelOrder, CarrierRating, OrderCreation}
 import onesignal.EventType._
-import onesignal.{OneSignalClient, ShippearLogo}
+import onesignal.OneSignalClient
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
@@ -24,6 +24,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: OneSignalClient,
                              qrCodeGenerator: QrCodeGenerator, userRepository: UserRepository)
                             (implicit ec: ExecutionContext) extends Service[Order]{
+
+  /* CREATION */
 
   def createOrder(newOrder: OrderCreation) = {
     validateAvailableTimes(newOrder)
@@ -57,6 +59,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
 
   }
 
+  /* CANCEL ORDER */
 
   def cancelOrder(cancelOrder: CancelOrder): Future[_] =
     for {
@@ -79,6 +82,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       }
   }
 
+
+  /* CONFIRM PARTICIPANT */
+
   def confirmParticipant(orderId: String): Future[Order] = {
     for {
       order <- repository.findOneById(orderId)
@@ -88,6 +94,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       _ = oneSignalClient.sendMulticastNotification(updatedOrder, CONFIRM_PARTICIPANT)
     } yield order
   }
+
+
+  /* ASSIGN CARRIER */
 
   def assignCarrier(content: AssignCarrier) =
     for {
@@ -107,6 +116,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
 
     repository.assignCarrier(order, carrier, qrCode = qrCode)
   }
+
+
+  /* QR VALIDATION */
 
   def validateQrCode(orderToValidate: OrderToValidate): Future[Boolean] = {
     val eventType = orderToValidate.userType match {
@@ -184,6 +196,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     if(!expectingStates.contains(orderState)) throw ShippearException(InvalidOrderState, s"Expecting order state in ${expectingStates.toString()} but is in $orderState")
   }
 
+
+  /* RATING CARRIER */
+
   def rateCarrier(carrierRating: CarrierRating): Future[User] = {
     for{
       order <- repository.findOneById(carrierRating.idOrder)
@@ -216,6 +231,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
   }
 
 
+
+  /* AUXILIARY REQUEST */
+
   def auxRequest(auxRequest: AuxRequest): Future[Order] = {
     for {
       order <- repository.findOneById(auxRequest.orderId)
@@ -223,7 +241,8 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       newOrder = makeAuxiliaryRequest(order, auxRequest)
       _ <- repository.update(newOrder)
       _ = oneSignalClient.sendMulticastNotification(order, AUX_REQUEST)
-    } yield order
+      //TODO send broadcast notification to other carriers
+    } yield newOrder
 
   }
 
@@ -231,8 +250,8 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     validateOrderState(order.state, ON_TRAVEL)
     order.carrier match {
       case Some(carrier) =>
-        if(!carrier.id.equals(request.orderId))
-          throw ShippearException(ValidationError, s"Carrier ${request.orderId} is not from this order")
+        if(!carrier.id.equals(request.carrierId))
+          throw ShippearException(ValidationError, s"Carrier ${request.carrierId} is not from this order")
       case None => throw ShippearException(OrderWithoutCarrier, s"Order ${order._id} doesn't have a carrier")
     }
   }

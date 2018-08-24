@@ -145,11 +145,16 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
   }
 
   def sendDirectNotification(user: User, order: Order, message: String): Future[OneSignalResponse] = {
-    val notification = Notification(appId, List(user.onesignalId),
-      Map("en" -> message),
-      DataNotification(order._id, order.state, user.photoUrl, RELOAD))
+    if (active) {
+      val notification = Notification(appId, List(user.onesignalId),
+        Map("en" -> message),
+        DataNotification(order._id, order.state, user.photoUrl, RELOAD))
 
-    doNotification(notification)
+      doNotification(notification)
+    }
+    else
+      Future(OneSignalResponse("Notifications Deactivated!", 0, None))
+
   }
 
   def sendMulticastNotification(order: Order, eventType: EventType, userCancelledType : Option[UserType] = None): Future[OneSignalResponse] = {
@@ -183,7 +188,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       Future(OneSignalResponse("", 3, None))
 
     } else
-      Future(OneSignalResponse("Emails Deactivated!", 0, None))
+      Future(OneSignalResponse("Notifications Deactivated!", 0, None))
   }
 
   def doNotification(notification: Notification): Future[OneSignalResponse] = {
