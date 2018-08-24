@@ -35,7 +35,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
         participant <- userRepository.findOneById(newOrder.participantId)
         orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
         _ <- repository.create(orderToSave)
-        _ = oneSignalClient.sendMulticastNotification(orderToSave, ORDER_CREATED)
+        _ = oneSignalClient.sendFlowMulticastNotification(orderToSave, ORDER_CREATED)
       } yield orderToSave
   }
 
@@ -67,7 +67,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       order <- repository.findOneById(cancelOrder.orderId)
       _ = validateCancelOrder(order, cancelOrder.userType)
       canceledOrder <- repository.cancelOrder(order)
-      _ = oneSignalClient.sendMulticastNotification(canceledOrder, ORDER_CANCELED, Some(cancelOrder.userType))
+      _ = oneSignalClient.sendFlowMulticastNotification(canceledOrder, ORDER_CANCELED, Some(cancelOrder.userType))
     } yield order
 
 
@@ -92,7 +92,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       _ = validateOrderState(order.state, PENDING_PARTICIPANT)
       updatedOrder = order.copy(state = PENDING_CARRIER)
       _ <- repository.update(updatedOrder)
-      _ = oneSignalClient.sendMulticastNotification(updatedOrder, CONFIRM_PARTICIPANT)
+      _ = oneSignalClient.sendFlowMulticastNotification(updatedOrder, CONFIRM_PARTICIPANT)
     } yield order
   }
 
@@ -106,7 +106,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       order <- repository.findOneById(content.orderId)
       _ = validateOrderStates(order.state, List(PENDING_CARRIER, PENDING_AUX))
       newOrder <- asignNewOrAuxCarrier(order, carrier)
-      _ = oneSignalClient.sendMulticastNotification(newOrder, ORDER_WITH_CARRIER)
+      _ = oneSignalClient.sendFlowMulticastNotification(newOrder, ORDER_WITH_CARRIER)
     } yield newOrder
 
   def asignNewOrAuxCarrier(order: Order, carrier: User) = {
@@ -131,7 +131,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       order <- repository.findOneById(orderToValidate.orderId)
       verification = verifyQR(orderToValidate, order)
       updatedOrder <- updateOrderStatus(order, orderToValidate.userType, verification)
-      _ = oneSignalClient.sendMulticastNotification(updatedOrder, eventType)
+      _ = oneSignalClient.sendFlowMulticastNotification(updatedOrder, eventType)
     } yield verification
   }
 
@@ -155,7 +155,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
           order.historicCarriers.map { olderCarriers: List[UserDataOrder] =>
             for {
               lastCarrier <- userRepository.updateUserOrder(olderCarriers.last.id, order.copy(state = CANCELLED, finalizedDate = Some(DateTimeNow.rightNowTime)))
-              _ = oneSignalClient.sendDirectNotification(lastCarrier, order, s"El pedido de ${order.description} fue cancelado por Shippear")
+              _ = oneSignalClient.sendDirectNotification(lastCarrier, order, s"El pedido de ${order.description} fue cancelado por Shippear", silent = false)
             } yield lastCarrier
           }
           order.copy(state = ON_TRAVEL)
@@ -241,8 +241,8 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       _ = validateAuxRequest(order, auxRequest)
       newOrder = makeAuxiliaryRequest(order, auxRequest)
       _ <- repository.update(newOrder)
-      _ = oneSignalClient.sendMulticastNotification(newOrder, AUX_REQUEST)
-      //TODO send broadcast notification to other carriers
+      _ = oneSignalClient.sendFlowMulticastNotification(newOrder, AUX_REQUEST)
+      _ <- sendOtherCarriersNotification(newOrder)
     } yield newOrder
 
   }
@@ -266,6 +266,21 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     val newRoute = order.route.copy(auxOrigin = Some(auxRequest.auxAddress))
 
     order.copy(state = PENDING_AUX, historicCarriers = Some(historicCarriers), route = newRoute)
+  }
+
+  def sendOtherCarriersNotification(order: Order) = {
+    for {
+      carriers <- userRepository.findByFilters(Filters.eq("appType", AppType.CARRIER.toString))
+      filtered = filterByAvailableCarriers(carriers)
+      result <- oneSignalClient.sendMulticastNotification("Hay un envío que necesita un nuevo transportista!", order, filtered)
+    } yield result
+  }
+
+  def filterByAvailableCarriers(user: Seq[User]) = {
+    user.filter(u => u.orders match {
+      case Some(orders) => orders.count(o => o.state.equals(PENDING_PICKUP.toString)) <= 2
+      case _ => true
+    })
   }
 
 
