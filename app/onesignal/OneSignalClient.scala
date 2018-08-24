@@ -3,7 +3,7 @@ package onesignal
 import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
-import model.internal.{Order, UserType}
+import model.internal.{Order, User, UserType}
 import model.internal.UserType._
 import onesignal.ActionState._
 import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
@@ -66,7 +66,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       case Some(APPLICANT) => applicantFullName
       case Some(PARTICIPANT) => participantFullName
       case Some(CARRIER) => carrierFullName
-      case _ => ""
+      case _ => "Shippear"
     }
 
     eventType match {
@@ -106,10 +106,16 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
           .toMap
 
       case ORDER_FINALIZED =>
-        val messageFromCarrier  = s"La solicitud de $orderDescription se ha completado con exito!"
+        val messageFromCarrier = s"La solicitud de $orderDescription se ha completado con exito!"
         Map(APPLICANT -> (messageFromCarrier, carrierPhoto),
           PARTICIPANT -> (messageFromCarrier, carrierPhoto),
           CARRIER -> (s"La solicitud #${order.orderNumber} se ha completado con exito!", carrierPhoto))
+
+      case AUX_REQUEST =>
+        val commonMessage = s"El transportista $carrierFullName de la orden $orderDescription ha pedido un auxilio"
+        Map(APPLICANT -> (commonMessage, carrierPhoto),
+          PARTICIPANT -> (commonMessage, carrierPhoto),
+          CARRIER -> ("Pedido de auxilio realizado con exito", carrierPhoto))
     }
   }
 
@@ -138,7 +144,20 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       Future(OneSignalResponse("Emails Deactivated!", 0, None))
   }
 
-  def sendNotification(order: Order, eventType: EventType, userCancelledType : Option[UserType] = None): Future[OneSignalResponse] = {
+  def sendDirectNotification(user: User, order: Order, message: String): Future[OneSignalResponse] = {
+    if (active) {
+      val notification = Notification(appId, List(user.onesignalId),
+        Map("en" -> message),
+        DataNotification(order._id, order.state, user.photoUrl, RELOAD))
+
+      doNotification(notification)
+    }
+    else
+      Future(OneSignalResponse("Notifications Deactivated!", 0, None))
+
+  }
+
+  def sendMulticastNotification(order: Order, eventType: EventType, userCancelledType : Option[UserType] = None): Future[OneSignalResponse] = {
     if(active) {
       val messagesValue = messageFactory(order, eventType, userCancelledType)
 
@@ -164,31 +183,35 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
       val notifications: List[Notification] = List(participantNotification, carrierNotifications, applicantNotification).flatten
 
-      notifications.map{ notification =>
-        val jsonBody = notification.toJson
-        info(s"Sending through push notification the following json: $jsonBody")
-        client.url(NotificationPath)
-          .withHttpHeaders(ContentType, Authorization)
-          .post(jsonBody)
-          .map{response =>
-            response.status match {
-              case 200 =>
-                val body = response.body.parseJsonTo[OneSignalResponse]
-                body.errors match {
-                  case Some(errors) =>
-                    throw ShippearException(NotificationException, errors.mkString(", "))
-                  case _ => body
-                }
-              case _ => val errors = response.body.parseJsonTo[OneSignalError].errors
-                OneSignalResponse(s"Error status: ${response.status}", 0, errors)
-            }
-          }
-      }
+      notifications.map(doNotification)
 
       Future(OneSignalResponse("", 3, None))
 
     } else
-      Future(OneSignalResponse("Emails Deactivated!", 0, None))
+      Future(OneSignalResponse("Notifications Deactivated!", 0, None))
+  }
+
+  def doNotification(notification: Notification): Future[OneSignalResponse] = {
+    val jsonBody = notification.toJson
+    info(s"Sending through push notification the following json: $jsonBody")
+    client.url(NotificationPath)
+      .withHttpHeaders(ContentType, Authorization)
+      .post(jsonBody)
+      .map { response =>
+        response.status match {
+          case 200 =>
+            val body = response.body.parseJsonTo[OneSignalResponse]
+            body.errors match {
+              case Some(errors) =>
+                throw ShippearException(NotificationException, errors.mkString(", "))
+              case _ => body
+            }
+          case _ => val errors = response.body.parseJsonTo[OneSignalError].errors
+            OneSignalResponse(s"Error status: ${response.status}", 0, errors)
+        }
+      }
+
+    Future(OneSignalResponse("", 3, None))
   }
 
 

@@ -32,6 +32,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
   private val paymentMethods = Macros.createCodecProviderIgnoreNone[PaymentMethod]()
   private val contactInfo = Macros.createCodecProviderIgnoreNone[ContactInfo]()
   private val city = Macros.createCodecProviderIgnoreNone[City]()
+  private val minimalAddress = Macros.createCodecProviderIgnoreNone[MinimalAddress]()
   private val address = Macros.createCodecProviderIgnoreNone[Address]()
   private val route = Macros.createCodecProviderIgnoreNone[Route]()
   private val order = Macros.createCodecProviderIgnoreNone[Order]()
@@ -49,6 +50,7 @@ class ShippearDBContext @Inject()(val applicationLifecycle: ApplicationLifecycle
       paymentMethods,
       contactInfo,
       city,
+      minimalAddress,
       address,
       route,
       order,

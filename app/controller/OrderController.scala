@@ -3,7 +3,7 @@ package controller
 import com.google.inject.Inject
 import controller.util.BaseController
 import model.internal.{AssignCarrier, Order, OrderToValidate}
-import model.request.{CancelOrder, CarrierRating, OrderCreation}
+import model.request.{CancelOrder, CarrierRating, OrderCreation, AuxRequest}
 import service.OrderService
 
 import scala.concurrent.ExecutionContext
@@ -101,6 +101,25 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }.recover {
       case ex: Exception =>
         constructErrorResult(s"Error updating order", ex)
+    }
+  }
+
+  def auxRequest = AsyncActionWithBody[AuxRequest] { implicit request =>
+    service.auxRequest(request.content).map{
+      Ok(_)
+    }.recover{
+      case ex: Exception =>
+        constructErrorResult(s"Error making auxiliar request to order ${request.content.orderId}", ex)
+    }
+
+  }
+
+  def allOrderRequests = AsyncAction { implicit request =>
+    service.ordersInPending.map {
+      Ok(_)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult("Error getting orders in PENDING_CARRIER and PENDING_AUX", ex)
     }
   }
 

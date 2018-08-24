@@ -4,6 +4,7 @@ import model.internal.TransportType.TransportType
 import model.internal.OperationType._
 import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight.MEDIUM
+import model.internal.AppType._
 import model.internal._
 import model.request.OrderCreation
 import com.github.nscala_time.time.Imports.DateTime
@@ -45,19 +46,19 @@ trait ModelData {
 
   val birthDate = rightNowTime
 
-  val marcelo = User(id_1, "oneSignal", "marcelo.l", "marcelo", "l", "36121311", birthDate,
+  val marcelo = User(id_1, USER, "oneSignal", "marcelo.l", "marcelo", "l", "36121311", birthDate,
     contactInfo, "photoUrl", Seq(almagroAddress), None, Some(Seq(visa, visaDebito)), None, None, None)
 
-  val lucas = User(id_2, "oneSignal", "lucas.c", "lucas", "c", "36121312", birthDate,
+  val lucas = User(id_2, USER, "oneSignal", "lucas.c", "lucas", "c", "36121312", birthDate,
     contactInfo, "photoUrl", Seq(parquePatriciosAddress), None, Some(Seq(masterCard)), None, None, None)
 
-  val german = User(id_3, "oneSignal", "german.l", "german", "l", "36121313", birthDate,
+  val german = User(id_3, CARRIER, "oneSignal", "german.l", "german", "l", "36121313", birthDate,
     contactInfo, "photoUrl", Seq(balvaneraAddress), None, Some(Seq(visa)), None, None, None)
 
-  val roman = User(id_4, "oneSignal", "roman.l", "roman", "g", "36121314", birthDate,
+  val roman = User(id_4, CARRIER, "oneSignal", "roman.l", "roman", "g", "36121314", birthDate,
     contactInfo, "photoUrl", Seq(boedoAddress), None, Some(Seq(visaDebito)), None, None, None)
 
-  val nazareno = User(id_5, "oneSignal", "nazareno.l", "nazareno", "l", "36121315", birthDate,
+  val nazareno = User(id_5, USER, "oneSignal", "nazareno.l", "nazareno", "l", "36121315", birthDate,
     contactInfo, "photoUrl", Seq(saavedraAddress), None, Some(Seq(visa, masterCard)), None, None, None)
 
 
@@ -69,7 +70,7 @@ trait ModelData {
   val orderId_5 = "5"
 
 
-  val almagroToSaavedra = Route(almagroAddress, saavedraAddress)
+  val almagroToSaavedra = Route(almagroAddress, saavedraAddress, None)
 
   val today = DateTime.now().plusMinutes(10)
   val yesterday = today.minusDays(1)
