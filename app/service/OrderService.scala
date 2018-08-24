@@ -13,6 +13,7 @@ import model.mapper.OrderMapper
 import model.request.{AuxRequest, CancelOrder, CarrierRating, OrderCreation}
 import onesignal.EventType._
 import onesignal.OneSignalClient
+import org.mongodb.scala.model.Filters
 import qrcodegenerator.QrCodeGenerator
 import qrcodegenerator.QrCodeGenerator._
 import repository.{OrderRepository, UserRepository}
@@ -265,5 +266,12 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     val newRoute = order.route.copy(auxOrigin = Some(auxRequest.auxAddress))
 
     order.copy(state = PENDING_AUX, historicCarriers = Some(historicCarriers), route = newRoute)
+  }
+
+
+  /* Orders with PENDING_CARRIER and PENDING_AUX */
+  def ordersInPending = {
+    repository.findByFilters(Filters.in("state", PENDING_AUX.toString, PENDING_CARRIER.toString))
+      .map{_.sortBy(_.state).toList}
   }
 }
