@@ -225,6 +225,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       .map { response =>
         response.status match {
           case 200 =>
+            info(s"Body of OneSignalResponse is ${response.body}")
             val body = Try(response.body.parseJsonTo[OneSignalResponse])
               .recover { case _: MismatchedInputException =>
                 info("Failed with serialization to OneSignalResponse, trying with InvalidPlayersIds...")
@@ -240,7 +241,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
               case Success(OneSignalResponse(_, _, Some(errors))) => throw ShippearException(NotificationException, errors.mkString(", "))
               case Success(InvalidPlayerIds(_, _, errors)) => throw ShippearException(NotificationException, errors.mkString(", "))
               case Success(NoSubscribedPlayers(_, _, errors)) => throw ShippearException(NotificationException, errors.mkString(", "))
-              case _ => throw ShippearException(NotificationException, "Failure in serialization or sending notification")
+              case _ => OneSignalResponse("", 0, None)
 
             }
           case _ => val errors = response.body.parseJsonTo[OneSignalError].errors
