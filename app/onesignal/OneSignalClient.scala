@@ -49,7 +49,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
     }
   }
 
-  def messageFactory(order: Order, eventType: EventType, userCancelledType: Option[UserType]): Map[UserType,(String, String)] = {
+  def messageFactory(order: Order, eventType: EventType, userCancelledType: Option[UserType]): Map[UserType, (String, String, Boolean)] = {
 
     val applicantFullName = s"${order.applicant.firstName} ${order.applicant.lastName}"
     val applicantPhoto = order.applicant.photoUrl
@@ -72,23 +72,23 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
     eventType match {
       //Order created
       case ORDER_CREATED => Map(PARTICIPANT ->
-        (s"$applicantFullName quiere que seas participante de: $orderDescription", applicantPhoto))
+        (s"$applicantFullName quiere que seas participante de: $orderDescription", applicantPhoto, false))
 
       //Confirmed Participant
       case CONFIRM_PARTICIPANT => Map(APPLICANT ->
-        (s"$participantFullName ha aceptado tu solicitud", participantPhoto))
+        (s"$participantFullName ha aceptado tu solicitud", participantPhoto, false))
 
       //Confirmed Carrier
       case ORDER_WITH_CARRIER =>
-        Map(PARTICIPANT -> (s"$carrierFullName sera el transportista de: $orderDescription", carrierPhoto),
-            APPLICANT -> (s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription", carrierPhoto),
-          CARRIER -> (s"Has sido asignado al pedido #${order.orderNumber} correctamente", carrierPhoto))
+        Map(PARTICIPANT -> (s"$carrierFullName sera el transportista de: $orderDescription", carrierPhoto, false),
+            APPLICANT -> (s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription", carrierPhoto, false),
+          CARRIER -> (s"Has sido asignado al pedido #${order.orderNumber} correctamente", carrierPhoto, false))
 
       //Carrier validated by QR
       case ORDER_ON_WAY =>
         val messageFromCarrier =  s"$carrierFullName ha retirado el objeto $orderDescription y se encuentra en camino!"
-        Map(APPLICANT -> (messageFromCarrier, carrierPhoto),
-          PARTICIPANT -> (messageFromCarrier, carrierPhoto))
+        Map(APPLICANT -> (messageFromCarrier, carrierPhoto, false),
+          PARTICIPANT -> (messageFromCarrier, carrierPhoto, false))
 
       //Canceled by some user
       case ORDER_CANCELED =>
@@ -102,20 +102,20 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
               case CARRIER => carrierPhoto
               case _ => ShippearLogo.logo
             }
-            u -> (s"El pedido de $orderDescription fue cancelado por $cancelledFullName", photo)}
+            u -> (s"El pedido de $orderDescription fue cancelado por $cancelledFullName", photo, false)}
           .toMap
 
       case ORDER_FINALIZED =>
         val messageFromCarrier = s"La solicitud de $orderDescription se ha completado con exito!"
-        Map(APPLICANT -> (messageFromCarrier, carrierPhoto),
-          PARTICIPANT -> (messageFromCarrier, carrierPhoto),
-          CARRIER -> (s"La solicitud #${order.orderNumber} se ha completado con exito!", carrierPhoto))
+        Map(APPLICANT -> (messageFromCarrier, carrierPhoto, false),
+          PARTICIPANT -> (messageFromCarrier, carrierPhoto, false),
+          CARRIER -> (s"La solicitud #${order.orderNumber} se ha completado con exito!", carrierPhoto, false))
 
       case AUX_REQUEST =>
         val commonMessage = s"El transportista $carrierFullName de la orden $orderDescription ha pedido un auxilio"
-        Map(APPLICANT -> (commonMessage, carrierPhoto),
-          PARTICIPANT -> (commonMessage, carrierPhoto),
-          CARRIER -> ("Pedido de auxilio realizado con exito", carrierPhoto))
+        Map(APPLICANT -> (commonMessage, carrierPhoto, true),
+          PARTICIPANT -> (commonMessage, carrierPhoto, true),
+          CARRIER -> ("Pedido de auxilio realizado con exito", ShippearLogo.logo, false))
     }
   }
 
@@ -144,11 +144,11 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       Future(OneSignalResponse("Emails Deactivated!", 0, None))
   }
 
-  def sendDirectNotification(user: User, order: Order, message: String): Future[OneSignalResponse] = {
+  def sendDirectNotification(user: User, order: Order, message: String, silent: Boolean): Future[OneSignalResponse] = {
     if (active) {
       val notification = Notification(appId, List(user.onesignalId),
         Map("en" -> message),
-        DataNotification(order._id, order.state, user.photoUrl, RELOAD))
+        DataNotification(order._id, order.state, user.photoUrl, RELOAD, silent))
 
       doNotification(notification)
     }
@@ -157,28 +157,28 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
   }
 
-  def sendMulticastNotification(order: Order, eventType: EventType, userCancelledType : Option[UserType] = None): Future[OneSignalResponse] = {
+  def sendFlowMulticastNotification(order: Order, eventType: EventType, userCancelledType : Option[UserType] = None): Future[OneSignalResponse] = {
     if(active) {
       val messagesValue = messageFactory(order, eventType, userCancelledType)
 
-      val applicantNotification = messagesValue.get(APPLICANT).map{ case (message, photo) =>
+      val applicantNotification = messagesValue.get(APPLICANT).map{ case (message, photo, silent) =>
           Notification(appId, List(order.applicant.oneSignalId),
           Map("en" -> message),
-          DataNotification(order._id, order.state, photo, RELOAD))}
+          DataNotification(order._id, order.state, photo, RELOAD, silent))}
 
 
       val participantNotification = messagesValue.get(PARTICIPANT).map{
-       case(message, photo) =>
+       case(message, photo, silent) =>
           Notification(appId, List(order.participant.oneSignalId),
             Map("en" -> message),
-            DataNotification(order._id, order.state, photo, RELOAD))
+            DataNotification(order._id, order.state, photo, RELOAD, silent))
       }
 
       val carrierNotifications = order.carrier.flatMap{
-        carrier => messagesValue.get(CARRIER).map { case (message, photo) =>
+        carrier => messagesValue.get(CARRIER).map { case (message, photo, silent) =>
           Notification(appId, List(carrier.oneSignalId),
             Map("en" -> message),
-            DataNotification(order._id, order.state, photo, RELOAD))}
+            DataNotification(order._id, order.state, photo, RELOAD, silent))}
       }
 
       val notifications: List[Notification] = List(participantNotification, carrierNotifications, applicantNotification).flatten
@@ -187,6 +187,16 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
 
       Future(OneSignalResponse("", 3, None))
 
+    } else
+      Future(OneSignalResponse("Notifications Deactivated!", 0, None))
+  }
+
+  def sendMulticastNotification(message: String, order: Order, users: Seq[User]) = {
+    if(active) {
+      doNotification(Notification(appId, users.map(_.onesignalId).toList,
+        Map("en" -> message),
+        DataNotification(order._id, order.state, ShippearLogo.logo, RELOAD, silent = false))
+      )
     } else
       Future(OneSignalResponse("Notifications Deactivated!", 0, None))
   }
@@ -210,8 +220,6 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
             OneSignalResponse(s"Error status: ${response.status}", 0, errors)
         }
       }
-
-    Future(OneSignalResponse("", 3, None))
   }
 
 
