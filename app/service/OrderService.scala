@@ -242,7 +242,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
       newOrder = makeAuxiliaryRequest(order, auxRequest)
       _ <- repository.update(newOrder)
       _ = oneSignalClient.sendFlowMulticastNotification(newOrder, AUX_REQUEST)
-      _ <- sendOtherCarriersNotification(newOrder)
+      _ <- sendOtherCarriersNotification(newOrder, auxRequest.carrierId)
     } yield newOrder
 
   }
@@ -268,9 +268,9 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     order.copy(state = PENDING_AUX, historicCarriers = Some(historicCarriers), route = newRoute)
   }
 
-  def sendOtherCarriersNotification(order: Order) = {
+  def sendOtherCarriersNotification(order: Order, originalCarrierId: String) = {
     for {
-      carriers <- userRepository.findByFilters(Filters.eq("appType", AppType.CARRIER.toString))
+      carriers <- userRepository.findByFilters(Filters.and(Filters.eq("appType", AppType.CARRIER.toString), Filters.notEqual("_id", originalCarrierId)))
       filtered = filterByAvailableCarriers(carriers)
       result <- oneSignalClient.sendMulticastNotification("Hay un envío que necesita un nuevo transportista!", order, filtered)
     } yield result
