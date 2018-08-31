@@ -130,7 +130,8 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     for {
       order <- repository.findOneById(orderToValidate.orderId)
       verification = verifyQR(orderToValidate, order)
-      _ <- updateOrderStatus(order, orderToValidate.userType, verification, eventType)
+      updatedOrder <- updateOrderStatus(order, orderToValidate.userType, verification)
+      _ = oneSignalClient.sendFlowMulticastNotification(updatedOrder, eventType)
     } yield verification
   }
 
@@ -147,7 +148,7 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
     }
   }
 
-  def updateOrderStatus(order: Order, userType: UserType, verification: Boolean, eventType: EventType): Future[Order] = {
+  def updateOrderStatus(order: Order, userType: UserType, verification: Boolean): Future[Order] = {
     if(verification) {
       val newOrder = userType match {
         case CARRIER =>
@@ -163,7 +164,6 @@ class OrderService @Inject()(val repository: OrderRepository, oneSignalClient: O
 
       for {
         _ <- repository.update(newOrder)
-        _ = oneSignalClient.sendFlowMulticastNotification(newOrder, eventType)
       } yield newOrder
     }
     else Future.successful(order)
