@@ -16,7 +16,6 @@ class GoogleMapsClient @Inject()(ws: WSClient, priceService: PriceService)(impli
   val DistanceMatrixUrl = "https://maps.googleapis.com/maps/api/distancematrix/json"
   val Origins = "origins"
   val Destinations = "destinations"
-  val modeWalking = ("mode", "walking")
 
   def searchDestinationsData(origin: Geolocation, listAddress: Seq[Address]): Seq[Future[List[RouteDetail]]] = {
     val originGeolocation = s"${origin.latitude},${origin.longitude}"
@@ -27,7 +26,7 @@ class GoogleMapsClient @Inject()(ws: WSClient, priceService: PriceService)(impli
 
       val apiResponse: Future[WSResponse] =
         ws.url(DistanceMatrixUrl)
-          .withQueryStringParameters(modeWalking, (Origins, originGeolocation), (Destinations, destinationGeolocation), ("key", ApiKey))
+          .withQueryStringParameters((Origins, originGeolocation), (Destinations, destinationGeolocation), ("key", ApiKey))
           .get
 
 
