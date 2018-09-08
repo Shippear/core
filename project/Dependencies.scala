@@ -30,8 +30,8 @@ object Dependencies {
     "com.github.salat" %% "salat" % "1.11.2",
     "com.github.kenglxn.qrgen" % "javase" % "2.4.0",
     "com.logentries" % "logentries-appender" % "1.1.38",
-    "com.github.nscala-time" %% "nscala-time" % "2.20.0"
-
+    "com.github.nscala-time" %% "nscala-time" % "2.20.0",
+    "com.sendgrid" % "sendgrid-java" % "4.2.1"
   )
 
   val jsonDependencies = Seq(

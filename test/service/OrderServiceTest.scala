@@ -12,7 +12,8 @@ import model.internal._
 import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight._
 import model.request.{AuxRequest, CancelOrder, OrderCreation}
-import onesignal.OneSignalClient
+import notification.email.EmailClient
+import notification.pushnotification.PushNotificationClient
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -40,9 +41,9 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
 
-  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
-  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(RECEIVER))
-  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(SENDER))
+  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(RECEIVER))
+  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), None)
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
@@ -54,7 +55,7 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
 
-  val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
+  val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), None)
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
     new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
@@ -72,11 +73,12 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
   "Order Service" should {
 
     val repo = mock[OrderRepository]
-    val mailClient = mock[OneSignalClient]
+    val pushClient = mock[PushNotificationClient]
     val qrGenerator = mock[QrCodeGenerator]
     val userRepo = mock[UserRepository]
+    val mailClient = mock[EmailClient]
 
-    val orderService = new OrderService(repo, mailClient, qrGenerator, userRepo)
+    val orderService = new OrderService(repo, pushClient, qrGenerator, userRepo, mailClient)
 
     "Validate the order data" in {
       val today = DateTime.now().plusSeconds(30)

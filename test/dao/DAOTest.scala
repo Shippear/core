@@ -35,9 +35,9 @@ class DAOTest extends MongoTest with ShippearRepository[Order] {
 
   val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
-  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(SENDER))
   lazy val participantId = "11111"
-  val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "onesignal", Some(0), Some(RECEIVER))
+  val participantData = UserDataOrder(participantId, "name", "last", birthDate, contactInfo,  "photo", "notification", Some(0), Some(RECEIVER))
   val visa = PaymentMethod("ownerName", "123", Some("cardCode"), Some("bankCode"), "02/20", "securityCode", Some("VISA"))
 
   val order = Order("123", applicantData, participantData, None, None, 123, "description",

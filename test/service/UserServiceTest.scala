@@ -33,9 +33,9 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
   val route = Route(origin, destination, None)
   val birthDate = rightNowTime
   val contactInfo = ContactInfo("email@email.com", "011123119")
-  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
-  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(RECEIVER))
-  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
+  val applicantData = UserDataOrder("12345", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(SENDER))
+  val participantData = UserDataOrder("123", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(RECEIVER))
+  val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), None)
 
 
   "OrdersByState" should {

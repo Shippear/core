@@ -53,9 +53,9 @@ class RepositoryTest extends MongoTest {
     val birthDate = rightNowTime
     val contactInfo = ContactInfo("email@email.com", "011123119")
     val qrCode = Some(qrCodeGenerator.generateQrImage(idOrder).stream().toByteArray)
-    val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(SENDER))
-    val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), Some(RECEIVER))
-    val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "onesignal", Some(0), None)
+    val applicantData = UserDataOrder(idUser, "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(SENDER))
+    val participantData = UserDataOrder("11111", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), Some(RECEIVER))
+    val carrierData = UserDataOrder("carrierId", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), None)
     val order = Order(idOrder, applicantData, participantData, Some(carrierData), None, 123, "description",
       PENDING_PARTICIPANT, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
       new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
@@ -103,7 +103,7 @@ class RepositoryTest extends MongoTest {
       when(user.birthDate).thenReturn(carrierData.birthDate)
       when(user.contactInfo).thenReturn(carrierData.contactInfo)
       when(user.photoUrl).thenReturn("photo")
-      when(user.onesignalId).thenReturn("onesignal")
+      when(user.onesignalId).thenReturn("notification")
       when(user.scoring).thenReturn(Some(0f))
       await(repo.create(order))
       await(repo.assignCarrier(order, user , qrCode))
