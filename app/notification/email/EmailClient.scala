@@ -72,17 +72,17 @@ class EmailClient extends ConfigReader with Logging {
         val toParticipant = new Email(participant.contactInfo.email, participant.firstName)
 
 
-        val applicantPersonalization = new Personalization()
+        val applicantPersonalization = new PersonalizationWrapper()
         applicantPersonalization.addTo(toApplicant)
-        applicantPersonalization.addSubstitution("-name-", applicant.firstName)
-        applicantPersonalization.addSubstitution("-description-", order.description)
-        applicantPersonalization.addSubstitution("-orderNumber-", order.orderNumber.toString)
+        applicantPersonalization.addDynamicTemplateData("name", applicant.firstName)
+        applicantPersonalization.addDynamicTemplateData("description", order.description)
+        applicantPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
 
-        val participantPersonalization = new Personalization()
+        val participantPersonalization = new PersonalizationWrapper()
         participantPersonalization.addTo(toParticipant)
-        participantPersonalization.addSubstitution("-applicant-", participant.firstName)
-        participantPersonalization.addSubstitution("-description-", order.description)
-        participantPersonalization.addSubstitution("-orderNumber-", order.orderNumber.toString)
+        participantPersonalization.addDynamicTemplateData("name", participant.firstName)
+        participantPersonalization.addDynamicTemplateData("description", order.description)
+        participantPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
 
         mail.addPersonalization(applicantPersonalization)
         mail.addPersonalization(participantPersonalization)
@@ -91,7 +91,7 @@ class EmailClient extends ConfigReader with Logging {
 
     }
 
-   // mail.setTemplateId(emailTemplate(eventType))
+    mail.setTemplateId(emailTemplate(eventType))
     mail
 
   }
