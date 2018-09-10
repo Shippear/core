@@ -32,10 +32,12 @@ POST     /shippear/orders/rate-carrier                  controller.OrderControll
 POST     /shippear/orders/aux-request                   controller.OrderController.auxRequest
 GET      /shippear/orders/requests                      controller.OrderController.allOrderRequests
 
-#Mails Test
-GET      /shippear/mail/devices                         controller.MailController.devices(id: Option[String])
-GET      /shippear/mail/send/:id/:typeMail              controller.MailController.sendEmail(id: String, typeMail: String)
-GET      /shippear/mail/activate/:status                controller.MailController.activate(status: Boolean)
+#Notification
+GET      /shippear/mail/send/:id/:typeMail              controller.NotificationController.sendEmail(id: String, typeMail: String)
+GET      /shippear/mail/activate/:status                controller.NotificationController.activateMail(status: Boolean)
+GET      /shippear/notification/send/:typeMail          controller.NotificationController.sendPush(id: String, typeMail: String)
+GET      /shippear/notification/activate/:status        controller.NotificationController.activatePush(status: Boolean)
+GET      /shippear/image/activate/:status               controller.NotificationController.activateImageUpload(status: Boolean)
 
 # Tasks for Tracking and Cancelling orders
 GET     /shippear/cache/:idUser                         controller.TaskController.geolocation(idUser: String)

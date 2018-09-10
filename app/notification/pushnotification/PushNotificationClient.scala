@@ -1,27 +1,25 @@
-package onesignal
+package notification.pushnotification
 
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.google.inject.Inject
 import common.serialization.{SnakeCaseJsonProtocol, _}
 import common.{ConfigReader, Logging}
+import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT, _}
 import model.internal.{Order, User, UserType}
-import model.internal.UserType._
-import onesignal.ActionState._
-import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import onesignal.EventType.{EventType, _}
-import onesignal.HTML._
+import notification.common.EventType.{EventType, _}
+import notification.pushnotification.ActionState._
 import play.api.libs.ws.WSClient
-import service.Exception.BadRequestCodes._
+import service.Exception.BadRequestCodes.NotificationException
 import service.Exception.ShippearException
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 
-class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext) extends ConfigReader with Logging with SnakeCaseJsonProtocol {
+class PushNotificationClient @Inject()(client: WSClient)(implicit ec: ExecutionContext) extends ConfigReader with Logging with SnakeCaseJsonProtocol {
 
-  private val config = envConfiguration.getConfig("email-notification").as[OneSignalConfig]
+  private val config = envConfiguration.getConfig("push-notification").as[PushNotificationConfig]
   private var active = config.activated
   private val appId = config.id.getOrElse("")
   private val auth = config.auth.getOrElse("")
@@ -32,23 +30,10 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
   //Paths Rest API One Signal
   val BasePath = "https://onesignal.com/api/v1"
   val NotificationPath = s"$BasePath/notifications"
-  val AddDevice = s"$BasePath/players"
-  val viewDevices = s"$AddDevice?app_id=$appId"
-  def viewDevice(id: String) = s"$AddDevice/$id?app_id=$appId"
 
   def activated(state: Boolean): Boolean = {
     active = state
     active
-  }
-
-  private def emailBody(emailType: EventType): String = {
-    emailType match {
-      case ORDER_CREATED => CREATED
-      case ORDER_WITH_CARRIER => WITH_CARRIER
-      case ORDER_ON_WAY => TRAVELLING
-      case ORDER_CANCELED => CANCELED
-      case ORDER_FINALIZED => FINALIZED
-    }
   }
 
   def messageFactory(order: Order, eventType: EventType, userCancelledType: Option[UserType]): Map[UserType, (String, String, Boolean)] = {
@@ -83,7 +68,7 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       //Confirmed Carrier
       case ORDER_WITH_CARRIER =>
         Map(PARTICIPANT -> (s"$carrierFullName sera el transportista de: $orderDescription", carrierPhoto, false),
-            APPLICANT -> (s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription", carrierPhoto, false),
+          APPLICANT -> (s"$carrierFullName sera el transportista de la solicitud que participas con $participantFullName de: $orderDescription", carrierPhoto, false),
           CARRIER -> (s"Has sido asignado al pedido #${order.orderNumber} correctamente", carrierPhoto, false))
 
       //Carrier validated by QR
@@ -121,44 +106,6 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
     }
   }
 
-
-  def sendEmail(playersId: List[String], emailType: EventType): Future[OneSignalResponse] = {
-    if(active) {
-      val email = Email(appId, "Shippear", emailBody(emailType), playersId)
-
-      client.url(NotificationPath)
-        .withHttpHeaders(ContentType, Authorization)
-        .post(email.toJson)
-        .map{response =>
-
-          response.status match {
-            case 200 =>
-
-              val body = Try(response.body.parseJsonTo[OneSignalResponse])
-                .recover { case _: MismatchedInputException =>
-                  info("Failed with serialization to OneSignalResponse, trying with InvalidPlayersIds...")
-                  response.body.parseJsonTo[InvalidPlayerIds]}
-                .recover { case _: MismatchedInputException =>
-                  info("Failed with serialization to InvalidPLayersIds, trying with NoSubscribedPlayers...")
-                  response.body.parseJsonTo[NoSubscribedPlayers]
-                }
-
-              body match {
-                case Success(OneSignalResponse(id,recipients,None)) => OneSignalResponse(id, recipients, None)
-                case Success(OneSignalResponse(_,_,Some(errors))) => throw ShippearException(NotificationException, errors.mkString(", "))
-                case Success(InvalidPlayerIds(_, _, errors)) =>  throw ShippearException(NotificationException, errors.mkString(", "))
-                case Success(NoSubscribedPlayers(_, _, errors)) =>  throw ShippearException(NotificationException, errors.mkString(", "))
-                case _ => throw ShippearException(NotificationException, "Failure in serialization or sending notification")
-
-              }
-            case _ => val errors = response.body.parseJsonTo[OneSignalError].errors
-              OneSignalResponse(s"Error status: ${response.status}", 0, errors)
-          }
-        }
-    } else
-      Future(OneSignalResponse("Emails Deactivated!", 0, None))
-  }
-
   def sendDirectNotification(user: User, order: Order, message: String, silent: Boolean): Future[OneSignalResponse] = {
     if (active) {
       val notification = Notification(appId, List(user.onesignalId),
@@ -177,13 +124,13 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
       val messagesValue = messageFactory(order, eventType, userCancelledType)
 
       val applicantNotification = messagesValue.get(APPLICANT).map{ case (message, photo, silent) =>
-          Notification(appId, List(order.applicant.oneSignalId),
+        Notification(appId, List(order.applicant.oneSignalId),
           Map("en" -> message),
           DataNotification(order._id, order.state, photo, RELOAD, silent))}
 
 
       val participantNotification = messagesValue.get(PARTICIPANT).map{
-       case(message, photo, silent) =>
+        case(message, photo, silent) =>
           Notification(appId, List(order.participant.oneSignalId),
             Map("en" -> message),
             DataNotification(order._id, order.state, photo, RELOAD, silent))
@@ -248,26 +195,5 @@ class OneSignalClient @Inject()(client: WSClient)(implicit ec: ExecutionContext)
             OneSignalResponse(s"Error status: ${response.status}", 0, errors)
         }
       }
-  }
-
-
-  def device(playerOneSignalId: Option[String]): Future[List[String]] = {
-    if(active){
-      playerOneSignalId match {
-        case Some(id) =>
-          client.url(viewDevice(id)).withHttpHeaders(ContentType, Authorization).get.map {
-            response =>
-              val res: Player = response.body.parseJsonTo[Player]
-              List(res.identifier)
-          }
-        case _ =>
-          client.url(viewDevices).withHttpHeaders(ContentType, Authorization).get.map {
-            response =>
-              val res = response.body.parseJsonTo[Device]
-              res.players.map(_.identifier)
-          }
-      }
-    } else
-      Future(List())
   }
 }

@@ -74,6 +74,7 @@ object OrderMapper extends IdGenerator with ConfigReader {
       orderCreation.qrCode,
       None,
       None,
+      None,
       orderCreation.paymentMethod,
       orderCreation.price,
       Some(orderCreation.price * commissionCarrier),
