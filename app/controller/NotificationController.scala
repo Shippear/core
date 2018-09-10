@@ -41,4 +41,8 @@ class NotificationController @Inject()(service: NotificationService)(implicit ec
     Future(Ok(Map("result" -> service.activateMail(status))))
   }
 
+  def activateImageUpload(status: Boolean) = AsyncAction { implicit request =>
+    Future(Ok(Map("result" -> service.activateImageUpload(status))))
+  }
+
 }

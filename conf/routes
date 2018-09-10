@@ -37,6 +37,7 @@ GET      /shippear/mail/send/:id/:typeMail              controller.NotificationC
 GET      /shippear/mail/activate/:status                controller.NotificationController.activateMail(status: Boolean)
 GET      /shippear/notification/send/:typeMail          controller.NotificationController.sendPush(id: String, typeMail: String)
 GET      /shippear/notification/activate/:status        controller.NotificationController.activatePush(status: Boolean)
+GET      /shippear/image/activate/:status               controller.NotificationController.activateImageUpload(status: Boolean)
 
 # Tasks for Tracking and Cancelling orders
 GET     /shippear/cache/:idUser                         controller.TaskController.geolocation(idUser: String)

@@ -12,7 +12,7 @@ import model.internal._
 import model.mapper.OrderMapper
 import model.request.{AuxRequest, CancelOrder, CarrierRating, OrderCreation}
 import notification.common.EventType._
-import notification.email.EmailClient
+import notification.email.{CloudinaryWrapper, EmailClient}
 import notification.pushnotification.PushNotificationClient
 import org.mongodb.scala.model.Filters
 import qrcodegenerator.QrCodeGenerator
@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class OrderService @Inject()(val repository: OrderRepository, pushNotificationClient: PushNotificationClient,
                              qrCodeGenerator: QrCodeGenerator, userRepository: UserRepository,
-                             emailClient: EmailClient)
+                             emailClient: EmailClient, cloudinary: CloudinaryWrapper)
                             (implicit ec: ExecutionContext) extends Service[Order]{
 
   /* CREATION */
@@ -38,7 +38,7 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
         orderToSave = OrderMapper.orderCreationToOrder(newOrder, applicant, participant)
         _ <- repository.create(orderToSave)
         _ = pushNotificationClient.sendFlowMulticastNotification(orderToSave, ORDER_CREATED)
-        _ = emailClient.createEmail(ORDER_CREATED, orderToSave, List(applicant, participant))
+        _ = emailClient.createEmail(ORDER_CREATED, orderToSave)
       } yield orderToSave
   }
 
@@ -71,6 +71,7 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
       _ = validateCancelOrder(order, cancelOrder.userType)
       canceledOrder <- repository.cancelOrder(order)
       _ = pushNotificationClient.sendFlowMulticastNotification(canceledOrder, ORDER_CANCELED, Some(cancelOrder.userType))
+      _ = emailClient.createEmail(ORDER_CANCELED, canceledOrder)
     } yield order
 
 
@@ -96,6 +97,7 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
       updatedOrder = order.copy(state = PENDING_CARRIER)
       _ <- repository.update(updatedOrder)
       _ = pushNotificationClient.sendFlowMulticastNotification(updatedOrder, CONFIRM_PARTICIPANT)
+      _ = emailClient.createEmail(CONFIRM_PARTICIPANT, updatedOrder)
     } yield order
   }
 
@@ -110,15 +112,19 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
       _ = validateOrderStates(order.state, List(PENDING_CARRIER, PENDING_AUX))
       newOrder <- asignNewOrAuxCarrier(order, carrier)
       _ = pushNotificationClient.sendFlowMulticastNotification(newOrder, ORDER_WITH_CARRIER)
+      _ = emailClient.createEmail(ORDER_WITH_CARRIER, newOrder)
     } yield newOrder
 
   def asignNewOrAuxCarrier(order: Order, carrier: User) = {
-    val qrCode: Option[Array[Byte]] = OrderState.toState(order.state) match {
-      case PENDING_CARRIER => Some(qrCodeGenerator.generateQrImage(order._id))
-      case _ => order.qrCode
+    val (code, url): (Option[Array[Byte]], Option[String]) = OrderState.toState(order.state) match {
+      case PENDING_CARRIER =>
+        val qrCode = qrCodeGenerator.generateQrImage(order._id)
+        val qrUrl =  cloudinary.upload(qrCode.file())
+        (Some(qrCode), Some(qrUrl))
+      case _ => (order.qrCode, order.qrCodeUrl)
     }
 
-    repository.assignCarrier(order, carrier, qrCode = qrCode)
+    repository.assignCarrier(order, carrier, code, url)
   }
 
 
@@ -167,6 +173,7 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
       for {
         _ <- repository.update(newOrder)
         _ = pushNotificationClient.sendFlowMulticastNotification(newOrder, eventType)
+        _ = emailClient.createEmail(eventType, newOrder)
       } yield newOrder
     }
     else Future.successful(order)

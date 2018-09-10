@@ -42,27 +42,27 @@ class UserServiceTest extends PlaySpec with MockitoSugar {
 
     val toBeConfirmed_1 = Order("1", applicantData, participantData, Some(carrierData), None, 123, "description",
       PENDING_CARRIER, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
     val toBeConfirmed_2 = Order("2", applicantData, participantData, Some(carrierData), None, 123, "description",
       PENDING_CARRIER, "operationType", SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
 
     val inProgress_1 = Order("3", applicantData, participantData, Some(carrierData), None, 123, "description",
       PENDING_PICKUP, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
     val inProgress_2 = Order("4", applicantData, participantData, Some(carrierData), None, 123, "description",
       PENDING_PICKUP, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
     val inProgress_3 = Order("5", applicantData, participantData, Some(carrierData), None, 123, "description",
       ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
 
     val finalized_1 = Order("6", applicantData, participantData, Some(carrierData), None, 123, "description",
       DELIVERED, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
     val finalized_2 = Order("7", applicantData, participantData, Some(carrierData), None, 123, "description",
       CANCELLED, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-      new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+      new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
 
 
     val orders = Some(Seq(toBeConfirmed_1, toBeConfirmed_2, inProgress_1, inProgress_2, inProgress_3, finalized_1, finalized_2))

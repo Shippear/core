@@ -5,7 +5,7 @@ import dao.ShippearDBContext
 import dao.util.ShippearDAOFactory
 import external.GoogleMapsClient
 import net.codingwell.scalaguice.ScalaModule
-import notification.email.EmailClient
+import notification.email.{CloudinaryWrapper, EmailClient}
 import notification.pushnotification.PushNotificationClient
 import qrcodegenerator.QrCodeGenerator
 import repository.price.{DistanceMultiplierRepository, SizeMultiplierRepository, WeightMultiplierRepository}
@@ -52,6 +52,7 @@ class ShippearModule extends ScalaModule {
     bind[NotificationService].asEagerSingleton()
     bind[PushNotificationClient].asEagerSingleton()
     bind[EmailClient].asEagerSingleton()
+    bind[CloudinaryWrapper].asEagerSingleton()
 
     //RouteMap
     bind[RouteMapController].asEagerSingleton()

@@ -1,5 +1,6 @@
 package service
 
+import java.io.File
 import java.util.Date
 
 import com.github.nscala_time.time.Imports.DateTime
@@ -11,8 +12,9 @@ import model.internal.UserType.{APPLICANT, CARRIER, PARTICIPANT}
 import model.internal._
 import model.internal.price.enum.Size._
 import model.internal.price.enum.Weight._
+import org.mockito.Matchers.any
 import model.request.{AuxRequest, CancelOrder, OrderCreation}
-import notification.email.EmailClient
+import notification.email.{CloudinaryWrapper, EmailClient}
 import notification.pushnotification.PushNotificationClient
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
@@ -47,18 +49,18 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
 
   val order_1 = Order("1", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
   val order_2 = Order("2", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
   val order_3 = Order("3", applicantData, participantData, Some(carrierData), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
 
   val otherCarrier = UserDataOrder("other", "name", "last", birthDate, contactInfo, "photo", "notification", Some(0), None)
   val order_bla = Order("4", carrierData, participantData, Some(otherCarrier), None, 123, "description",
     ON_TRAVEL, SENDER, SMALL, HEAVY, List(MOTORCYCLE), route, new Date,
-    new Date, Some(new Date), None, None, None, visa, 0, Some(0), None)
+    new Date, Some(new Date), None, None, None, None, visa, 0, Some(0), None)
 
   val orderWithoutCarrier: Order = order_1.copy(carrier = None)
 
@@ -77,8 +79,11 @@ class OrderServiceTest extends PlaySpec with MockitoSugar {
     val qrGenerator = mock[QrCodeGenerator]
     val userRepo = mock[UserRepository]
     val mailClient = mock[EmailClient]
+    val cloudinaryWrapper = mock[CloudinaryWrapper]
 
-    val orderService = new OrderService(repo, pushClient, qrGenerator, userRepo, mailClient)
+    when(cloudinaryWrapper.upload(any[File])).thenReturn("url")
+
+    val orderService = new OrderService(repo, pushClient, qrGenerator, userRepo, mailClient, cloudinaryWrapper)
 
     "Validate the order data" in {
       val today = DateTime.now().plusSeconds(30)
