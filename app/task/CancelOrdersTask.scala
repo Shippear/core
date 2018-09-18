@@ -7,19 +7,18 @@ import com.typesafe.config.Config
 import common.{ConfigReader, Logging}
 import model.internal.Order
 import common.DateTimeNow._
-import onesignal.EventType._
 import model.internal.OrderState._
-import onesignal.OneSignalClient
+import notification.pushnotification.PushNotificationClient
 import repository.OrderRepository
 import service.OrderService
-
+import notification.common.EventType._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.FiniteDuration
 
 class CancelOrdersTask @Inject()(val taskManager: TaskManager,
                                  orderRepository : OrderRepository,
                                  orderService : OrderService,
-                                 oneSignalClient: OneSignalClient)
+                                 pushNotificationClient: PushNotificationClient)
   extends RepetitveAsyncTask with ConfigReader with Logging{
 
   lazy val config: Config = envConfiguration.getConfig("timeout")
@@ -47,7 +46,7 @@ class CancelOrdersTask @Inject()(val taskManager: TaskManager,
           info(s"Cancelling order ${orderToSave._id} due time out")
           val newOrder = orderToSave.copy(state = CANCELLED, finalizedDate = Some(rightNowTime))
           orderRepository.update(newOrder)
-          oneSignalClient.sendFlowMulticastNotification(newOrder, ORDER_CANCELED)
+          pushNotificationClient.sendFlowMulticastNotification(newOrder, ORDER_CANCELED)
         }
       }
     }
