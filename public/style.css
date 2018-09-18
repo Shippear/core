@@ -554,7 +554,6 @@ input:-webkit-autofill:focus {
 
 .single-team .team-photo {
     margin-bottom: 20px;
-    padding-top: 20px;
     overflow: hidden;
 }
 
@@ -980,4 +979,20 @@ preloader
         transform: perspective(140px) rotateY(180deg);
         opacity: 0;
     }
+}
+
+.header{
+background-color:#FF9800
+}
+.bia{
+background-color: #8bc2ca;
+
+}
+.bib{
+background-color: #75cbd6;
+}
+
+.owl-item img{
+width:200px;
+height:356px;
 }
