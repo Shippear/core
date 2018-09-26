@@ -2,10 +2,11 @@ package notification.email
 
 import com.sendgrid._
 import common.{ConfigReader, Logging}
+import model.internal.OperationType._
 import model.internal.{Order, User, UserDataOrder}
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import notification.common.EventType.{EventType, ORDER_CANCELED, ORDER_CREATED, ORDER_FINALIZED, ORDER_ON_WAY, ORDER_WITH_CARRIER, CONFIRM_PARTICIPANT}
+import notification.common.EventType.{CONFIRM_PARTICIPANT, EventType, ORDER_CANCELED, ORDER_CREATED, ORDER_FINALIZED, ORDER_ON_WAY, ORDER_WITH_CARRIER}
 import notification.email.HTML._
 
 import scala.util.{Failure, Success, Try}
@@ -56,6 +57,34 @@ class EmailClient extends ConfigReader with Logging {
     request.setEndpoint(SendEndpoint)
     request.setBody(body.build())
     request
+  }
+
+  private def sendWithoutQRMail(receptor: UserDataOrder, order: Order): Unit = {
+    val from = new Email(EmailShippear)
+
+    val mail = new Mail()
+    val content = new Content("text/html", " ")
+    mail.addContent(content)
+    mail.setFrom(from)
+
+    val toReceptor = new Email(receptor.contactInfo.email, receptor.firstName)
+    val receptorPersonalization = new PersonalizationWrapper()
+    receptorPersonalization.addTo(toReceptor)
+    receptorPersonalization.addDynamicTemplateData("name", receptor.firstName)
+    receptorPersonalization.addDynamicTemplateData("description", order.description)
+    receptorPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
+    mail.addPersonalization(receptorPersonalization)
+
+    mail.setTemplateId(WITH_CARRIER_WITHOUT_QR)
+
+    val req = request(mail)
+
+    Try(sendGrid.api(req)) match {
+      case Success(response) => response.getStatusCode
+      case Failure(ex: Throwable) => warn(s"Error sending email ${ex.getMessage} to RECEPTOR")
+    }
+
+
   }
 
   def parseBody(eventType: EventType, order: Order) = {
@@ -113,22 +142,30 @@ class EmailClient extends ConfigReader with Logging {
         val toApplicant = new Email(applicant.contactInfo.email, applicant.firstName)
         val toParticipant = new Email(participant.contactInfo.email, participant.firstName)
 
-        val applicantPersonalization = new PersonalizationWrapper()
-        applicantPersonalization.addTo(toApplicant)
-        applicantPersonalization.addDynamicTemplateData("name", applicant.firstName)
-        applicantPersonalization.addDynamicTemplateData("description", order.description)
-        applicantPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
-        applicantPersonalization.addDynamicTemplateData("image", order.qrCodeUrl.get)
+        toOperationType(order.operationType) match {
+          case SENDER =>
+            sendWithoutQRMail(participant, order)
 
-        val participantPersonalization = new PersonalizationWrapper()
-        participantPersonalization.addTo(toParticipant)
-        participantPersonalization.addDynamicTemplateData("name", participant.firstName)
-        participantPersonalization.addDynamicTemplateData("description", order.description)
-        participantPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
-        participantPersonalization.addDynamicTemplateData("image", order.qrCodeUrl.get)
+            val applicantPersonalization = new PersonalizationWrapper()
+            applicantPersonalization.addTo(toApplicant)
+            applicantPersonalization.addDynamicTemplateData("name", applicant.firstName)
+            applicantPersonalization.addDynamicTemplateData("description", order.description)
+            applicantPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
+            applicantPersonalization.addDynamicTemplateData("image", order.qrCodeUrl.get)
+            mail.addPersonalization(applicantPersonalization)
 
-        mail.addPersonalization(applicantPersonalization)
-        mail.addPersonalization(participantPersonalization)
+          case RECEIVER =>
+            sendWithoutQRMail(applicant, order)
+
+            val participantPersonalization = new PersonalizationWrapper()
+            participantPersonalization.addTo(toParticipant)
+            participantPersonalization.addDynamicTemplateData("name", participant.firstName)
+            participantPersonalization.addDynamicTemplateData("description", order.description)
+            participantPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
+            participantPersonalization.addDynamicTemplateData("image", order.qrCodeUrl.get)
+            mail.addPersonalization(participantPersonalization)
+
+        }
 
       case ORDER_ON_WAY =>
         val toApplicant = new Email(applicant.contactInfo.email, applicant.firstName)
