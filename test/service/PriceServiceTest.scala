@@ -63,71 +63,73 @@ class PriceServiceTest extends PlaySpec with MockitoSugar {
       // Scenario = 1
       // Small = 2
       // Heavy = 4
-      // 5 * 1 * 2 * 4 = 40
+      // Should be a price base of 50 due heavy
+      // 5 * 1 * 2 * 4 + 50 = 90
       var result = await(priceService.calculatePriceAndTransports(listRoutes, Size.SMALL, Weight.HEAVY)).head
-      result.priceInformation.price mustBe 40
+      result.priceInformation.price mustBe 90
 
       // Distance = 5
       // Scenario = 1
       // Medium = 2.5
       // Medium = 3
-      // 5 * 1 * 2.5 * 3 = 37.5
+      // Should be a price base of 20
+      // 5 * 1 * 2.5 * 3 + 20 = 57.5
       result = await(priceService.calculatePriceAndTransports(listRoutes, Size.MEDIUM, Weight.MEDIUM)).head
-      result.priceInformation.price mustBe 37.5
+      result.priceInformation.price mustBe 57.5
 
       //Urgent!
       // Distance = 5
       // Scenario = 3
       // Medium = 2.5
       // Medium = 3
-      // 5 * 1 * 2.5 * 3 = 37.5
+      // Should be a price base of 20
+      // 5 * 1 * 2.5 * 3 + 20 = 132.5
       result = await(priceService.calculatePriceAndTransports(listRoutes, Size.MEDIUM, Weight.MEDIUM, Scenario.URGENT)).head
-      result.priceInformation.price mustBe 112.5
-
+      result.priceInformation.price mustBe 132.5
 
     }
 
     "Filter the supported transports" in {
       var transports = priceService.supportedTransport(1, Size.SMALL, Weight.LIGHT)
       transports must have size TransportType.values.toList.size
-      transports must contain(TransportType.WALKING.toString)
-      transports must contain(TransportType.BICYCLE.toString)
-      transports must contain(TransportType.MOTORCYCLE.toString)
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.WALKING)
+      transports must contain(TransportType.BICYCLE)
+      transports must contain(TransportType.MOTORCYCLE)
+      transports must contain(TransportType.CAR)
 
       transports = priceService.supportedTransport(9, Size.SMALL, Weight.LIGHT)
       transports must have size 3
-      transports must contain(TransportType.BICYCLE.toString)
-      transports must contain(TransportType.MOTORCYCLE.toString)
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.BICYCLE)
+      transports must contain(TransportType.MOTORCYCLE)
+      transports must contain(TransportType.CAR)
 
       transports = priceService.supportedTransport(16, Size.SMALL, Weight.LIGHT)
       transports must have size 2
-      transports must contain(TransportType.MOTORCYCLE.toString)
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.MOTORCYCLE)
+      transports must contain(TransportType.CAR)
 
       transports = priceService.supportedTransport(1, Size.SMALL, Weight.MEDIUM)
       transports must have size TransportType.values.toList.size
-      transports must contain(TransportType.WALKING.toString)
-      transports must contain(TransportType.BICYCLE.toString)
-      transports must contain(TransportType.MOTORCYCLE.toString)
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.WALKING)
+      transports must contain(TransportType.BICYCLE)
+      transports must contain(TransportType.MOTORCYCLE)
+      transports must contain(TransportType.CAR)
 
       transports = priceService.supportedTransport(1, Size.SMALL, Weight.HEAVY)
       transports must have size 2
-      transports must contain(TransportType.MOTORCYCLE.toString)
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.MOTORCYCLE)
+      transports must contain(TransportType.CAR)
 
       transports = priceService.supportedTransport(1, Size.MEDIUM, Weight.LIGHT)
       transports must have size TransportType.values.toList.size
-      transports must contain(TransportType.WALKING.toString)
-      transports must contain(TransportType.BICYCLE.toString)
-      transports must contain(TransportType.MOTORCYCLE.toString)
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.WALKING)
+      transports must contain(TransportType.BICYCLE)
+      transports must contain(TransportType.MOTORCYCLE)
+      transports must contain(TransportType.CAR)
 
       transports = priceService.supportedTransport(1, Size.BIG, Weight.LIGHT)
       transports must have size 1
-      transports must contain(TransportType.CAR.toString)
+      transports must contain(TransportType.CAR)
 
     }
 
