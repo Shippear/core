@@ -65,19 +65,20 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
 
   /* CANCEL ORDER */
 
-  def cancelOrder(cancelOrder: CancelOrder): Future[_] =
+  def cancelOrder(cancelOrder: CancelOrder): Future[Order] =
     for {
       order <- repository.findOneById(cancelOrder.orderId)
       _ = validateCancelOrder(order, cancelOrder.userType)
-      canceledOrder <- repository.cancelOrder(order)
+      priceUpdatedOrder = updatedPriceCanceledOrder(order, cancelOrder.userType)
+      canceledOrder <- repository.cancelOrder(priceUpdatedOrder)
       _ = pushNotificationClient.sendFlowMulticastNotification(canceledOrder, ORDER_CANCELED, Some(cancelOrder.userType))
       _ = emailClient.createEmail(ORDER_CANCELED, canceledOrder)
-    } yield order
+    } yield canceledOrder
 
 
   private def validateCancelOrder(order: Order, userType: UserType) = {
     val message = s"Order is in state ${order.state}"
-    val possibleStates = List(PENDING_CARRIER, PENDING_PARTICIPANT, PENDING_PICKUP)
+    val possibleStates = List(PENDING_PARTICIPANT, PENDING_CARRIER, PENDING_PICKUP)
       userType match {
         case APPLICANT | PARTICIPANT =>
           if(!possibleStates.contains(OrderState.toState(order.state)))
@@ -85,6 +86,22 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
         case _ => if(!order.state.equals(PENDING_PICKUP.toString))
             throw ShippearException(InvalidOrderState, message)
       }
+  }
+
+  private def updatedPriceCanceledOrder(order: Order, userType: UserType) = {
+    userType match {
+      case APPLICANT | PARTICIPANT =>
+        toState(order.state) match {
+          case PENDING_PARTICIPANT => order.copy(price = 0, carrierEarning = Some(0))
+          case PENDING_CARRIER =>
+            val price: Double = order.price
+            val carrierEarning: Double = order.carrierEarning.getOrElse(0)
+            val shippearCommision: Double = price - carrierEarning
+              order.copy(price = shippearCommision, carrierEarning = Some(0))
+          case _ => order
+    }
+      case _ => order.copy(price = 0, carrierEarning = Some(0))
+    }
   }
 
 
