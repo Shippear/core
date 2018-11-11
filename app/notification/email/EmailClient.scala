@@ -87,10 +87,49 @@ class EmailClient extends ConfigReader with Logging {
 
   }
 
+  private def sendToCarrier(someCarrier: Option[UserDataOrder], eventType: EventType, order: Order): Unit = {
+    someCarrier match {
+      case Some(carrier) =>
+        val from = new Email(EmailShippear)
+
+        val mail = new Mail()
+        val content = new Content("text/html", " ")
+        mail.addContent(content)
+        mail.setFrom(from)
+
+        val toCarrier = new Email(carrier.contactInfo.email, carrier.firstName)
+        val receptorPersonalization = new PersonalizationWrapper()
+        receptorPersonalization.addTo(toCarrier)
+        receptorPersonalization.addDynamicTemplateData("name", carrier.firstName)
+        receptorPersonalization.addDynamicTemplateData("orderNumber", order.orderNumber.toString)
+        mail.addPersonalization(receptorPersonalization)
+
+        val template = eventType match {
+          case ORDER_WITH_CARRIER => ASSIGNED
+          case ORDER_FINALIZED => CARRIER_FINALIZED
+          case ORDER_CANCELED => CARRIER_FINALIZED
+
+        }
+        mail.setTemplateId(template)
+
+        val req = request(mail)
+
+        Try(sendGrid.api(req)) match {
+          case Success(response) => response.getStatusCode
+          case Failure(ex: Throwable) => warn(s"Error sending email ${ex.getMessage} to RECEPTOR")
+        }
+      case _ => someCarrier
+    }
+
+
+
+  }
+
   def parseBody(eventType: EventType, order: Order) = {
 
     val applicant = order.applicant
     val participant = order.participant
+    val carrier = order.carrier
     val from = new Email(EmailShippear)
 
     val mail = new Mail()
@@ -142,6 +181,9 @@ class EmailClient extends ConfigReader with Logging {
         val toApplicant = new Email(applicant.contactInfo.email, applicant.firstName)
         val toParticipant = new Email(participant.contactInfo.email, participant.firstName)
 
+        sendToCarrier(carrier, ORDER_WITH_CARRIER, order)
+
+
         toOperationType(order.operationType) match {
           case SENDER =>
             sendWithoutQRMail(participant, order)
@@ -191,6 +233,8 @@ class EmailClient extends ConfigReader with Logging {
         val toApplicant = new Email(applicant.contactInfo.email, applicant.firstName)
         val toParticipant = new Email(participant.contactInfo.email, participant.firstName)
 
+        sendToCarrier(carrier, ORDER_FINALIZED, order)
+
         val applicantPersonalization = new PersonalizationWrapper()
         applicantPersonalization.addTo(toApplicant)
         applicantPersonalization.addDynamicTemplateData("name", applicant.firstName)
@@ -209,6 +253,8 @@ class EmailClient extends ConfigReader with Logging {
       case ORDER_CANCELED =>
         val toApplicant = new Email(applicant.contactInfo.email, applicant.firstName)
         val toParticipant = new Email(participant.contactInfo.email, participant.firstName)
+
+        sendToCarrier(carrier, ORDER_CANCELED, order)
 
         val applicantPersonalization = new PersonalizationWrapper()
         applicantPersonalization.addTo(toApplicant)
