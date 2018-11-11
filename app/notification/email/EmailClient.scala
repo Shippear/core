@@ -107,7 +107,7 @@ class EmailClient extends ConfigReader with Logging {
         val template = eventType match {
           case ORDER_WITH_CARRIER => ASSIGNED
           case ORDER_FINALIZED => CARRIER_FINALIZED
-          case ORDER_CANCELED => CARRIER_FINALIZED
+          case ORDER_CANCELED => CARRIER_CANCELED
 
         }
         mail.setTemplateId(template)
