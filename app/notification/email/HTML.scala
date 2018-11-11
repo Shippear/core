@@ -13,5 +13,5 @@ object HTML {
   //Only for carrier
   val ASSIGNED = "d-df87f0c52e5b4bb88e1227e57ad0cf75"
   val CARRIER_FINALIZED = "d-ef51f9f3d2294ae49ff8d50f3f936838"
-  val CARRIER_CANCELED = "d-d-fb770261b1c744389034c14bb6f13c6b"
+  val CARRIER_CANCELED = "d-fb770261b1c744389034c14bb6f13c6b"
 }
