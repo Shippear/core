@@ -58,7 +58,7 @@ class UserController @Inject()(service: UserService)(implicit ec: ExecutionConte
   }
 
   def allUsers = AsyncAction { implicit request =>
-    service.all.map{ result =>
+    service.all.map { result =>
       Ok(result.toList)
     }.recover {
       case ex: Exception =>

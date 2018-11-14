@@ -56,5 +56,4 @@ class UserService @Inject()(val repository: UserRepository)(implicit ec: Executi
   def ordersByState(idUser: String): Future[UserResponse] =
     super.findById(idUser).map(User.user2Response)
 
-
 }

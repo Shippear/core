@@ -123,4 +123,14 @@ class OrderController @Inject()(service: OrderService)(implicit ec: ExecutionCon
     }
   }
 
+
+  def end = AsyncAction { implicit request =>
+    service.end.map { result =>
+      Ok(result)
+    }.recover {
+      case ex: Exception =>
+        constructErrorResult(s"Error sending easter :(", ex)
+    }
+  }
+
 }

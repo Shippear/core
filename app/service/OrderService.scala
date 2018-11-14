@@ -316,4 +316,11 @@ class OrderService @Inject()(val repository: OrderRepository, pushNotificationCl
     repository.findByFilters(Filters.in("state", PENDING_AUX.toString, PENDING_CARRIER.toString))
       .map{_.sortBy(_.state).toList}
   }
+
+  def end = for {
+      users <- userRepository.all
+      emails = users.map(user => (user.contactInfo.email, user.firstName))
+      result <- emailClient.sendEasterEgg(emails)
+    } yield result
+
 }

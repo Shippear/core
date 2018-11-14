@@ -9,6 +9,7 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import notification.common.EventType.{CONFIRM_PARTICIPANT, EventType, ORDER_CANCELED, ORDER_CREATED, ORDER_FINALIZED, ORDER_ON_WAY, ORDER_WITH_CARRIER}
 import notification.email.HTML._
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 class EmailClient extends ConfigReader with Logging {
@@ -281,5 +282,36 @@ class EmailClient extends ConfigReader with Logging {
   }
 
 
+  def sendEasterEgg(emails: Seq[(String, String)]) = {
+    emails.foreach { case (name, email) =>
+      val mail = new Mail()
 
+      val content = new Content("text/html", " ")
+      mail.addContent(content)
+
+      val from = new Email(EmailShippear)
+      mail.setFrom(from)
+
+
+      val to = new Email(email, name)
+      val applicantPersonalization = new PersonalizationWrapper()
+      applicantPersonalization.addTo(to)
+      applicantPersonalization.addDynamicTemplateData("name", name)
+      mail.addPersonalization(applicantPersonalization)
+
+
+      mail.setTemplateId(END)
+
+      val req = request(mail)
+
+      Try(sendGrid.api(req)) match {
+        case Success(response) => response.getStatusCode
+        case Failure(ex: Throwable) => warn(s"Error sending email ${ex.getMessage} to RECEPTOR")
+      }
+
+    }
+
+    Future.successful()
+
+  }
 }

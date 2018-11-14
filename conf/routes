@@ -51,3 +51,6 @@ POST    /shippear/routes/information                    controller.RouteMapContr
 
 # Serve static assets under public directory
 GET     /*file                                          controller.FrontendController.assetOrDefault(file)
+
+# Easter egg
+POST   /shippear/end                                    controller.OrderController.end
