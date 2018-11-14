@@ -283,7 +283,7 @@ class EmailClient extends ConfigReader with Logging {
 
 
   def sendEasterEgg(emails: Seq[(String, String)]) = {
-    emails.foreach { case (name, email) =>
+    emails.foreach { case (email, name) =>
       val mail = new Mail()
 
       val content = new Content("text/html", " ")
